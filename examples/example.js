@@ -9,6 +9,8 @@ const pages = [
   ['content', 'Rich Content', 'code'],
   ['editors', 'Editors', 'edit'],
   ['badges', 'Badges', 'crown'],
+  ['lists', 'Lists & Tables', 'table'],
+  ['dates', 'Date & Time', 'calendar'],
   ['profiles', 'Profiles', 'users'],
   ['overlays', 'Overlays', 'zap'],
 ];

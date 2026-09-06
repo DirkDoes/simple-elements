@@ -6,6 +6,7 @@ const files = [
   'src/helpers.js',
   'src/icon-names.js',
   'src/syntax.js',
+  'src/native-input.js',
   ...((await readFile('src/index.js', 'utf8')).match(/components\/.+?\.js/g) || []).map((file) => `src/${file}`),
 ];
 const source = (await Promise.all(files.map((file) => readFile(file, 'utf8'))))

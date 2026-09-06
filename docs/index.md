@@ -31,6 +31,9 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [File upload](file-upload.md)
 - [Code editor](code-editor.md)
 - [WYSIWYG](wysiwyg.md)
+- [Date picker](date-picker.md)
+- [Date and time picker](datetime-picker.md)
+- [Time picker](time-picker.md)
 
 ## Actions and feedback
 
@@ -43,5 +46,12 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Modal](modal.md)
 - [Drawer](drawer.md)
 - [Badge](badge.md)
+
+## Data display
+
+- [List](list.md)
+- [List header](list-header.md)
+- [List row](list-row.md)
+- [Table](table.md)
 
 Browse the page-like component sections in [`examples/index.html`](../examples/index.html).
