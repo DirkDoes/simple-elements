@@ -2,9 +2,9 @@
 
 ```html
 <se-time-picker label="Start time" name="event[start_time]" value="09:30" step="900"></se-time-picker>
-<se-time-picker label="Reminder" name="event[reminder_time]" value="23:55" variant="spinner" step="300"></se-time-picker>
+<se-time-picker label="Reminder" name="event[reminder_time]" value="23:55" step="300"></se-time-picker>
 ```
 
 Opens the Simple Elements time selector and submits a hidden `HH:MM` value normally in HTML and Ruby on Rails forms. `step` controls the minute interval and is measured in seconds.
 
-The default variant shows selectable hour and minute lists. `variant="spinner"` provides typed fields that also respond to the mouse wheel and Up/Down keys. Hours wrap between `23` and `00`; minutes wrap between `59` and `00` using the configured step.
+The hour and minute fields accept typing and respond to the mouse wheel and Up/Down keys. Hours wrap between `23` and `00`; minutes wrap between `59` and `00` using the configured step.
