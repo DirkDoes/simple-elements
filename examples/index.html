@@ -171,7 +171,7 @@ This supports **bold text**, *emphasis*, and `inline code`.
             <div class="demo-stack">
               <se-card><se-wysiwyg label="Article body" name="article[body]" placeholder="Write the article..."><p>Compose <strong>formatted content</strong> directly in the browser.</p></se-wysiwyg></se-card>
               <div class="demo-code-grid">
-                <se-code-editor label="JSON" name="examples[json]" language="json" value='{"name":"Simple Elements","enabled":true}'></se-code-editor>
+                <se-code-editor label="JSON (read only)" name="examples[json]" language="json" value='{"name":"Simple Elements","enabled":true}' readonly></se-code-editor>
                 <se-code-editor label="Markdown" name="examples[markdown]" language="markdown" value="# Heading&#10;&#10;**Bold** and `code`"></se-code-editor>
                 <se-code-editor label="HTML" name="examples[html]" language="html" value="&lt;se-button variant=&quot;brand&quot;&gt;Save&lt;/se-button&gt;"></se-code-editor>
                 <se-code-editor label="CSS" name="examples[css]" language="css" value=".card {&#10;  color: var(--se-text);&#10;}"></se-code-editor>
@@ -181,13 +181,27 @@ This supports **bold text**, *emphasis*, and `inline code`.
             </div>
           </section>
 
+          <section data-demo="quotes" hidden>
+            <se-title level="section">Quotes</se-title>
+            <se-text muted>Highlighted notes, quotations, and callouts matching the badge color system.</se-text>
+            <se-card class="demo-stack">
+              <se-blockquote>Brand is the normal quote style.</se-blockquote>
+              <se-blockquote variant="gray">Gray works for neutral supporting information.</se-blockquote>
+              <se-blockquote variant="success">Success confirms that something completed correctly.</se-blockquote>
+              <se-blockquote variant="warning">Warning draws attention before a potentially risky action.</se-blockquote>
+              <se-blockquote variant="error">Error explains what failed and what should be corrected.</se-blockquote>
+              <se-blockquote variant="info">Info provides useful context without implying a problem.</se-blockquote>
+              <se-blockquote variant="purple">Purple provides an additional distinct category.</se-blockquote>
+            </se-card>
+          </section>
+
           <section data-demo="badges" hidden>
             <se-title level="section">Badges</se-title>
             <se-text muted>Status labels with text, icons, or both.</se-text>
             <se-card class="demo-stack">
               <div><se-title level="sidebar" class="demo-card-title">Text badges</se-title><div class="demo-row"><se-badge>Gray</se-badge><se-badge variant="brand">Brand</se-badge><se-badge variant="success">Success</se-badge><se-badge variant="warning">Warning</se-badge><se-badge variant="error">Error</se-badge><se-badge variant="info">Info</se-badge><se-badge variant="purple">Purple</se-badge></div></div>
-              <div><se-title level="sidebar" class="demo-card-title">Icon and text</se-title><div class="demo-row"><se-badge variant="success"><se-icon name="check"></se-icon>Active</se-badge><se-badge variant="warning"><se-icon name="alert"></se-icon>Needs attention</se-badge><se-badge variant="danger"><se-icon name="x"></se-icon>Failed</se-badge></div></div>
-              <div><se-title level="sidebar" class="demo-card-title">Icon only</se-title><div class="demo-row"><se-badge variant="brand" aria-label="Verified"><se-icon name="check"></se-icon></se-badge><se-badge variant="warning" aria-label="Warning"><se-icon name="alert"></se-icon></se-badge><se-badge variant="danger" aria-label="Error"><se-icon name="x"></se-icon></se-badge></div></div>
+              <div><se-title level="sidebar" class="demo-card-title">Icon and text</se-title><div class="demo-row"><se-badge variant="success"><se-icon name="check"></se-icon>Active</se-badge><se-badge variant="warning"><se-icon name="alert"></se-icon>Needs attention</se-badge><se-badge variant="error"><se-icon name="x"></se-icon>Failed</se-badge></div></div>
+              <div><se-title level="sidebar" class="demo-card-title">Icon only</se-title><div class="demo-row"><se-badge variant="brand" aria-label="Verified"><se-icon name="check"></se-icon></se-badge><se-badge variant="warning" aria-label="Warning"><se-icon name="alert"></se-icon></se-badge><se-badge variant="error" aria-label="Error"><se-icon name="x"></se-icon></se-badge></div></div>
             </se-card>
           </section>
 

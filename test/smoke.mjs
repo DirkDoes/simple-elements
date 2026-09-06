@@ -35,12 +35,13 @@ for (const file of examplePages) assert.match(await readFile(`examples/${file}`,
 const exampleScript = await readFile('examples/example.js', 'utf8');
 assert.doesNotMatch(exampleScript, /const demos\s*=/, 'demo markup belongs in HTML');
 const exampleHtml = await readFile('examples/index.html', 'utf8');
-assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 14, 'expected fourteen page-like sections');
+assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 15, 'expected fifteen page-like sections');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea name=/, 'code editor must submit through a native textarea');
+assert.match(await readFile('src/components/code-editor.js', 'utf8'), /hasAttribute\('readonly'\)/, 'code editor must support readonly');
 assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
 assert.match(highlightCode('const ready = true;', 'javascript'), /se-token--keyword/);
 assert.match(renderMarkdown('> Safe\n\n```json\n{"ready":true}\n```'), /<se-blockquote>Safe<\/se-blockquote>.*<se-code block language="json">/s);
 assert.doesNotMatch(renderMarkdown('<script>alert(1)</script>'), /<script>/);
 for (const component of ['date-picker', 'datetime-picker', 'time-picker']) assert.match(await readFile(`src/components/${component}.js`, 'utf8'), /defineNativeInput/);
 assert.match(await readFile('src/components/table.js', 'utf8'), /--se-columns/);
-console.log(`Checked ${components.length} components and 14 example sections.`);
+console.log(`Checked ${components.length} components and 15 example sections.`);

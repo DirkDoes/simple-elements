@@ -1,6 +1,6 @@
 import { define } from '../helpers.js';
 
-const variants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'danger', 'info', 'purple']);
+const variants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'purple']);
 
 class SeBadge extends HTMLElement {
   connectedCallback() {

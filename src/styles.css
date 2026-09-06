@@ -58,7 +58,18 @@ se-card { display: block; padding: 1.5rem; color: var(--se-text); background: va
 
 .se-code-inline { padding: .125rem .35rem; color: var(--se-brand); background: var(--se-brand-soft); border: 1px solid var(--se-border); border-radius: .3rem; font: 500 .85em/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .se-code-block { margin: 0; padding: 1rem; overflow: auto; color: var(--se-text); background: var(--se-surface-soft); border: 1px solid var(--se-border); border-radius: var(--se-radius); font: 400 .8125rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 2; }
-.se-blockquote { display: block; margin: 1rem 0; padding: .75rem 1rem; color: var(--se-muted); background: var(--se-surface-soft); border-left: 4px solid var(--se-brand); border-radius: 0 var(--se-radius) var(--se-radius) 0; font: 400 .875rem/1.6 var(--se-font); }
+.se-blockquote { display: block; margin: 1rem 0; padding: .75rem 1rem; color: var(--se-text); background: var(--se-brand-soft); border-left: 4px solid var(--se-brand); border-radius: 0 var(--se-radius) var(--se-radius) 0; font: 400 .875rem/1.6 var(--se-font); }
+.se-blockquote--gray { background: var(--se-surface-soft); border-color: var(--se-muted); }
+.se-blockquote--success { background: #f0fdf4; border-color: #16a34a; }
+.se-blockquote--warning { background: #fffbeb; border-color: #d97706; }
+.se-blockquote--error { background: #fef2f2; border-color: #dc2626; }
+.se-blockquote--info { background: #f0f9ff; border-color: #0284c7; }
+.se-blockquote--purple { background: #faf5ff; border-color: #9333ea; }
+[data-theme="dark"] .se-blockquote--success { background: #14532d55; border-color: #4ade80; }
+[data-theme="dark"] .se-blockquote--warning { background: #78350f66; border-color: #fbbf24; }
+[data-theme="dark"] .se-blockquote--error { background: #7f1d1d66; border-color: #f87171; }
+[data-theme="dark"] .se-blockquote--info { background: #0c4a6e66; border-color: #38bdf8; }
+[data-theme="dark"] .se-blockquote--purple { background: #581c8766; border-color: #c084fc; }
 se-markdown { display: block; color: var(--se-text); font: 400 .875rem/1.65 var(--se-font); }
 se-markdown > :first-child { margin-top: 0; }
 se-markdown > :last-child { margin-bottom: 0; }
@@ -88,6 +99,7 @@ se-markdown .se-code-block { margin: 1rem 0; }
 .se-editor__highlight { pointer-events: none; color: var(--se-text); }
 .se-editor textarea { z-index: 1; width: 100%; min-height: 14rem; resize: vertical; color: transparent; caret-color: var(--se-text); background: transparent; outline: 0; -webkit-text-fill-color: transparent; }
 .se-editor textarea::selection { background: color-mix(in srgb, var(--se-brand) 25%, transparent); }
+.se-editor textarea:read-only { cursor: default; }
 .se-editor textarea:disabled { cursor: not-allowed; }
 
 .se-wysiwyg { overflow: hidden; background: var(--se-surface); border: 1px solid var(--se-border-strong); border-radius: var(--se-radius); box-shadow: var(--se-shadow); }
@@ -108,14 +120,14 @@ se-badge { display: inline-flex; }
 .se-badge--brand { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
 .se-badge--success { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
 .se-badge--warning { color: #b45309; background: #fffbeb; border-color: #fde68a; }
-.se-badge--error, .se-badge--danger { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+.se-badge--error { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
 .se-badge--info { color: #0369a1; background: #f0f9ff; border-color: #bae6fd; }
 .se-badge--purple { color: #7e22ce; background: #faf5ff; border-color: #e9d5ff; }
 [data-theme="dark"] .se-badge--gray { color: #cbd5e1; background: #1e293b; border-color: #475569; }
 [data-theme="dark"] .se-badge--brand { color: #93c5fd; background: #1e3a8a66; border-color: #1d4ed8; }
 [data-theme="dark"] .se-badge--success { color: #6ee7b7; background: #064e3b66; border-color: #047857; }
 [data-theme="dark"] .se-badge--warning { color: #fcd34d; background: #78350f66; border-color: #b45309; }
-[data-theme="dark"] .se-badge--error, [data-theme="dark"] .se-badge--danger { color: #fca5a5; background: #7f1d1d66; border-color: #b91c1c; }
+[data-theme="dark"] .se-badge--error { color: #fca5a5; background: #7f1d1d66; border-color: #b91c1c; }
 [data-theme="dark"] .se-badge--info { color: #7dd3fc; background: #0c4a6e66; border-color: #0369a1; }
 [data-theme="dark"] .se-badge--purple { color: #d8b4fe; background: #581c8766; border-color: #7e22ce; }
 

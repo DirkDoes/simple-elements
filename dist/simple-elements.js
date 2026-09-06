@@ -569,8 +569,13 @@ class SeCode extends HTMLElement {
 define('se-code', SeCode);
 
 
+const blockquoteVariants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'purple']);
+
 class SeBlockquote extends HTMLElement {
-  connectedCallback() { this.classList.add('se-blockquote'); }
+  connectedCallback() {
+    const variant = this.getAttribute('variant') || 'brand';
+    this.classList.add('se-blockquote', `se-blockquote--${blockquoteVariants.has(variant) ? variant : 'brand'}`);
+  }
 }
 
 define('se-blockquote', SeBlockquote);
@@ -595,7 +600,7 @@ class SeCodeEditor extends HTMLElement {
     this.dataset.ready = 'true';
     const value = this.getAttribute('value') || this.textContent.trim();
     const language = this.getAttribute('language') || 'javascript';
-    this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-editor"><pre class="se-editor__lines" aria-hidden="true"></pre><pre class="se-editor__highlight" aria-hidden="true"><code></code></pre><textarea name="${escapeHtml(this.getAttribute('name') || '')}" aria-label="${escapeHtml(this.getAttribute('label') || 'Code editor')}" spellcheck="false"${this.hasAttribute('disabled') ? ' disabled' : ''}>${escapeHtml(value)}</textarea></div>`;
+    this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-editor"><pre class="se-editor__lines" aria-hidden="true"></pre><pre class="se-editor__highlight" aria-hidden="true"><code></code></pre><textarea name="${escapeHtml(this.getAttribute('name') || '')}" aria-label="${escapeHtml(this.getAttribute('label') || 'Code editor')}" spellcheck="false"${this.hasAttribute('readonly') ? ' readonly' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}>${escapeHtml(value)}</textarea></div>`;
     const textarea = this.querySelector('textarea');
     const highlight = this.querySelector('.se-editor__highlight');
     const lines = this.querySelector('.se-editor__lines');
@@ -646,7 +651,7 @@ class SeWysiwyg extends HTMLElement {
 define('se-wysiwyg', SeWysiwyg);
 
 
-const variants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'danger', 'info', 'purple']);
+const variants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'purple']);
 
 class SeBadge extends HTMLElement {
   connectedCallback() {

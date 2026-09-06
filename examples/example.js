@@ -7,6 +7,7 @@ const pages = [
   ['uploads', 'File Uploads', 'file-up'],
   ['contextual', 'Contextual', 'message-square'],
   ['content', 'Rich Content', 'code'],
+  ['quotes', 'Quotes', 'message-square'],
   ['editors', 'Editors', 'edit'],
   ['badges', 'Badges', 'crown'],
   ['lists', 'Lists & Tables', 'table'],
