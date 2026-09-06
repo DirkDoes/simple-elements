@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { highlightCode, renderMarkdown } from '../src/syntax.js';
-import { calendarDays, dateValue, parseDate, parseTime, timeValue } from '../src/calendar.js';
+import { calendarDays, dateValue, parseDate, parseTime, timeValue, wrapNumber } from '../src/calendar.js';
 
 const components = (await readdir('src/components')).filter((file) => file.endsWith('.js'));
 const examplePages = (await readdir('examples')).filter((file) => file.endsWith('.html'));
@@ -49,5 +49,7 @@ assert.equal(calendarDays(2026, 8).length, 42);
 assert.deepEqual(parseTime('09:30'), { hour: 9, minute: 30 });
 assert.equal(parseTime('25:00'), null);
 assert.equal(timeValue({ hour: 9, minute: 5 }), '09:05');
+assert.equal(wrapNumber(24, 24), 0);
+assert.equal(wrapNumber(-5, 60), 55);
 assert.match(await readFile('src/components/table.js', 'utf8'), /--se-columns/);
 console.log(`Checked ${components.length} components and 15 example sections.`);

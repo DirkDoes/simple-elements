@@ -142,6 +142,8 @@ const parseTime = (value) => {
 
 const timeValue = ({ hour, minute }) => `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 
+const wrapNumber = (value, limit) => ((value % limit) + limit) % limit;
+
 
 const attributeName = (name) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 const iconMarkup = (nodes) => nodes.map(([tag, attributes]) =>
@@ -778,13 +780,21 @@ class SeTimePicker extends HTMLElement {
     this._draft = this._selected || { hour: now.getHours(), minute: now.getMinutes() };
     const id = this.getAttribute('id') || `se-time-${crypto.randomUUID()}`;
     const disabled = this.hasAttribute('disabled');
-    this.innerHTML = `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(this.getAttribute('label') || 'Time')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label><div class="se-time"><button class="se-control se-time__trigger" type="button" aria-labelledby="${escapeHtml(id)}-label" aria-haspopup="dialog" aria-expanded="false"${disabled ? ' disabled' : ''}><span></span><se-icon name="clock"></se-icon></button><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"><div class="se-time__popover" role="dialog" aria-label="Choose time" hidden><strong class="se-time__title">Choose time</strong><div class="se-time__columns"><div><small>Hour</small><div class="se-time__options" data-hours></div></div><span class="se-time__separator">:</span><div><small>Minute</small><div class="se-time__options" data-minutes></div></div></div><div class="se-time__footer"><button type="button" data-now>Now</button><button type="button" data-clear>Clear</button><button type="button" data-done>Done</button></div></div></div>`;
+    this._spinner = this.getAttribute('variant') === 'spinner';
+    const chooser = this._spinner ? '<div class="se-time__spinner"><label><small>Hour</small><input data-hour-input inputmode="numeric" aria-label="Hour"></label><span>:</span><label><small>Minute</small><input data-minute-input inputmode="numeric" aria-label="Minute"></label></div>' : '<div class="se-time__columns"><div><small>Hour</small><div class="se-time__options" data-hours></div></div><span class="se-time__separator">:</span><div><small>Minute</small><div class="se-time__options" data-minutes></div></div></div>';
+    this.innerHTML = `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(this.getAttribute('label') || 'Time')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label><div class="se-time"><button class="se-control se-time__trigger" type="button" aria-labelledby="${escapeHtml(id)}-label" aria-haspopup="dialog" aria-expanded="false"${disabled ? ' disabled' : ''}><span></span><se-icon name="clock"></se-icon></button><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"><div class="se-time__popover" role="dialog" aria-label="Choose time" hidden><strong class="se-time__title">Choose time</strong>${chooser}<div class="se-time__footer">${this._spinner ? '<button type="button" data-now>Now</button>' : ''}<button type="button" data-clear>Clear</button><button type="button" data-done>Done</button></div></div></div>`;
     this._outside = (event) => { if (!this.contains(event.target)) this.close(); };
     document.addEventListener('pointerdown', this._outside);
     this.querySelector('.se-time__trigger').addEventListener('click', () => this.querySelector('.se-time__popover').hidden ? this.open() : this.close());
-    this.querySelector('[data-now]').addEventListener('click', () => { const date = new Date(); this._draft = { hour: date.getHours(), minute: date.getMinutes() }; this.apply(); });
+    this.querySelector('[data-now]')?.addEventListener('click', () => { const date = new Date(); this._draft = { hour: date.getHours(), minute: date.getMinutes() }; this.apply(); });
     this.querySelector('[data-clear]').addEventListener('click', () => { this._selected = null; this.querySelector('input').value = ''; this.render(); this.close(); emit(this, 'change', { value: '' }); });
     this.querySelector('[data-done]').addEventListener('click', () => this.apply());
+    this.querySelectorAll('.se-time__spinner input').forEach((input) => {
+      const part = input.hasAttribute('data-hour-input') ? 'hour' : 'minute';
+      input.addEventListener('wheel', (event) => { event.preventDefault(); this.adjust(part, event.deltaY < 0 ? 1 : -1); }, { passive: false });
+      input.addEventListener('keydown', (event) => { if (event.key === 'ArrowUp' || event.key === 'ArrowDown') { event.preventDefault(); this.adjust(part, event.key === 'ArrowUp' ? 1 : -1); } });
+      input.addEventListener('change', () => { this._draft[part] = wrapNumber(Number.parseInt(input.value, 10) || 0, part === 'hour' ? 24 : 60); this.render(); });
+    });
     this.render();
   }
 
@@ -797,10 +807,16 @@ class SeTimePicker extends HTMLElement {
   }
   close() { this.querySelector('.se-time__popover').hidden = true; this.querySelector('.se-time__trigger').setAttribute('aria-expanded', 'false'); }
   apply() { this._selected = { ...this._draft }; this.querySelector('input').value = timeValue(this._selected); this.render(); this.close(); emit(this, 'change', { value: this.value }); }
+  adjust(part, direction) { const step = part === 'minute' ? Math.max(1, Math.min(30, Math.round(Number(this.getAttribute('step') || 300) / 60))) : 1; this._draft[part] = wrapNumber(this._draft[part] + direction * step, part === 'hour' ? 24 : 60); this.render(); }
 
   render() {
     const step = Math.max(1, Math.min(30, Math.round(Number(this.getAttribute('step') || 300) / 60)));
     this.querySelector('.se-time__trigger span').textContent = this._selected ? timeValue(this._selected) : this.getAttribute('placeholder') || 'Choose a time';
+    if (this._spinner) {
+      this.querySelector('[data-hour-input]').value = String(this._draft.hour).padStart(2, '0');
+      this.querySelector('[data-minute-input]').value = String(this._draft.minute).padStart(2, '0');
+      return;
+    }
     this.querySelector('[data-hours]').innerHTML = Array.from({ length: 24 }, (_, hour) => `<button type="button" data-hour="${hour}"${hour === this._draft.hour ? ' aria-pressed="true"' : ''}>${String(hour).padStart(2, '0')}</button>`).join('');
     this.querySelector('[data-minutes]').innerHTML = Array.from({ length: Math.ceil(60 / step) }, (_, index) => index * step).filter((minute) => minute < 60).map((minute) => `<button type="button" data-minute="${minute}"${minute === this._draft.minute ? ' aria-pressed="true"' : ''}>${String(minute).padStart(2, '0')}</button>`).join('');
     this.querySelectorAll('[data-hour]').forEach((button) => button.addEventListener('click', () => { this._draft.hour = Number(button.dataset.hour); this.render(); }));
@@ -817,7 +833,7 @@ class SeDatetimePicker extends HTMLElement {
     this.dataset.ready = 'true';
     const [date = '', time = ''] = (this.getAttribute('value') || '').split('T');
     const disabled = this.hasAttribute('disabled');
-    this.innerHTML = `<fieldset class="se-datetime"${disabled ? ' disabled' : ''}><legend class="se-label">${escapeHtml(this.getAttribute('label') || 'Date and time')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</legend><div class="se-datetime__fields"><se-date-picker label="Date" value="${escapeHtml(date)}"${this.hasAttribute('min') ? ` min="${escapeHtml(this.getAttribute('min').split('T')[0])}"` : ''}${this.hasAttribute('max') ? ` max="${escapeHtml(this.getAttribute('max').split('T')[0])}"` : ''}></se-date-picker><se-time-picker label="Time" value="${escapeHtml(time)}" step="${escapeHtml(this.getAttribute('step') || '300')}"></se-time-picker></div><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"></fieldset>`;
+    this.innerHTML = `<fieldset class="se-datetime"${disabled ? ' disabled' : ''}><legend class="se-label">${escapeHtml(this.getAttribute('label') || 'Date and time')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</legend><div class="se-datetime__fields"><se-date-picker label="Date" value="${escapeHtml(date)}"${this.hasAttribute('min') ? ` min="${escapeHtml(this.getAttribute('min').split('T')[0])}"` : ''}${this.hasAttribute('max') ? ` max="${escapeHtml(this.getAttribute('max').split('T')[0])}"` : ''}></se-date-picker><se-time-picker label="Time" value="${escapeHtml(time)}" step="${escapeHtml(this.getAttribute('step') || '300')}"${this.getAttribute('time-variant') === 'spinner' ? ' variant="spinner"' : ''}></se-time-picker></div><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"></fieldset>`;
     this.querySelectorAll('se-date-picker, se-time-picker').forEach((picker) => picker.addEventListener('change', () => this.sync()));
   }
 
