@@ -19,6 +19,36 @@
             <button class="demo-mobile__theme" type="button" aria-label="Toggle dark mode"><se-icon name="sun"></se-icon></button>
           </header>
 
+          <section data-demo="template" hidden>
+            <se-title level="section">Input</se-title>
+            <se-text muted>A live reference for the standard text input. Change an override to update the real component and its HTML.</se-text>
+            <div class="demo-stack">
+              <se-card class="demo-template-preview">
+                <div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-template-code-toggle></se-switch></div>
+                <div data-template-preview></div>
+                <div data-template-code hidden></div>
+              </se-card>
+              <se-card class="demo-stack">
+                <se-title level="sidebar">Attributes</se-title>
+                <se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 7rem minmax(15rem, 1.4fr)">
+                  <se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>
+                  <se-list-row><strong>id</strong><span>Associates the label with the native field.</span><se-badge>generated</se-badge><se-input data-template-attribute="id" placeholder="Generated automatically"></se-input></se-list-row>
+                  <se-list-row><strong>type</strong><span>Sets the native input type, or renders a textarea.</span><se-badge>text</se-badge><se-select data-template-attribute="type" value="text" options='[{"id":"text","label":"Text"},{"id":"email","label":"Email"},{"id":"password","label":"Password"},{"id":"number","label":"Number"},{"id":"tel","label":"Telephone"},{"id":"url","label":"URL"},{"id":"search","label":"Search"},{"id":"textarea","label":"Textarea"}]'></se-select></se-list-row>
+                  <se-list-row><strong>name</strong><span>Names the native field for HTML and Rails form submission.</span><se-badge>empty</se-badge><se-input data-template-attribute="name" placeholder="user[email]"></se-input></se-list-row>
+                  <se-list-row><strong>value</strong><span>Sets the field's initial value.</span><se-badge>empty</se-badge><se-input data-template-attribute="value" placeholder="Initial value"></se-input></se-list-row>
+                  <se-list-row><strong>placeholder</strong><span>Shows a hint while the field is empty.</span><se-badge>empty</se-badge><se-input data-template-attribute="placeholder" value="Enter some text..."></se-input></se-list-row>
+                  <se-list-row><strong>label</strong><span>Adds an accessible label above the field.</span><se-badge>none</se-badge><se-input data-template-attribute="label" value="Example input"></se-input></se-list-row>
+                  <se-list-row><strong>icon</strong><span>Adds a Lucide icon inside the field.</span><se-badge>none</se-badge><se-select data-template-attribute="icon" placeholder="No icon" options='[{"id":"mail","label":"Mail","icon":"mail"},{"id":"lock","label":"Lock","icon":"lock"},{"id":"search","label":"Search","icon":"search"},{"id":"user","label":"User","icon":"user"}]'></se-select></se-list-row>
+                  <se-list-row><strong>hint</strong><span>Adds supporting text below the field.</span><se-badge>none</se-badge><se-input data-template-attribute="hint" placeholder="Helpful context"></se-input></se-list-row>
+                  <se-list-row><strong>error</strong><span>Shows an error state and replaces the hint.</span><se-badge>none</se-badge><se-input data-template-attribute="error" placeholder="Error message"></se-input></se-list-row>
+                  <se-list-row><strong>disabled</strong><span>Prevents interaction with the native field.</span><se-badge>false</se-badge><se-switch data-template-attribute="disabled" label="Disabled"></se-switch></se-list-row>
+                  <se-list-row><strong>required</strong><span>Marks the field as required for form validation.</span><se-badge>false</se-badge><se-switch data-template-attribute="required" label="Required"></se-switch></se-list-row>
+                  <se-list-row><strong>fixed</strong><span>Disables resizing when the type is textarea.</span><se-badge>false</se-badge><se-switch data-template-attribute="fixed" label="Fixed height"></se-switch></se-list-row>
+                </se-table>
+              </se-card>
+            </div>
+          </section>
+
           <section data-demo="foundations">
             <se-title level="section">Foundations</se-title>
             <se-text muted>Text styles, headings, cards, and the complete built-in icon set.</se-text>

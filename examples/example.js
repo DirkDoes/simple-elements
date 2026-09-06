@@ -1,4 +1,5 @@
 const pages = [
+  ['template', 'Template', 'package'],
   ['foundations', 'Foundations', 'dashboard'],
   ['inputs', 'Text Inputs', 'type'],
   ['controls', 'Selection Controls', 'toggle-left'],
@@ -43,3 +44,27 @@ document.querySelector('.demo-mobile__theme').addEventListener('click', (event) 
   document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
   event.currentTarget.innerHTML = `<se-icon name="${document.documentElement.dataset.theme === 'dark' ? 'moon' : 'sun'}"></se-icon>`;
 });
+
+const template = document.querySelector('[data-demo="template"]');
+const renderTemplateInput = () => {
+  const attributes = [...template.querySelectorAll('[data-template-attribute]')].flatMap((control) => {
+    const name = control.dataset.templateAttribute;
+    const value = control.matches('se-switch') ? control.checked : control.value;
+    if (!value) return [];
+    return [value === true ? name : `${name}="${String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;')}"`];
+  });
+  const markup = `<se-input${attributes.length ? ` ${attributes.join(' ')}` : ''}></se-input>`;
+  template.querySelector('[data-template-preview]').innerHTML = markup;
+  template.querySelector('[data-template-code]').innerHTML = `<se-code block language="html">${markup.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</se-code>`;
+};
+
+template.addEventListener('input', (event) => { if (event.target.closest('[data-template-attribute]')) renderTemplateInput(); });
+template.addEventListener('change', (event) => {
+  if (event.target.closest('[data-template-attribute]')) renderTemplateInput();
+  if (event.target.closest('[data-template-code-toggle]')) {
+    const showCode = template.querySelector('[data-template-code-toggle]').checked;
+    template.querySelector('[data-template-preview]').hidden = showCode;
+    template.querySelector('[data-template-code]').hidden = !showCode;
+  }
+});
+renderTemplateInput();
