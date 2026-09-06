@@ -52,5 +52,5 @@ assert.equal(timeValue({ hour: 9, minute: 5 }), '09:05');
 assert.equal(wrapNumber(24, 24), 0);
 assert.equal(wrapNumber(-5, 60), 55);
 assert.match(await readFile('src/components/table.js', 'utf8'), /--se-columns/);
-assert.match(await readFile('src/components/datetime-picker.js', 'utf8'), /show-part-labels/);
+assert.match(await readFile('src/components/datetime-picker.js', 'utf8'), /variant === 'single'/);
 console.log(`Checked ${components.length} components and 15 example sections.`);

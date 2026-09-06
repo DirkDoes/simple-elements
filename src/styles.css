@@ -438,7 +438,7 @@ se-date-picker { position: relative; }
 .se-time__footer { display: flex; align-items: center; gap: .25rem; margin-top: .75rem; padding-top: .625rem; border-top: 1px solid var(--se-border); }
 .se-time__footer button { padding: .375rem .5rem; color: var(--se-brand); background: transparent; border: 0; border-radius: .375rem; cursor: pointer; font: 600 .75rem/1rem var(--se-font); }
 .se-time__footer button:hover { background: var(--se-surface-soft); }
-.se-time__footer [data-done] { margin-left: auto; color: white; background: var(--se-brand); }
+.se-time__footer [data-clear] { margin-left: auto; }
 .se-time__spinner { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: .5rem; padding: .5rem 0; }
 .se-time__spinner label small { display: block; margin-bottom: .375rem; color: var(--se-faint); font-size: .6875rem; font-weight: 700; letter-spacing: .08em; text-align: center; text-transform: uppercase; }
 .se-time__spinner > span { padding-bottom: .625rem; font-size: 1rem; font-weight: 700; }
@@ -454,6 +454,16 @@ se-date-picker { position: relative; }
 .se-datetime--joined se-time-picker .se-time__trigger { border-left-color: transparent; border-radius: 0 var(--se-radius) var(--se-radius) 0; }
 .se-datetime--joined se-date-picker:focus-within .se-date__trigger, .se-datetime--joined se-time-picker:focus-within .se-time__trigger { position: relative; z-index: 2; border-color: var(--se-brand); }
 .se-datetime:disabled { opacity: .55; }
+.se-datetime-single { position: relative; margin-top: .5rem; }
+.se-datetime-single__trigger { display: flex; margin-top: 0; align-items: center; justify-content: space-between; text-align: left; }
+.se-datetime-single__trigger se-icon { color: var(--se-faint); }
+.se-datetime-single__popover { position: absolute; top: calc(100% + .5rem); left: 0; z-index: 42; width: 19rem; padding: .75rem; color: var(--se-text); background: var(--se-surface); border: 1px solid var(--se-border); border-radius: .75rem; box-shadow: var(--se-shadow-lg); }
+.se-datetime-single__title { display: block; margin: .25rem 0 .75rem; text-align: center; font-size: .875rem; }
+.se-datetime-single__footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: .5rem; padding-top: .625rem; border-top: 1px solid var(--se-border); }
+.se-datetime-single__footer button { width: max-content; padding: .375rem .5rem; color: var(--se-brand); background: transparent; border: 0; border-radius: .375rem; cursor: pointer; font: 600 .75rem/1rem var(--se-font); }
+.se-datetime-single__footer button:hover { background: var(--se-surface-soft); }
+.se-datetime-single__footer button:nth-child(2) { display: grid; width: 2rem; height: 2rem; padding: 0; place-items: center; }
+.se-datetime-single__footer button:last-child { justify-self: end; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
