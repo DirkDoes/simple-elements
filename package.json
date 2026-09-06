@@ -1,0 +1,45 @@
+{
+  "name": "simple-elements",
+  "version": "0.1.0",
+  "description": "Simple, framework-free web components with light and dark themes.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DirkDoes/simple-elements.git"
+  },
+  "homepage": "https://dirkdoes.github.io/simple-elements/",
+  "bugs": "https://github.com/DirkDoes/simple-elements/issues",
+  "type": "module",
+  "main": "./src/index.js",
+  "style": "./dist/styles.css",
+  "exports": {
+    ".": "./src/index.js",
+    "./bundle": "./dist/simple-elements.js",
+    "./styles.css": "./dist/styles.css",
+    "./components/*": "./src/components/*.js"
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs && tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify",
+    "test": "npm run build && node test/smoke.mjs",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "web-components",
+    "vanilla-js",
+    "design-system"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": true,
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}
