@@ -25,6 +25,8 @@ document.documentElement.dataset.theme = 'dark'; // or 'light'
 
 Consumers do not need a build step or Tailwind configuration: the package ships compiled CSS. Tailwind is a development dependency used for the library's theme tokens and CSS build, so it does not reset or couple the host application's styles.
 
+Icons are supplied by the framework-free `lucide` package. The browser bundle embeds only the curated icons exposed through `<se-icon>`.
+
 For a page opened directly from disk, use the browser-ready bundle (CSS files also work over `file://`):
 
 ```html
