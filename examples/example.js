@@ -58,9 +58,12 @@ const renderTemplateInput = () => {
   template.querySelector('[data-template-code]').value = markup;
 };
 
-template.addEventListener('input', (event) => { if (event.target.closest('[data-template-attribute]')) renderTemplateInput(); });
+template.addEventListener('input', (event) => {
+  if (event.target.closest('se-input[data-template-attribute]')) renderTemplateInput();
+});
 template.addEventListener('change', (event) => {
-  if (event.target.closest('[data-template-attribute]')) renderTemplateInput();
+  const control = event.target.closest('[data-template-attribute]');
+  if (control && !control.matches('se-input')) renderTemplateInput();
   if (event.target.closest('[data-template-code-toggle]')) {
     const showCode = template.querySelector('[data-template-code-toggle]').checked;
     template.querySelector('[data-template-preview]').hidden = showCode;

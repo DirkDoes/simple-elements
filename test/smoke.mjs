@@ -42,6 +42,8 @@ assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 16, 'expe
 assert.match(exampleHtml, /data-demo="template"/);
 assert.equal((exampleHtml.match(/data-template-attribute=/g) || []).length, 11, 'expected every relevant input attribute in the template');
 assert.match(exampleScript, /template\.querySelector\('\[data-template-preview\]'\)\.innerHTML = markup/);
+assert.match(exampleScript, /closest\('se-input\[data-template-attribute\]'\)/, 'text overrides should render on input');
+assert.match(exampleScript, /!control\.matches\('se-input'\)/, 'switches and selects should render only once on change');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea name=/, 'code editor must submit through a native textarea');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /hasAttribute\('readonly'\)/, 'code editor must support readonly');
 assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
