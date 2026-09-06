@@ -42,4 +42,4 @@ npm test
 
 Open `examples/index.html` directly in a browser; no server is needed.
 
-Component documentation is in [`docs`](./docs/index.md) and is configured for GitHub Pages.
+The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates the components. Concise, AI-friendly API documentation lives in [`docs`](./docs/index.md) and is also included in the npm package.
