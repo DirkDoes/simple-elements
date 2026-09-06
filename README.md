@@ -5,7 +5,7 @@ Framework-free UI components built with standard custom elements, Tailwind CSS, 
 ## Install
 
 ```sh
-npm install simple-elements
+npm install github:DirkDoes/simple-elements
 ```
 
 ```js
@@ -42,4 +42,4 @@ npm test
 
 Open `examples/index.html` directly in a browser; no server is needed.
 
-The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates the components. Concise, AI-friendly API documentation lives in [`docs`](./docs/index.md) and is also included in the npm package.
+The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates the components. Concise, AI-friendly API documentation lives in [`docs`](./docs/index.md) and is included when installing directly from GitHub.

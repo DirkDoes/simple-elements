@@ -1,6 +1,12 @@
 # Simple Elements
 
-Import `simple-elements` and its precompiled `simple-elements/styles.css`, then use the elements in ordinary HTML. The CSS is built with Tailwind, but consuming applications need no Tailwind configuration. Set `data-theme="light"` or `data-theme="dark"` on `<html>`.
+Install directly from GitHub:
+
+```sh
+npm install github:DirkDoes/simple-elements
+```
+
+Then import `simple-elements` and its precompiled `simple-elements/styles.css`, and use the elements in ordinary HTML. The CSS is built with Tailwind, but consuming applications need no Tailwind configuration. Set `data-theme="light"` or `data-theme="dark"` on `<html>`.
 
 ## Foundations
 

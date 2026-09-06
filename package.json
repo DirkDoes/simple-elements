@@ -26,8 +26,7 @@
   ],
   "scripts": {
     "build": "node scripts/build.mjs && tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify",
-    "test": "npm run build && node test/smoke.mjs",
-    "prepublishOnly": "npm test"
+    "test": "npm run build && node test/smoke.mjs"
   },
   "keywords": [
     "web-components",
@@ -35,9 +34,6 @@
     "design-system"
   ],
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
   "sideEffects": true,
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
