@@ -1,6 +1,6 @@
 import { define } from '../helpers.js';
 
-const blockquoteVariants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'purple']);
+const blockquoteVariants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'important']);
 
 class SeBlockquote extends HTMLElement {
   connectedCallback() {

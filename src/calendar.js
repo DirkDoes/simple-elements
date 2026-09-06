@@ -12,3 +12,10 @@ export const calendarDays = (year, month) => {
   const start = new Date(year, month, 1 - first.getDay());
   return Array.from({ length: 42 }, (_, index) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + index));
 };
+
+export const parseTime = (value) => {
+  const match = /^(\d{2}):(\d{2})$/.exec(value || '');
+  return match && Number(match[1]) < 24 && Number(match[2]) < 60 ? { hour: Number(match[1]), minute: Number(match[2]) } : null;
+};
+
+export const timeValue = ({ hour, minute }) => `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;

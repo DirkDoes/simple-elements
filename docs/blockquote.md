@@ -6,4 +6,4 @@
 <se-blockquote variant="error">Something went wrong.</se-blockquote>
 ```
 
-Variants match badges: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `purple`. The default is `brand`.
+Variants match badges: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `important`. The default is `brand`.

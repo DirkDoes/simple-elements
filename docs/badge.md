@@ -6,4 +6,4 @@
 <se-badge variant="error" aria-label="Error"><se-icon name="x"></se-icon></se-badge>
 ```
 
-Variants: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `purple`. Badges may contain text, an icon, or both. Add an accessible label to icon-only badges.
+Variants: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `important`. Badges may contain text, an icon, or both. Add an accessible label to icon-only badges.
