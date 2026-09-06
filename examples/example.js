@@ -55,7 +55,7 @@ const renderTemplateInput = () => {
   });
   const markup = `<se-input${attributes.length ? ` ${attributes.join(' ')}` : ''}></se-input>`;
   template.querySelector('[data-template-preview]').innerHTML = markup;
-  template.querySelector('[data-template-code]').innerHTML = `<se-code block language="html">${markup.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}</se-code>`;
+  template.querySelector('[data-template-code]').value = markup;
 };
 
 template.addEventListener('input', (event) => { if (event.target.closest('[data-template-attribute]')) renderTemplateInput(); });

@@ -39,15 +39,39 @@ const patterns = {
   json: /(?<property>"(?:\\.|[^"\\])*"(?=\s*:))|(?<string>"(?:\\.|[^"\\])*")|(?<number>-?\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b)|(?<keyword>\b(?:true|false|null)\b)/gi,
   javascript: /(?<comment>\/\*[\s\S]*?\*\/|\/\/[^\n]*)|(?<string>`(?:\\.|[^`\\])*`|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")|(?<number>\b\d+(?:\.\d+)?\b)|(?<keyword>\b(?:async|await|break|case|catch|class|const|continue|default|delete|do|else|export|extends|finally|for|from|function|if|import|in|instanceof|let|new|of|return|static|switch|this|throw|try|typeof|var|void|while|yield)\b)|(?<literal>\b(?:true|false|null|undefined)\b)/g,
   python: /(?<comment>#[^\n]*)|(?<string>'''[\s\S]*?'''|"""[\s\S]*?"""|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")|(?<number>\b\d+(?:\.\d+)?\b)|(?<keyword>\b(?:and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield)\b)|(?<literal>\b(?:True|False|None)\b)/g,
-  html: /(?<comment><!--[\s\S]*?-->)|(?<tag><\/?[A-Za-z][^>]*>)|(?<string>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/g,
   css: /(?<comment>\/\*[\s\S]*?\*\/)|(?<string>'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")|(?<property>--?[\w-]+(?=\s*:))|(?<number>\b\d+(?:\.\d+)?(?:px|rem|em|%|s|vh|vw)?\b)|(?<keyword>!important|@[\w-]+)/gi,
   markdown: /(?<comment>^#{1,6}(?=\s)|^>|^\s*[-*+]\s|^\s*\d+\.\s)|(?<string>`{1,3}[^`]*`{1,3})|(?<keyword>\*\*|__|\*|_|~~)|(?<tag>!?\[[^\]]*\]\([^)]*\))/gm,
 };
 
 const aliases = { js: 'javascript', py: 'python', md: 'markdown', htm: 'html' };
 
+const highlightHtml = (source) => {
+  let result = '';
+  let cursor = 0;
+  for (const match of source.matchAll(/<!--[\s\S]*?-->|<\/?[A-Za-z][^>]*>/g)) {
+    result += escapeHtml(source.slice(cursor, match.index));
+    if (match[0].startsWith('<!--')) result += `<span class="se-token--comment">${escapeHtml(match[0])}</span>`;
+    else {
+      const [, opening, name, attributes, closing] = match[0].match(/^(<\/?)([\w:-]+)([\s\S]*?)(\/?>)$/);
+      result += `<span class="se-token--tag">${escapeHtml(opening + name)}</span>`;
+      let attributeCursor = 0;
+      for (const attribute of attributes.matchAll(/([\w:-]+)(\s*)(=)?(\s*)("[^"]*"|'[^']*'|[^\s]+)?/g)) {
+        result += escapeHtml(attributes.slice(attributeCursor, attribute.index));
+        result += `<span class="se-token--property">${escapeHtml(attribute[1])}</span>${escapeHtml(attribute[2])}`;
+        if (attribute[3]) result += `<span class="se-token--operator">=</span>${escapeHtml(attribute[4])}<span class="se-token--string">${escapeHtml(attribute[5])}</span>`;
+        attributeCursor = attribute.index + attribute[0].length;
+      }
+      result += `${escapeHtml(attributes.slice(attributeCursor))}<span class="se-token--tag">${escapeHtml(closing)}</span>`;
+    }
+    cursor = match.index + match[0].length;
+  }
+  return result + escapeHtml(source.slice(cursor));
+};
+
 const highlightCode = (source = '', language = '') => {
-  const pattern = patterns[aliases[language] || language];
+  const resolvedLanguage = aliases[language] || language;
+  if (resolvedLanguage === 'html') return highlightHtml(source);
+  const pattern = patterns[resolvedLanguage];
   if (!pattern) return escapeHtml(source);
   pattern.lastIndex = 0;
   let result = '';

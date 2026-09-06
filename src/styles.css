@@ -84,12 +84,14 @@ se-markdown .se-code-block { margin: 1rem 0; }
 .se-token--number { color: #d97706; }
 .se-token--keyword { color: #7c3aed; }
 .se-token--literal { color: #dc2626; }
+.se-token--operator { color: #db2777; }
 .se-token--property, .se-token--tag { color: #2563eb; }
 [data-theme="dark"] .se-token--comment { color: #94a3b8; }
 [data-theme="dark"] .se-token--string { color: #34d399; }
 [data-theme="dark"] .se-token--number { color: #fbbf24; }
 [data-theme="dark"] .se-token--keyword { color: #c4b5fd; }
 [data-theme="dark"] .se-token--literal { color: #f87171; }
+[data-theme="dark"] .se-token--operator { color: #f472b6; }
 [data-theme="dark"] .se-token--property, [data-theme="dark"] .se-token--tag { color: #60a5fa; }
 
 .se-editor { position: relative; display: grid; grid-template-columns: 3rem 1fr; min-height: 14rem; overflow: hidden; background: var(--se-surface-soft); border: 1px solid var(--se-border-strong); border-radius: var(--se-radius); box-shadow: var(--se-shadow); font: 400 .8125rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
