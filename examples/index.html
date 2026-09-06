@@ -23,10 +23,10 @@
             <se-title level="section">Input</se-title>
             <se-text muted>A live reference for the standard text input. Change an override to update the real component and its HTML.</se-text>
             <div class="demo-stack">
-              <div class="demo-template-preview">
+              <se-card class="demo-template-preview">
                 <div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-template-code-toggle></se-switch></div>
-                <div class="demo-template-stage"><div data-template-preview></div><se-code-editor data-template-code language="html" readonly hidden></se-code-editor></div>
-              </div>
+                <div data-template-preview></div><se-code-editor data-template-code language="html" readonly hidden></se-code-editor>
+              </se-card>
               <se-card class="demo-stack">
                 <se-title level="sidebar">Attributes</se-title>
                 <se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 7rem minmax(15rem, 1.4fr)">
