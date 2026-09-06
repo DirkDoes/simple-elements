@@ -24,6 +24,7 @@ assert.doesNotMatch(compiledCss, /@import\s/);
 const selectSource = await readFile('src/components/select.js', 'utf8');
 assert.match(selectSource, /const trigger = multiple/);
 assert.match(selectSource, /option\.icon/);
+assert.match(selectSource, /set value\(value\)/);
 const iconSource = await readFile('src/components/icon.js', 'utf8');
 assert.match(iconSource, /from 'lucide'/);
 assert.doesNotMatch(iconSource, /<path|<circle|<rect/);

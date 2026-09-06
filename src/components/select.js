@@ -3,6 +3,7 @@ import { define, emit, escapeHtml, parseOptions } from '../helpers.js';
 class SeSelect extends HTMLElement {
   set options(value) { this._options = value; if (this.isConnected) this.render(); }
   get options() { return this._options; }
+  set value(value) { this._selected = new Set((Array.isArray(value) ? value : [value]).map(String).filter(Boolean)); if (this.isConnected) this.render(); }
 
   connectedCallback() {
     if (this.dataset.ready) return;
