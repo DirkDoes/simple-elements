@@ -29,7 +29,7 @@ class SeDatePicker extends HTMLElement {
   get value() { return this.querySelector('input')?.value || ''; }
   set value(value) { this._selected = parseDate(value); if (this._selected) this._view = this._selected; this.querySelector('input').value = value || ''; this.renderCalendar(); }
   open() { this.querySelector('.se-date__popover').hidden = false; this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'true'); }
-  close() { this.querySelector('.se-date__popover').hidden = true; this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'false'); }
+  close() { this.querySelector('.se-date__popover').hidden = true; this.querySelector('.se-date__jump').hidden = true; this.querySelector('[data-jump-toggle]').setAttribute('aria-expanded', 'false'); this.querySelector('[data-month-select]')?.close(); this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'false'); }
   select(date) {
     const value = date ? dateValue(date) : '';
     if (date && ((this.getAttribute('min') && value < this.getAttribute('min')) || (this.getAttribute('max') && value > this.getAttribute('max')))) return;

@@ -30,6 +30,7 @@ assert.match(iconSource, /from 'lucide'/);
 assert.doesNotMatch(iconSource, /<path|<circle|<rect/);
 const phoneSource = await readFile('src/components/phone-input.js', 'utf8');
 assert.equal((phoneSource.match(/[A-Z]{2}\|[^;`]+\|\d+/g) || []).length, 245, 'expected complete phone country data');
+assert.match(phoneSource, /No countries found\./);
 assert.equal(spawnSync(process.execPath, ['--check', 'examples/example.js']).status, 0);
 assert.ok(components.length >= 34, 'expected the complete component set');
 assert.equal(examplePages.length, 1, 'expected one example HTML page');

@@ -20,7 +20,7 @@ class SePhoneInput extends HTMLElement {
   close() { this.querySelector('.se-phone')?.classList.remove('se-phone--open'); }
   render() {
     const [iso, country, code] = this._country;
-    this.innerHTML = `<div class="se-phone"><label class="se-label">${escapeHtml(this.getAttribute('label') || 'Phone Number')}</label><div class="se-phone__control"><button class="se-phone__prefix" type="button" aria-label="Choose country" aria-expanded="false"><span>${flag(iso)}</span><strong>+${code}</strong><se-icon name="chevron"></se-icon></button><input type="tel" name="${escapeHtml(this.getAttribute('name') || '')}" placeholder="${escapeHtml(this.getAttribute('placeholder') || '6 12345678')}"></div><div class="se-phone__menu"><header><se-icon name="search"></se-icon><input class="se-control" type="search" placeholder="Search country or code..." aria-label="Search countries"></header><div class="se-phone__list">${countries.map((item, index) => `<button class="se-phone__country" type="button" data-country="${index}" aria-selected="${item[0] === iso}"><span>${flag(item[0])}</span><span>${item[1]}</span><small>+${item[2]}</small></button>`).join('')}</div></div></div>`;
+    this.innerHTML = `<div class="se-phone"><label class="se-label">${escapeHtml(this.getAttribute('label') || 'Phone Number')}</label><div class="se-phone__control"><button class="se-phone__prefix" type="button" aria-label="Choose country" aria-expanded="false"><span>${flag(iso)}</span><strong>+${code}</strong><se-icon name="chevron"></se-icon></button><input type="tel" name="${escapeHtml(this.getAttribute('name') || '')}" placeholder="${escapeHtml(this.getAttribute('placeholder') || '6 12345678')}"></div><div class="se-phone__menu"><header><se-icon name="search"></se-icon><input class="se-control" type="search" placeholder="Search country or code..." aria-label="Search countries"></header><div class="se-phone__list">${countries.map((item, index) => `<button class="se-phone__country" type="button" data-country="${index}" aria-selected="${item[0] === iso}"><span>${flag(item[0])}</span><span>${item[1]}</span><small>+${item[2]}</small></button>`).join('')}<div class="se-select__empty" data-empty hidden>No countries found.</div></div></div></div>`;
     const root = this.querySelector('.se-phone');
     this.querySelector('.se-phone__prefix').addEventListener('click', (event) => {
       root.classList.toggle('se-phone--open');
@@ -33,7 +33,9 @@ class SePhoneInput extends HTMLElement {
     }));
     this.querySelector('input[type="search"]').addEventListener('input', (event) => {
       const term = event.target.value.toLowerCase();
-      this.querySelectorAll('[data-country]').forEach((button) => { button.hidden = !button.textContent.toLowerCase().includes(term); });
+      let visible = 0;
+      this.querySelectorAll('[data-country]').forEach((button) => { button.hidden = !button.textContent.toLowerCase().includes(term); if (!button.hidden) visible += 1; });
+      this.querySelector('[data-empty]').hidden = visible > 0;
     });
   }
 }

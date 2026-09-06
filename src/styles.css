@@ -420,7 +420,8 @@ se-date-picker { position: relative; }
 .se-date__jump .se-select > .se-label:empty { display: none; }
 .se-date__jump .se-select__trigger { min-height: 2.25rem; padding: .5rem .625rem; }
 .se-date__jump .se-select__menu { z-index: 45; max-height: 14rem; overflow-y: auto; }
-.se-date__jump input { min-width: 0; padding: .5rem; color: var(--se-text); background: var(--se-surface-soft); border: 1px solid var(--se-border); border-radius: .5rem; outline: 0; font: 500 .8125rem/1rem var(--se-font); }
+.se-date__jump .se-select__options { max-height: none; overflow: visible; }
+.se-date__jump input { min-width: 0; padding: .5rem; color: var(--se-text); background: var(--se-surface); border: 1px solid var(--se-border); border-radius: .5rem; outline: 0; font: 500 .8125rem/1rem var(--se-font); }
 .se-date__jump input:focus { border-color: var(--se-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--se-brand) 12%, transparent); }
 .se-date__nav button, .se-date__grid button, .se-date__footer button { color: inherit; background: transparent; border: 0; border-radius: .5rem; cursor: pointer; font: inherit; }
 .se-date__nav button { display: grid; width: 2rem; height: 2rem; place-items: center; }

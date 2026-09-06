@@ -12,7 +12,7 @@ class SeDatetimePicker extends HTMLElement {
     this.innerHTML = `<fieldset class="se-datetime${joined ? ' se-datetime--joined' : ' se-datetime--part-labels'}"${this.hasAttribute('disabled') ? ' disabled' : ''}><legend class="se-label">${escapeHtml(this.getAttribute('label') || 'Date and time')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</legend><div class="se-datetime__fields"><se-date-picker label="Date" value="${escapeHtml(date)}"${this.hasAttribute('min') ? ` min="${escapeHtml(this.getAttribute('min').split('T')[0])}"` : ''}${this.hasAttribute('max') ? ` max="${escapeHtml(this.getAttribute('max').split('T')[0])}"` : ''}></se-date-picker><se-time-picker label="Time" value="${escapeHtml(time)}" step="${escapeHtml(this.getAttribute('step') || '300')}"></se-time-picker></div><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"></fieldset>`;
     const datePicker = this.querySelector('se-date-picker');
     const timePicker = this.querySelector('se-time-picker');
-    datePicker.addEventListener('change', () => { this.syncParts(); if (joined && datePicker.value) timePicker.open(); });
+    datePicker.addEventListener('change', (event) => { if (event.target !== datePicker) return; this.syncParts(); if (joined && datePicker.value) timePicker.open(); });
     timePicker.addEventListener('change', () => this.syncParts());
   }
 
@@ -55,7 +55,7 @@ class SeDatetimePicker extends HTMLElement {
   set value(value) { if (this.matches('[variant="combined"]')) { const [date = '', time = ''] = (value || '').split('T'); this._date = parseDate(date); this._time = parseTime(time); if (this._date) this._view = this._date; if (this._time) this._draftTime = this._time; this.syncSingle(false); } else { const [date = '', time = ''] = (value || '').split('T'); this.querySelector('se-date-picker').value = date; this.querySelector('se-time-picker').value = time; this.syncParts(false); } }
   syncParts(notify = true) { const date = this.querySelector('se-date-picker').value; const time = this.querySelector('se-time-picker').value; this.output.value = date && time ? `${date}T${time}` : ''; if (notify) emit(this, 'change', { value: this.value }); }
   open() { this.querySelector('.se-datetime-single__popover').hidden = false; this.querySelector('.se-datetime-single__trigger').setAttribute('aria-expanded', 'true'); }
-  close() { this.querySelector('.se-datetime-single__popover').hidden = true; this.querySelector('.se-datetime-single__trigger').setAttribute('aria-expanded', 'false'); }
+  close() { this.querySelector('.se-datetime-single__popover').hidden = true; this.querySelector('.se-date__jump').hidden = true; this.querySelector('[data-jump-toggle]').setAttribute('aria-expanded', 'false'); this.querySelector('[data-month-select]')?.close(); this.querySelector('.se-datetime-single__trigger').setAttribute('aria-expanded', 'false'); }
   syncSingle(notify = true) { this.output.value = this._date && this._time ? `${dateValue(this._date)}T${timeValue(this._time)}` : ''; this.renderSingle(); if (notify) emit(this, 'change', { value: this.value }); }
   setMode(mode) {
     const popover = this.querySelector('.se-datetime-single__popover');
