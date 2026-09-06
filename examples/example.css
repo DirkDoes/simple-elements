@@ -1,6 +1,6 @@
 html { scroll-behavior: smooth; }
 body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: var(--se-font); transition: color .2s, background .2s; }
-.demo-shell { display: flex; height: 100vh; overflow: hidden; }
+.demo-shell { position: fixed; inset: 0; display: flex; overflow: hidden; }
 .demo-main { min-width: 0; min-height: 0; flex: 1; overflow: auto; }
 .demo-content { width: min(100% - 6rem, 72rem); margin: auto; padding: 3rem 0 8rem; }
 .demo-heading { margin-bottom: 2rem; }
