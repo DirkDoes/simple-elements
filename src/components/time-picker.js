@@ -23,7 +23,10 @@ class SeTimePicker extends HTMLElement {
   disconnectedCallback() { document.removeEventListener('pointerdown', this._outside); }
   get value() { return this.querySelector('input')?.value || ''; }
   set value(value) { this._selected = parseTime(value); if (this._selected) this._draft = this._selected; this.querySelector('input').value = value || ''; this.render(); }
-  open() { this._draft = this._selected || this._draft; this.render(); this.querySelector('.se-time__popover').hidden = false; this.querySelector('.se-time__trigger').setAttribute('aria-expanded', 'true'); }
+  open() {
+    this._draft = this._selected || this._draft; this.render(); this.querySelector('.se-time__popover').hidden = false; this.querySelector('.se-time__trigger').setAttribute('aria-expanded', 'true');
+    this.querySelectorAll('.se-time__options button[aria-pressed="true"]').forEach((button) => { button.parentElement.scrollTop = button.offsetTop - button.parentElement.clientHeight / 2 + button.offsetHeight / 2; });
+  }
   close() { this.querySelector('.se-time__popover').hidden = true; this.querySelector('.se-time__trigger').setAttribute('aria-expanded', 'false'); }
   apply() { this._selected = { ...this._draft }; this.querySelector('input').value = timeValue(this._selected); this.render(); this.close(); emit(this, 'change', { value: this.value }); }
 
