@@ -6,6 +6,9 @@ const pages = [
   ['buttons', 'Buttons', 'mouse-pointer'],
   ['uploads', 'File Uploads', 'file-up'],
   ['contextual', 'Contextual', 'message-square'],
+  ['content', 'Rich Content', 'code'],
+  ['editors', 'Editors', 'edit'],
+  ['badges', 'Badges', 'crown'],
   ['profiles', 'Profiles', 'users'],
   ['overlays', 'Overlays', 'zap'],
 ];

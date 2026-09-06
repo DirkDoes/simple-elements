@@ -19,6 +19,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-custom-icon { display: flex; align-items: center; gap: 1rem; }
 .demo-custom-icon img { width: 3rem; height: 3rem; padding: .625rem; background: var(--se-brand-soft); border-radius: .625rem; }
 .demo-custom-icon code { display: block; margin-top: .5rem; }
+.demo-code-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; }
 .demo-card-title { margin-bottom: 1rem; }
 .demo-controls { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3rem; }
 .demo-controls se-range { grid-column: 1 / -1; max-width: 28rem; padding-top: 1rem; }
@@ -38,7 +39,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-modal-copy { margin: .5rem 0 0; }
 @media (max-width: 767px) {
   .demo-content { width: min(100% - 4rem, 72rem); padding-top: 2rem; }
-  .demo-grid, .demo-fields, .demo-controls { grid-template-columns: 1fr; }
+  .demo-grid, .demo-fields, .demo-controls, .demo-code-grid { grid-template-columns: 1fr; }
   .demo-wide { grid-column: auto; }
   .demo-controls se-range { grid-column: auto; }
   .demo-mobile { display: flex; }

@@ -15,6 +15,9 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Title](title.md)
 - [Card](card.md)
 - [Sidebar](sidebar.md)
+- [Code](code.md)
+- [Blockquote](blockquote.md)
+- [Markdown](markdown.md)
 
 ## Forms
 
@@ -26,6 +29,8 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Select](select.md)
 - [Phone input](phone-input.md)
 - [File upload](file-upload.md)
+- [Code editor](code-editor.md)
+- [WYSIWYG](wysiwyg.md)
 
 ## Actions and feedback
 
@@ -37,5 +42,6 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Profile](profile.md)
 - [Modal](modal.md)
 - [Drawer](drawer.md)
+- [Badge](badge.md)
 
 Browse the page-like component sections in [`examples/index.html`](../examples/index.html).

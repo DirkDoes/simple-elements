@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { highlightCode, renderMarkdown } from '../src/syntax.js';
 
 const components = (await readdir('src/components')).filter((file) => file.endsWith('.js'));
 const examplePages = (await readdir('examples')).filter((file) => file.endsWith('.html'));
@@ -28,11 +29,16 @@ assert.doesNotMatch(iconSource, /<path|<circle|<rect/);
 const phoneSource = await readFile('src/components/phone-input.js', 'utf8');
 assert.equal((phoneSource.match(/[A-Z]{2}\|[^;`]+\|\d+/g) || []).length, 245, 'expected complete phone country data');
 assert.equal(spawnSync(process.execPath, ['--check', 'examples/example.js']).status, 0);
-assert.ok(components.length >= 20, 'expected the complete component set');
+assert.ok(components.length >= 27, 'expected the complete component set');
 assert.equal(examplePages.length, 1, 'expected one example HTML page');
 for (const file of examplePages) assert.match(await readFile(`examples/${file}`, 'utf8'), /data-demo=/);
 const exampleScript = await readFile('examples/example.js', 'utf8');
 assert.doesNotMatch(exampleScript, /const demos\s*=/, 'demo markup belongs in HTML');
 const exampleHtml = await readFile('examples/index.html', 'utf8');
-assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 9, 'expected nine page-like sections');
-console.log(`Checked ${components.length} components and 9 example sections.`);
+assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 12, 'expected twelve page-like sections');
+assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea name=/, 'code editor must submit through a native textarea');
+assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
+assert.match(highlightCode('const ready = true;', 'javascript'), /se-token--keyword/);
+assert.match(renderMarkdown('> Safe\n\n```json\n{"ready":true}\n```'), /<se-blockquote>Safe<\/se-blockquote>.*<se-code block language="json">/s);
+assert.doesNotMatch(renderMarkdown('<script>alert(1)</script>'), /<script>/);
+console.log(`Checked ${components.length} components and 12 example sections.`);
