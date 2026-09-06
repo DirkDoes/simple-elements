@@ -447,6 +447,12 @@ se-date-picker { position: relative; }
 .se-datetime { min-width: 0; margin: 0; padding: 0; border: 0; font-family: var(--se-font); }
 .se-datetime__fields { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: .5rem; }
 .se-datetime__fields .se-label { color: var(--se-muted); font-size: .6875rem; }
+.se-datetime:not(.se-datetime--part-labels) .se-datetime__fields .se-label { display: none; }
+.se-datetime:not(.se-datetime--part-labels) .se-date, .se-datetime:not(.se-datetime--part-labels) .se-time { margin-top: 0; }
+.se-datetime--joined .se-datetime__fields { gap: 0; }
+.se-datetime--joined se-date-picker .se-date__trigger { border-radius: var(--se-radius) 0 0 var(--se-radius); }
+.se-datetime--joined se-time-picker .se-time__trigger { border-left-color: transparent; border-radius: 0 var(--se-radius) var(--se-radius) 0; }
+.se-datetime--joined se-date-picker:focus-within .se-date__trigger, .se-datetime--joined se-time-picker:focus-within .se-time__trigger { position: relative; z-index: 2; border-color: var(--se-brand); }
 .se-datetime:disabled { opacity: .55; }
 
 @media (prefers-reduced-motion: reduce) {
