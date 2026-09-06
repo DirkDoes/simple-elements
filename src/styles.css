@@ -414,6 +414,10 @@ se-date-picker { position: relative; }
 .se-date__popover { position: absolute; top: calc(100% + .5rem); left: 0; z-index: 40; width: 19rem; padding: .75rem; color: var(--se-text); background: var(--se-surface); border: 1px solid var(--se-border); border-radius: .75rem; box-shadow: var(--se-shadow-lg); }
 .se-date__nav { display: grid; grid-template-columns: 2rem 1fr 2rem; align-items: center; margin-bottom: .75rem; text-align: center; }
 .se-date__nav strong { font-size: .875rem; }
+.se-date__heading { width: auto !important; padding: .375rem .625rem !important; }
+.se-date__jump { display: grid; grid-template-columns: 1fr 5.5rem; gap: .5rem; margin: -.25rem 0 .75rem; }
+.se-date__jump select, .se-date__jump input { min-width: 0; padding: .5rem; color: var(--se-text); background: var(--se-surface-soft); border: 1px solid var(--se-border); border-radius: .5rem; outline: 0; font: 500 .8125rem/1rem var(--se-font); }
+.se-date__jump select:focus, .se-date__jump input:focus { border-color: var(--se-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--se-brand) 12%, transparent); }
 .se-date__nav button, .se-date__grid button, .se-date__footer button { color: inherit; background: transparent; border: 0; border-radius: .5rem; cursor: pointer; font: inherit; }
 .se-date__nav button { display: grid; width: 2rem; height: 2rem; place-items: center; }
 .se-date__nav button:first-child se-icon { transform: rotate(90deg); }
