@@ -27,6 +27,7 @@ assert.match(selectSource, /const trigger = multiple/);
 assert.match(selectSource, /option\.icon/);
 assert.match(selectSource, /set value\(value\)/);
 assert.match(selectSource, /hasAttribute\('clearable'\)/);
+assert.match(selectSource, /const clearable = !multiple/);
 assert.match(selectSource, /this\._selected\.clear\(\)/);
 const inputSource = await readFile('src/components/input.js', 'utf8');
 assert.match(inputSource, /email: \{ placeholder: 'you@example\.com', icon: 'mail' \}/);

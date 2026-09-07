@@ -31,7 +31,7 @@ class SeSelect extends HTMLElement {
     const hidden = selected.map((option) => `<input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}${multiple ? '[]' : ''}" value="${escapeHtml(option.id)}">`).join('');
     const available = multiple ? options.filter((option) => !this._selected.has(String(option.id))) : options;
     const disabled = this.hasAttribute('disabled');
-    const clearable = this.hasAttribute('clearable') && selected.length && !disabled;
+    const clearable = !multiple && this.hasAttribute('clearable') && selected.length && !disabled;
     const trigger = multiple
       ? `<div class="se-select__trigger" role="button" tabindex="${disabled ? '-1' : '0'}" aria-haspopup="listbox" aria-expanded="false" aria-disabled="${disabled}">${value}<span class="se-select__chevron"><se-icon name="chevron"></se-icon></span></div>`
       : `<button class="se-select__trigger" type="button" aria-haspopup="listbox" aria-expanded="false"${disabled ? ' disabled' : ''}>${value}<span class="se-select__chevron"><se-icon name="chevron"></se-icon></span></button>`;
