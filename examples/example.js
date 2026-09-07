@@ -52,7 +52,8 @@ const renderComponentPage = (tag) => {
 };
 componentTags.filter((tag) => tag !== 'sidebar' && tag !== 'input').forEach(renderComponentPage);
 
-document.querySelector('[data-icon-grid]').innerHTML = customElements.get('se-icon').names
+const iconGrid = document.querySelector('[data-icon-grid]');
+if (iconGrid) iconGrid.innerHTML = customElements.get('se-icon').names
   .map((name) => `<div class="demo-icon"><se-icon name="${name}"></se-icon><code>${name}</code></div>`)
   .join('');
 
@@ -75,7 +76,7 @@ document.querySelector('.demo-mobile__theme').addEventListener('click', (event) 
   event.currentTarget.innerHTML = `<se-icon name="${document.documentElement.dataset.theme === 'dark' ? 'moon' : 'sun'}"></se-icon>`;
 });
 
-const template = document.querySelector('[data-demo="template"]');
+const template = document.querySelector('[data-demo="input"]');
 const renderTemplateInput = () => {
   const attributes = [...template.querySelectorAll('[data-template-attribute]')].flatMap((control) => {
     const name = control.dataset.templateAttribute;
