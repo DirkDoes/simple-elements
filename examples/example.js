@@ -7,7 +7,7 @@ const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage :
 const sidebar = document.querySelector('se-sidebar');
 sidebar.options = pages.map(([id, label, icon]) => ({ label, icon, href: `#${id}`, active: id === initialPage }));
 
-const oldSections = [...document.querySelectorAll('section[data-demo]')];
+const oldSections = [...document.querySelector('#component-samples').content.querySelectorAll('section[data-demo]')];
 const inputPage = document.querySelector('section[data-demo="template"]');
 inputPage.dataset.demo = 'input';
 const samples = new Map();
