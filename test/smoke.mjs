@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { highlightCode, renderMarkdown } from '../src/syntax.js';
 import { calendarDays, dateValue, parseDate, parseTime, timeValue, wrapNumber } from '../src/calendar.js';
 import { iconNames } from '../src/icon-names.js';
-import { componentCatalog } from '../examples/catalog.js';
+import { componentCatalog, patternCatalog } from '../examples/catalog.js';
 import { icons as lucideIcons } from 'lucide';
 
 const components = (await readdir('src/components')).filter((file) => file.endsWith('.js'));
@@ -71,8 +71,10 @@ assert.match(exampleScript, /customElements\.get\('se-input'\)\.defaultsFor\(typ
 assert.doesNotMatch(exampleScript, /inputTypeDefaults/);
 assert.match(exampleHtml, /<se-code-editor data-template-code language="html" readonly wrap hidden>/);
 assert.doesNotMatch(exampleHtml, /data-template-wrap-toggle/);
-assert.equal(componentCatalog.length, components.length, 'every component needs a catalog page');
-assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(components), 'catalog tags must match component files');
+const documentedComponents = components.filter((file) => file !== 'sidebar.js');
+assert.equal(componentCatalog.length, documentedComponents.length, 'every standalone component needs a catalog page');
+assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(documentedComponents), 'catalog tags must match standalone component files');
+assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['sidebar'], 'sidebar must be documented as a pattern');
 assert.equal(new Set(componentCatalog.map(({ tag }) => tag)).size, componentCatalog.length, 'catalog pages must be unique');
 componentCatalog.forEach(({ tag, icon, attributes, custom }) => {
   assert.ok(iconNames[icon], `${tag} needs a supported sidebar icon`);
@@ -111,4 +113,4 @@ assert.match(await readFile('src/components/table.js', 'utf8'), /--se-columns/);
 const datetimeSource = await readFile('src/components/datetime-picker.js', 'utf8');
 assert.match(datetimeSource, /variant === 'combined'/);
 assert.match(datetimeSource, /:scope > \.se-datetime-single > input, :scope > fieldset > input/, 'default combined picker must resolve its hidden form input');
-console.log(`Checked ${components.length} components and ${componentCatalog.length} catalog pages.`);
+console.log(`Checked ${components.length} components, ${componentCatalog.length} component pages, and ${patternCatalog.length} pattern page.`);

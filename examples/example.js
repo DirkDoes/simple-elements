@@ -1,12 +1,16 @@
-import { componentCatalog } from './catalog.js?v=8428e24';
+import { componentCatalog, patternCatalog } from './catalog.js?v=8428e24';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
-const pages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
+const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
+const patternPages = patternCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
+const pages = [...componentPages, ...patternPages];
 
 const requestedPage = location.hash.slice(1) || 'input';
 const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'input';
 const sidebar = document.querySelector('se-sidebar');
-sidebar.options = pages.map(([id, label, icon]) => ({ label, icon, href: `#${id}`, active: id === initialPage }));
+const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-sidebar-button label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-sidebar-button>`).join('');
+sidebar.querySelector('[data-component-section] .se-sidebar-section__content > div').innerHTML = sidebarItems(componentPages);
+sidebar.querySelector('[data-pattern-section] .se-sidebar-section__content > div').innerHTML = sidebarItems(patternPages);
 
 const inputPage = document.querySelector('section[data-demo="template"]');
 inputPage.dataset.demo = 'input';
@@ -65,11 +69,12 @@ const renderComponentPage = (component) => {
   render();
 };
 componentCatalog.filter(({ custom }) => !custom).forEach(renderComponentPage);
+patternCatalog.forEach(renderComponentPage);
 
 const showPage = (id) => {
   const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';
   document.querySelectorAll('[data-demo]').forEach((section) => { section.hidden = section.dataset.demo !== selected; });
-  sidebar.querySelectorAll('.se-sidebar__link').forEach((link) => link.classList.toggle('se-sidebar__link--active', link.getAttribute('href') === `#${selected}`));
+  sidebar.querySelectorAll('se-sidebar-button').forEach((button) => button.toggleAttribute('active', button.querySelector('a')?.getAttribute('href') === `#${selected}`));
   document.querySelector('.demo-main').scrollTop = 0;
 };
 

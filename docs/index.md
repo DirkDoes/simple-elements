@@ -14,7 +14,6 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Text](text.md)
 - [Title](title.md)
 - [Card](card.md)
-- [Sidebar](sidebar.md)
 - [Code](code.md)
 - [Blockquote](blockquote.md)
 - [Markdown](markdown.md)
@@ -45,6 +44,19 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Modal](modal.md)
 - [Drawer](drawer.md)
 - [Badge](badge.md)
+
+## Navigation
+
+- [Sidebar header](sidebar-header.md)
+- [Sidebar body](sidebar-body.md)
+- [Sidebar footer](sidebar-footer.md)
+- [Sidebar brand](sidebar-brand.md)
+- [Sidebar section](sidebar-section.md)
+- [Sidebar button](sidebar-button.md)
+
+## Patterns
+
+- [Sidebar](sidebar.md)
 
 ## Data display
 

@@ -384,29 +384,41 @@ button.se-profile:focus-visible { outline: 0; box-shadow: 0 0 0 4px color-mix(in
 .se-close { display: grid; padding: .5rem; color: var(--se-muted); background: none; border: 0; border-radius: .5rem; cursor: pointer; }
 .se-close:hover { color: var(--se-text); background: var(--se-surface-soft); }
 
-.se-sidebar { display: flex; width: 16rem; height: 100%; flex-direction: column; color: var(--se-text); background: var(--se-surface); border-right: 1px solid var(--se-border); font-family: var(--se-font); transition: width .2s; }
-.se-sidebar--collapsed { width: 5rem; }
-.se-sidebar__header { position: relative; display: flex; height: 4rem; align-items: center; justify-content: space-between; padding: 0 1.25rem; border-bottom: 1px solid var(--se-border); }
-.se-sidebar__brand { display: flex; align-items: center; gap: .75rem; font-size: 1.125rem; font-weight: 700; white-space: nowrap; }
-.se-sidebar__logo { display: grid; width: 2rem; height: 2rem; place-items: center; color: white; background: var(--se-brand); border-radius: .5rem; }
-.se-sidebar__nav { flex: 1; padding: 1.5rem .75rem; overflow: auto; }
-.se-sidebar__nav se-title { margin: 0 .75rem .5rem; }
-.se-sidebar__link { display: flex; align-items: center; gap: .75rem; width: 100%; margin: .125rem 0; padding: .625rem .75rem; color: var(--se-muted); background: transparent; border: 0; border-radius: .5rem; cursor: pointer; font: 500 .875rem/1.25rem var(--se-font); text-decoration: none; }
-.se-sidebar__link se-icon { width: 1.25rem; height: 1.25rem; }
-.se-sidebar__link:hover { color: var(--se-text); background: var(--se-surface-soft); }
-.se-sidebar__link--active { color: var(--se-brand); background: var(--se-brand-soft); }
-.se-sidebar__collapse { position: absolute; right: 1rem; }
-.se-sidebar__footer { padding: 1rem; border-top: 1px solid var(--se-border); }
-.se-sidebar__theme-row { display: flex; align-items: center; justify-content: space-between; padding: .5rem .75rem; color: var(--se-muted); font-size: .875rem; font-weight: 500; }
-.se-sidebar__theme-row .se-choice__label { display: none; }
-.se-sidebar--collapsed .se-sidebar__brand { opacity: 0; pointer-events: none; }
-.se-sidebar--collapsed se-title, .se-sidebar--collapsed .se-sidebar__link span, .se-sidebar--collapsed .se-sidebar__theme-row > span { display: none; }
-.se-sidebar--collapsed .se-sidebar__link { justify-content: center; padding: .75rem; }
-.se-sidebar--collapsed .se-sidebar__collapse { right: 50%; transform: translateX(50%); }
-.se-sidebar--collapsed .se-sidebar__theme-row { justify-content: center; padding: .5rem 0; }
+.se-sidebar, se-sidebar { display: flex; width: 16rem; height: 100%; flex: 0 0 auto; flex-direction: column; color: var(--se-text); background: var(--se-surface); border-right: 1px solid var(--se-border); font-family: var(--se-font); transition: width .2s; }
+se-sidebar[collapsed] { width: 5rem; }
+se-sidebar-header { display: flex; min-height: 4rem; align-items: center; padding: 0 1.25rem; border-bottom: 1px solid var(--se-border); }
+se-sidebar-body { display: block; flex: 1; padding: 1.5rem .75rem; overflow: auto; }
+se-sidebar-footer { display: block; padding: 1rem; border-top: 1px solid var(--se-border); }
+se-sidebar-brand { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .75rem; }
+.se-sidebar-brand__identity { display: flex; min-width: 0; align-items: center; gap: .75rem; white-space: nowrap; }
+.se-sidebar-brand__logo { display: grid; width: 2rem; height: 2rem; flex: 0 0 auto; place-items: center; color: white; background: var(--se-brand); border-radius: .5rem; }
+.se-sidebar-brand__identity strong { overflow: hidden; text-overflow: ellipsis; font-size: 1.125rem; }
+.se-sidebar-brand__collapse { flex: 0 0 auto; }
+se-sidebar-section { display: block; }
+se-sidebar-section + se-sidebar-section { margin-top: 1.5rem; }
+se-sidebar-section > se-title { display: block; margin: 0 .75rem .5rem; }
+.se-sidebar-section__title { display: flex; width: 100%; align-items: center; justify-content: space-between; padding: .375rem .75rem; color: var(--se-faint); background: transparent; border: 0; cursor: pointer; font: 700 .6875rem/1rem var(--se-font); letter-spacing: .12em; text-align: left; text-transform: uppercase; }
+.se-sidebar-section__title se-icon { width: .875rem; height: .875rem; transition: transform .2s; }
+se-sidebar-section[collapsed] .se-sidebar-section__title se-icon { transform: rotate(-90deg); }
+.se-sidebar-section__content { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .2s ease, opacity .2s ease; }
+.se-sidebar-section__content > div { min-height: 0; overflow: hidden; }
+se-sidebar-section[collapsed] .se-sidebar-section__content { grid-template-rows: 0fr; opacity: 0; }
+se-sidebar-button { display: block; }
+.se-sidebar-button { display: flex; align-items: center; gap: .75rem; width: 100%; margin: .125rem 0; padding: .625rem .75rem; color: var(--se-muted); background: transparent; border: 0; border-radius: .5rem; cursor: pointer; font: 500 .875rem/1.25rem var(--se-font); text-align: left; text-decoration: none; }
+.se-sidebar-button se-icon { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; }
+.se-sidebar-button:hover:not(:disabled) { color: var(--se-text); background: var(--se-surface-soft); }
+se-sidebar-button[active] .se-sidebar-button { color: var(--se-brand); background: var(--se-brand-soft); }
+.se-sidebar-button:disabled { opacity: .5; cursor: not-allowed; }
+.se-sidebar-theme { display: flex; align-items: center; justify-content: space-between; padding: .5rem .75rem; color: var(--se-muted); font-size: .875rem; font-weight: 500; }
+.se-sidebar-theme .se-choice__label { display: none; }
+se-sidebar[collapsed] .se-sidebar-brand__identity { display: none; }
+se-sidebar[collapsed] se-sidebar-brand { justify-content: center; }
+se-sidebar[collapsed] .se-sidebar-section__title, se-sidebar[collapsed] se-sidebar-section > se-title, se-sidebar[collapsed] .se-sidebar-button span, se-sidebar[collapsed] .se-sidebar-theme > span { display: none; }
+se-sidebar[collapsed] .se-sidebar-button { justify-content: center; padding: .75rem; }
+se-sidebar[collapsed] .se-sidebar-theme { justify-content: center; padding: .5rem 0; }
 
 @media (max-width: 767px) {
-  .se-sidebar { display: none; }
+  .se-sidebar, se-sidebar { display: none; }
 }
 
 se-date-picker, se-datetime-picker, se-time-picker { display: block; font-family: var(--se-font); }
