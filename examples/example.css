@@ -51,6 +51,12 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-component-attributes se-code-editor .se-editor, .demo-component-attributes se-code-editor textarea { min-height: 4.25rem; height: 4.25rem; }
 .demo-component-attributes .demo-default-code .se-editor, .demo-component-attributes .demo-default-code textarea { min-height: 3.25rem; height: 3.25rem; }
 .demo-component-content { display: grid; gap: 1rem; }
+.demo-pattern-page > se-text { display: block; margin-top: .25rem; }
+.demo-pattern-code, .demo-pattern-result { margin-top: 2rem; }
+.demo-pattern-code > se-title, .demo-pattern-result > se-title { display: block; margin-bottom: 1rem; }
+.demo-pattern-code .se-editor, .demo-pattern-code .se-editor textarea { min-height: 20rem; height: 20rem; }
+.demo-pattern-result [data-pattern-preview] { height: 32rem; overflow: hidden; }
+.demo-pattern-result se-sidebar { display: flex; }
 .demo-template-attributes .se-table, .demo-component-attributes .se-table { overflow: visible; }
 .demo-template-table se-list-row { align-items: center; }
 .demo-template-table se-input, .demo-template-table se-select { width: 100%; }

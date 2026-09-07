@@ -16,6 +16,20 @@ const inputPage = document.querySelector('section[data-demo="template"]');
 inputPage.dataset.demo = 'input';
 
 const escapeAttribute = (value) => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+const formatHtml = (source) => {
+  const template = document.createElement('template');
+  template.innerHTML = source.trim();
+  const formatNode = (node, depth = 0) => {
+    const padding = '  '.repeat(depth);
+    if (node.nodeType === Node.TEXT_NODE) return `${padding}${node.textContent.trim().replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}`;
+    const opening = node.outerHTML.slice(0, node.outerHTML.indexOf('>') + 1);
+    const children = [...node.childNodes].filter((child) => child.nodeType !== Node.TEXT_NODE || child.textContent.trim());
+    if (!children.length) return `${padding}${opening}</${node.localName}>`;
+    if (children.length === 1 && children[0].nodeType === Node.TEXT_NODE) return `${padding}${opening}${node.innerHTML.trim()}</${node.localName}>`;
+    return `${padding}${opening}\n${children.map((child) => formatNode(child, depth + 1)).join('\n')}\n${padding}</${node.localName}>`;
+  };
+  return [...template.content.childNodes].filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim()).map((node) => formatNode(node)).join('\n');
+};
 const controlMarkup = (attribute) => {
   if (attribute.control === 'boolean') return `<se-checkbox variant="switch" data-component-attribute="${attribute.name}" label="Enabled"></se-checkbox>`;
   if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}" clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value), ...(['icon', 'name'].includes(attribute.name) ? { icon: value } : {}) }))))}"></se-select>`;
@@ -36,7 +50,7 @@ const renderComponentPage = (component) => {
   const section = document.createElement('section');
   section.dataset.demo = tag;
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-checkbox variant="switch" label="Show code" data-component-code-toggle></se-checkbox></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-table>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(contentAttribute.defaultValue)}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-checkbox variant="switch" label="Show code" data-component-code-toggle></se-checkbox></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-table>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
   document.querySelector('.demo-content').append(section);
   const preview = section.querySelector('[data-component-preview]');
   const code = section.querySelector('[data-component-code]');
@@ -62,14 +76,27 @@ const renderComponentPage = (component) => {
       opener.addEventListener('click', () => clone.open());
       preview.prepend(opener);
     }
-    code.value = usageMarkup;
+    code.value = formatHtml(usageMarkup);
   };
   section.querySelectorAll('.demo-component-attributes [data-component-attribute]').forEach((control) => control.addEventListener(control.matches('se-input, se-code-editor') ? 'input' : 'change', render));
   section.querySelector('[data-component-code-toggle]').addEventListener('change', (event) => { preview.hidden = event.currentTarget.checked; code.hidden = !event.currentTarget.checked; });
   render();
 };
 componentCatalog.filter(({ custom }) => !custom).forEach(renderComponentPage);
-patternCatalog.forEach(renderComponentPage);
+const renderPatternPage = ({ tag, description, markup }) => {
+  const section = document.createElement('section');
+  section.dataset.demo = tag;
+  section.className = 'demo-pattern-page';
+  section.hidden = true;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-pattern-code"><se-title level="sidebar">Code</se-title><se-code-editor language="html" value="${escapeAttribute(formatHtml(markup))}" wrap></se-code-editor></div><div class="demo-pattern-result"><se-title level="sidebar">Preview</se-title><div data-pattern-preview></div></div>`;
+  document.querySelector('.demo-content').append(section);
+  const editor = section.querySelector('se-code-editor');
+  const preview = section.querySelector('[data-pattern-preview]');
+  const render = () => { const template = document.createElement('template'); template.innerHTML = editor.value; preview.replaceChildren(template.content.cloneNode(true)); };
+  editor.addEventListener('input', render);
+  render();
+};
+patternCatalog.forEach(renderPatternPage);
 
 const showPage = (id) => {
   const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';
