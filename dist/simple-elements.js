@@ -246,13 +246,15 @@ const typeDefaults = {
 };
 
 class SeInput extends HTMLElement {
+  static defaultsFor(type = 'text') { return { ...(typeDefaults[type] || {}) }; }
+
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
     const id = this.getAttribute('id') || `se-input-${crypto.randomUUID()}`;
     const type = this.getAttribute('type') || 'text';
     const textarea = type === 'textarea';
-    const defaults = typeDefaults[type] || {};
+    const defaults = SeInput.defaultsFor(type);
     const icon = this.hasAttribute('icon') ? this.getAttribute('icon') : defaults.icon;
     const placeholder = this.hasAttribute('placeholder') ? this.getAttribute('placeholder') : defaults.placeholder || '';
     const error = this.getAttribute('error');

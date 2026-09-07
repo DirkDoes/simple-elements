@@ -29,6 +29,7 @@ assert.match(selectSource, /set value\(value\)/);
 const inputSource = await readFile('src/components/input.js', 'utf8');
 assert.match(inputSource, /email: \{ placeholder: 'you@example\.com', icon: 'mail' \}/);
 assert.match(inputSource, /tel: \{ placeholder: 'Enter a phone number\.\.\.', icon: 'phone' \}/);
+assert.match(inputSource, /static defaultsFor\(type = 'text'\)/);
 const iconSource = await readFile('src/components/icon.js', 'utf8');
 assert.match(iconSource, /from 'lucide'/);
 assert.doesNotMatch(iconSource, /<path|<circle|<rect/);
@@ -48,6 +49,8 @@ assert.equal((exampleHtml.match(/data-template-attribute=/g) || []).length, 11, 
 assert.match(exampleScript, /template\.querySelector\('\[data-template-preview\]'\)\.innerHTML = markup/);
 assert.match(exampleScript, /closest\('se-input\[data-template-attribute\]'\)/, 'text overrides should render on input');
 assert.match(exampleScript, /!control\.matches\('se-input'\)/, 'switches and selects should render only once on change');
+assert.match(exampleScript, /customElements\.get\('se-input'\)\.defaultsFor\(type\)/);
+assert.doesNotMatch(exampleScript, /inputTypeDefaults/);
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea name=/, 'code editor must submit through a native textarea');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /hasAttribute\('readonly'\)/, 'code editor must support readonly');
 assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
