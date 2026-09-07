@@ -1,33 +1,63 @@
-const pages = [
-  ['template', 'Template', 'package'],
-  ['foundations', 'Foundations', 'dashboard'],
-  ['inputs', 'Text Inputs', 'type'],
-  ['controls', 'Selection Controls', 'toggle-left'],
-  ['selects', 'Dropdowns & Selects', 'list'],
-  ['buttons', 'Buttons', 'mouse-pointer'],
-  ['uploads', 'File Uploads', 'file-up'],
-  ['contextual', 'Contextual', 'message-square'],
-  ['content', 'Rich Content', 'code'],
-  ['quotes', 'Quotes', 'message-square'],
-  ['editors', 'Editors', 'edit'],
-  ['badges', 'Badges', 'crown'],
-  ['lists', 'Lists & Tables', 'table'],
-  ['dates', 'Date & Time', 'calendar'],
-  ['profiles', 'Profiles', 'users'],
-  ['overlays', 'Overlays', 'zap'],
-];
+const componentTags = ['badge', 'blockquote', 'button', 'card', 'checkbox', 'code-editor', 'code', 'date-picker', 'datetime-picker', 'drawer', 'file-row', 'file-upload', 'icon', 'input', 'list-header', 'list-row', 'list', 'markdown', 'menu', 'modal', 'phone-input', 'profile', 'radio', 'range', 'select', 'sidebar', 'split-button', 'switch', 'table', 'text', 'time-picker', 'title', 'tooltip', 'wysiwyg'];
+const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
+const pages = componentTags.map((tag) => [tag, titleFor(tag), tag === 'icon' ? 'sparkles' : tag]);
 
-const requestedPage = location.hash.slice(1) || 'foundations';
-const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'foundations';
+const requestedPage = location.hash.slice(1) || 'input';
+const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'input';
 const sidebar = document.querySelector('se-sidebar');
 sidebar.options = pages.map(([id, label, icon]) => ({ label, icon, href: `#${id}`, active: id === initialPage }));
+
+const oldSections = [...document.querySelectorAll('section[data-demo]')];
+const inputPage = document.querySelector('section[data-demo="template"]');
+inputPage.dataset.demo = 'input';
+const samples = new Map();
+oldSections.forEach((section) => section.querySelectorAll('*').forEach((element) => {
+  const tag = element.localName;
+  if (!tag?.startsWith('se-') || tag === 'se-sidebar' || samples.has(tag) || section === inputPage) return;
+  samples.set(tag, element.outerHTML);
+}));
+oldSections.filter((section) => section !== inputPage).forEach((section) => section.remove());
+
+const booleanAttributes = new Set(['checked', 'clearable', 'clickable', 'disabled', 'fixed', 'large', 'multiple', 'readonly', 'required', 'searchable', 'wrap']);
+const describeAttribute = (name) => name.replaceAll('-', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+const renderComponentPage = (tag) => {
+  const sample = samples.get(`se-${tag}`) || `<se-${tag}></se-${tag}>`;
+  const element = document.createElement('template');
+  element.innerHTML = sample;
+  const source = element.content.firstElementChild;
+  const attributes = [...source.attributes].filter((attribute) => !['class', 'style', 'id', 'name'].includes(attribute.name));
+  const section = document.createElement('section');
+  section.dataset.demo = tag;
+  section.hidden = true;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>Live ${titleFor(tag)} component reference. Preview the component, inspect its markup, and try attribute overrides.</se-text><div class="demo-stack"><se-card class="demo-component-preview"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-component-code-toggle></se-switch></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes"><se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${attributes.map((attribute) => `<se-list-row><strong data-description="${describeAttribute(attribute.name)} for this component.">${attribute.name}</strong><span>${describeAttribute(attribute.name)} for this component.</span>${attribute.value ? `<se-badge>${attribute.value}</se-badge>` : '<span></span>'}${booleanAttributes.has(attribute.name) ? `<se-switch data-component-attribute="${attribute.name}" label="Override"></se-switch>` : `<se-input data-component-attribute="${attribute.name}" placeholder="Override ${attribute.name}"></se-input>`}</se-list-row>`).join('')}</se-table></se-card></div>`;
+  document.querySelector('.demo-content').append(section);
+  const preview = section.querySelector('[data-component-preview]');
+  const code = section.querySelector('[data-component-code]');
+  const render = () => {
+    const clone = source.cloneNode(true);
+    section.querySelectorAll('[data-component-attribute]').forEach((control) => {
+      const value = control.matches('se-switch') ? control.checked : control.value;
+      if (value) clone.setAttribute(control.dataset.componentAttribute, value === true ? '' : value);
+      else clone.removeAttribute(control.dataset.componentAttribute);
+    });
+    preview.replaceChildren(clone);
+    code.value = clone.outerHTML;
+  };
+  section.addEventListener('input', (event) => { if (event.target.matches('[data-component-attribute]')) render(); });
+  section.addEventListener('change', (event) => {
+    if (event.target.matches('[data-component-attribute]')) render();
+    if (event.target.closest('[data-component-code-toggle]')) { const show = section.querySelector('[data-component-code-toggle]').checked; preview.hidden = show; code.hidden = !show; }
+  });
+  render();
+};
+componentTags.filter((tag) => tag !== 'sidebar' && tag !== 'input').forEach(renderComponentPage);
 
 document.querySelector('[data-icon-grid]').innerHTML = customElements.get('se-icon').names
   .map((name) => `<div class="demo-icon"><se-icon name="${name}"></se-icon><code>${name}</code></div>`)
   .join('');
 
 const showPage = (id) => {
-  const selected = pages.some(([pageId]) => pageId === id) ? id : 'foundations';
+  const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';
   document.querySelectorAll('[data-demo]').forEach((section) => { section.hidden = section.dataset.demo !== selected; });
   document.querySelectorAll('.se-sidebar__link').forEach((link) => link.classList.toggle('se-sidebar__link--active', link.getAttribute('href') === `#${selected}`));
   document.querySelector('.demo-main').scrollTop = 0;
