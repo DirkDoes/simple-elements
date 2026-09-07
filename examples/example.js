@@ -21,7 +21,7 @@ oldSections.filter((section) => section !== inputPage).forEach((section) => sect
 const booleanAttributes = new Set(['checked', 'clearable', 'clickable', 'disabled', 'fixed', 'large', 'multiple', 'readonly', 'required', 'searchable', 'wrap']);
 const describeAttribute = (name) => name.replaceAll('-', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 const renderComponentPage = (tag) => {
-  const sample = samples.get(`se-${tag}`) || `<se-${tag}></se-${tag}>`;
+  const sample = samples.get(`se-${tag}`) || (tag === 'sidebar' ? `<se-sidebar label="Preview" options='[{"label":"Overview","icon":"dashboard","href":"#"}]'></se-sidebar>` : `<se-${tag}></se-${tag}>`);
   const element = document.createElement('template');
   element.innerHTML = sample;
   const source = element.content.firstElementChild;
@@ -50,7 +50,7 @@ const renderComponentPage = (tag) => {
   });
   render();
 };
-componentTags.filter((tag) => tag !== 'sidebar' && tag !== 'input').forEach(renderComponentPage);
+componentTags.filter((tag) => tag !== 'input').forEach(renderComponentPage);
 
 const iconGrid = document.querySelector('[data-icon-grid]');
 if (iconGrid) iconGrid.innerHTML = customElements.get('se-icon').names
