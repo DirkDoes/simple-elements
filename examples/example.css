@@ -46,7 +46,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-template-table se-input, .demo-template-table se-select { width: 100%; }
 .demo-template-table .se-label:empty { display: none; }
 .demo-template-attributes { container-type: inline-size; }
-@container (max-width: 54rem) {
+@container (max-width: 60rem) {
   .demo-template-table .se-list__header, .demo-template-table .se-list__row { min-width: 0; grid-template-columns: 12rem 10rem minmax(12rem, 1fr); }
   .demo-template-table .se-list__header > :nth-child(2), .demo-template-table .se-list__row > :nth-child(2) { display: none; }
   .demo-template-table .se-list__row strong::after { display: block; margin-top: .25rem; color: var(--se-muted); content: attr(data-description); font-size: .75rem; font-weight: 400; line-height: 1.35; }
