@@ -81,7 +81,7 @@ assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /hasAttribute\('readonly'\)/, 'code editor must support readonly');
 assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
 assert.match(highlightCode('const ready = true;', 'javascript'), /se-token--keyword/);
-const highlightedHtml = highlightCode('<se-button variant="brand" disabled>Save</se-button>', 'html');
+const highlightedHtml = highlightCode('<se-button variant="brand" text="Save" disabled></se-button>', 'html');
 assert.match(highlightedHtml, /se-token--tag[^>]*>&lt;se-button/);
 assert.match(highlightedHtml, /se-token--property[^>]*>variant/);
 assert.match(highlightedHtml, /se-token--operator[^>]*>=/);

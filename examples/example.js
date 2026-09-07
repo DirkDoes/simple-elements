@@ -21,14 +21,16 @@ const controlMarkup = (attribute) => {
 const defaultMarkup = (attribute) => {
   if (attribute.defaultValue === '') return '<span></span>';
   if (attribute.control === 'code' || String(attribute.defaultValue).length > 32) return `<se-code-editor class="demo-default-code" language="${attribute.name === 'options' ? 'json' : 'html'}" value="${escapeAttribute(attribute.defaultValue)}" readonly wrap></se-code-editor>`;
-  return `<se-badge>${escapeAttribute(attribute.defaultValue)}</se-badge>`;
+  return `<se-badge text="${escapeAttribute(attribute.defaultValue)}"></se-badge>`;
 };
 const renderComponentPage = (component) => {
   const { tag, description, markup, attributes } = component;
+  const contentAttribute = attributes.find(({ control }) => control === 'content');
+  const tableAttributes = attributes.filter(({ control }) => control !== 'content');
   const section = document.createElement('section');
   section.dataset.demo = tag;
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-component-code-toggle></se-switch></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes"><se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${attributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-table></se-card></div>`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-component-code-toggle></se-switch></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-table>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(contentAttribute.defaultValue)}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
   document.querySelector('.demo-content').append(section);
   const preview = section.querySelector('[data-component-preview]');
   const code = section.querySelector('[data-component-code]');
@@ -49,7 +51,7 @@ const renderComponentPage = (component) => {
     preview.replaceChildren(clone);
     if (component.action === 'open') {
       const opener = document.createElement('se-button');
-      opener.textContent = `Open ${titleFor(tag)}`;
+      opener.setAttribute('text', `Open ${titleFor(tag)}`);
       opener.addEventListener('click', () => clone.open());
       preview.prepend(opener);
     }
@@ -96,9 +98,9 @@ const renderTemplateInput = () => {
   template.querySelector('[data-template-code]').value = markup;
   const type = template.querySelector('[data-template-attribute="type"]').value || 'text';
   const defaults = customElements.get('se-input').defaultsFor(type);
-  template.querySelector('[data-template-default="placeholder"]').textContent = defaults.placeholder;
+  template.querySelector('[data-template-default="placeholder"]').setAttribute('text', defaults.placeholder);
   const iconDefault = template.querySelector('[data-template-default="icon"]');
-  iconDefault.textContent = defaults.icon || '';
+  iconDefault.setAttribute('text', defaults.icon || '');
   iconDefault.hidden = !defaults.icon;
 };
 

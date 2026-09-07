@@ -2,7 +2,7 @@
 
 ```html
 <se-tooltip content="Edit profile">
-  <se-button icon-only aria-label="Edit profile"><se-icon name="edit"></se-icon></se-button>
+  <se-button icon="edit" aria-label="Edit profile"></se-button>
 </se-tooltip>
 ```
 

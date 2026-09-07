@@ -14,7 +14,7 @@ import 'simple-elements/styles.css';
 ```
 
 ```html
-<se-button variant="brand">Save changes</se-button>
+<se-button variant="brand" text="Save changes"></se-button>
 ```
 
 Set the theme on any ancestor (normally `<html>`):

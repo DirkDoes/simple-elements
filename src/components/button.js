@@ -1,4 +1,4 @@
-import { define } from '../helpers.js';
+import { define, escapeHtml } from '../helpers.js';
 
 class SeButton extends HTMLElement {
   connectedCallback() {
@@ -9,10 +9,12 @@ class SeButton extends HTMLElement {
   render() {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.innerHTML;
     const variant = this.getAttribute('variant') || 'primary';
-    const iconOnly = this.hasAttribute('icon-only') ? ' se-button--icon' : '';
-    this.innerHTML = `<button class="se-button se-button--${variant}${iconOnly}" type="${this.getAttribute('type') || 'button'}"${this.hasAttribute('disabled') ? ' disabled' : ''}${this.getAttribute('aria-label') ? ` aria-label="${this.getAttribute('aria-label')}"` : ''}>${content}</button>`;
+    const icon = this.getAttribute('icon') || '';
+    const text = this.hasAttribute('text') ? this.getAttribute('text') : icon ? '' : 'Button';
+    const iconOnly = icon && !text ? ' se-button--icon' : '';
+    const label = this.getAttribute('aria-label') || text || icon;
+    this.innerHTML = `<button class="se-button se-button--${escapeHtml(variant)}${iconOnly}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${this.hasAttribute('disabled') ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}</button>`;
   }
 }
 

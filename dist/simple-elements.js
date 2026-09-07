@@ -224,10 +224,12 @@ class SeButton extends HTMLElement {
   render() {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.innerHTML;
     const variant = this.getAttribute('variant') || 'primary';
-    const iconOnly = this.hasAttribute('icon-only') ? ' se-button--icon' : '';
-    this.innerHTML = `<button class="se-button se-button--${variant}${iconOnly}" type="${this.getAttribute('type') || 'button'}"${this.hasAttribute('disabled') ? ' disabled' : ''}${this.getAttribute('aria-label') ? ` aria-label="${this.getAttribute('aria-label')}"` : ''}>${content}</button>`;
+    const icon = this.getAttribute('icon') || '';
+    const text = this.hasAttribute('text') ? this.getAttribute('text') : icon ? '' : 'Button';
+    const iconOnly = icon && !text ? ' se-button--icon' : '';
+    const label = this.getAttribute('aria-label') || text || icon;
+    this.innerHTML = `<button class="se-button se-button--${escapeHtml(variant)}${iconOnly}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${this.hasAttribute('disabled') ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}</button>`;
   }
 }
 
@@ -565,7 +567,7 @@ class SeModal extends HTMLElement {
     const content = this.innerHTML.trim();
     const large = this.hasAttribute('large');
     const title = escapeHtml(this.getAttribute('title') || '');
-    const actions = `<div class="se-modal__actions"><se-button variant="${large ? 'secondary' : 'ghost'}" data-cancel>${escapeHtml(this.getAttribute('cancel-label') || (large ? 'Close' : 'Cancel'))}</se-button><se-button variant="${escapeHtml(this.getAttribute('confirm-variant') || 'brand')}" data-confirm>${escapeHtml(this.getAttribute('confirm-label') || 'Confirm')}</se-button></div>`;
+    const actions = `<div class="se-modal__actions"><se-button variant="${large ? 'secondary' : 'ghost'}" text="${escapeHtml(this.getAttribute('cancel-label') || (large ? 'Close' : 'Cancel'))}" data-cancel></se-button><se-button variant="${escapeHtml(this.getAttribute('confirm-variant') || 'brand')}" text="${escapeHtml(this.getAttribute('confirm-label') || 'Confirm')}" data-confirm></se-button></div>`;
     this.innerHTML = `<div class="se-overlay se-modal${large ? ' se-modal--large' : ''}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${large ? `<header class="se-modal__header"><span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content"><se-card>${content}</se-card></div>${actions}` : `<div class="se-modal__body${this.hasAttribute('centered') ? ' se-modal__body--center' : ''}">${this.getAttribute('icon') ? `<span class="se-modal__icon"><se-icon name="${escapeHtml(this.getAttribute('icon'))}"></se-icon></span>` : ''}<se-title level="section">${title}</se-title>${content}</div>${actions}`}</div></div>`;
     this.querySelector('[data-cancel]').addEventListener('click', () => this.close());
     this.querySelector('[data-confirm]').addEventListener('click', () => { emit(this, 'confirm', {}); this.close(); });
@@ -726,10 +728,18 @@ define('se-wysiwyg', SeWysiwyg);
 const variants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'important']);
 
 class SeBadge extends HTMLElement {
-  connectedCallback() {
+  static observedAttributes = ['variant', 'icon', 'text', 'aria-label'];
+  connectedCallback() { this.render(); }
+  attributeChangedCallback() { if (this.isConnected) this.render(); }
+  render() {
     const variant = this.getAttribute('variant') || 'gray';
+    const icon = this.getAttribute('icon') || '';
+    const text = this.getAttribute('text') || (icon ? '' : 'Badge');
+    variants.forEach((name) => this.classList.remove(`se-badge--${name}`));
     this.classList.add('se-badge', `se-badge--${variants.has(variant) ? variant : 'gray'}`);
-    if (!this.textContent.trim()) this.classList.add('se-badge--icon');
+    this.classList.toggle('se-badge--icon', Boolean(icon && !text));
+    if (icon && !text) this.setAttribute('role', 'img'); else this.removeAttribute('role');
+    this.innerHTML = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
   }
 }
 

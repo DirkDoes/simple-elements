@@ -1,9 +1,9 @@
 # Badge
 
 ```html
-<se-badge variant="success">Active</se-badge>
-<se-badge variant="warning"><se-icon name="alert"></se-icon>Needs attention</se-badge>
-<se-badge variant="error" aria-label="Error"><se-icon name="x"></se-icon></se-badge>
+<se-badge variant="success" text="Active"></se-badge>
+<se-badge variant="warning" icon="alert" text="Needs attention"></se-badge>
+<se-badge variant="error" icon="x" aria-label="Error"></se-badge>
 ```
 
-Variants: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `important`. Badges may contain text, an icon, or both. Add an accessible label to icon-only badges.
+Variants: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `important`. Set `text`, `icon`, or both. Add `aria-label` to icon-only badges.
