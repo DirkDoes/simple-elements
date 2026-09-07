@@ -50,9 +50,9 @@ class SeDatetimePicker extends HTMLElement {
   }
 
   disconnectedCallback() { document.removeEventListener('pointerdown', this._outside); }
-  get output() { return this.matches('[variant="combined"]') ? this.querySelector(':scope > .se-datetime-single > input') : this.querySelector(':scope > fieldset > input'); }
+  get output() { return this.querySelector(':scope > .se-datetime-single > input, :scope > fieldset > input'); }
   get value() { return this.output?.value || ''; }
-  set value(value) { if (this.matches('[variant="combined"]')) { const [date = '', time = ''] = (value || '').split('T'); this._date = parseDate(date); this._time = parseTime(time); if (this._date) this._view = this._date; if (this._time) this._draftTime = this._time; this.syncSingle(false); } else { const [date = '', time = ''] = (value || '').split('T'); this.querySelector('se-date-picker').value = date; this.querySelector('se-time-picker').value = time; this.syncParts(false); } }
+  set value(value) { if (this.querySelector(':scope > .se-datetime-single')) { const [date = '', time = ''] = (value || '').split('T'); this._date = parseDate(date); this._time = parseTime(time); if (this._date) this._view = this._date; if (this._time) this._draftTime = this._time; this.syncSingle(false); } else { const [date = '', time = ''] = (value || '').split('T'); this.querySelector('se-date-picker').value = date; this.querySelector('se-time-picker').value = time; this.syncParts(false); } }
   syncParts(notify = true) { const date = this.querySelector('se-date-picker').value; const time = this.querySelector('se-time-picker').value; this.output.value = date && time ? `${date}T${time}` : ''; if (notify) emit(this, 'change', { value: this.value }); }
   open() { this.querySelector('.se-datetime-single__popover').hidden = false; this.querySelector('.se-datetime-single__trigger').setAttribute('aria-expanded', 'true'); }
   close() { this.querySelector('.se-datetime-single__popover').hidden = true; this.querySelector('.se-date__jump').hidden = true; this.querySelector('[data-jump-toggle]').setAttribute('aria-expanded', 'false'); this.querySelector('[data-month-select]')?.close(); this.querySelector('.se-datetime-single__trigger').setAttribute('aria-expanded', 'false'); }

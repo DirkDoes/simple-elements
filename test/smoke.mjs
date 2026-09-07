@@ -108,5 +108,7 @@ assert.equal(timeValue({ hour: 9, minute: 5 }), '09:05');
 assert.equal(wrapNumber(24, 24), 0);
 assert.equal(wrapNumber(-5, 60), 55);
 assert.match(await readFile('src/components/table.js', 'utf8'), /--se-columns/);
-assert.match(await readFile('src/components/datetime-picker.js', 'utf8'), /variant === 'combined'/);
+const datetimeSource = await readFile('src/components/datetime-picker.js', 'utf8');
+assert.match(datetimeSource, /variant === 'combined'/);
+assert.match(datetimeSource, /:scope > \.se-datetime-single > input, :scope > fieldset > input/, 'default combined picker must resolve its hidden form input');
 console.log(`Checked ${components.length} components and ${componentCatalog.length} catalog pages.`);
