@@ -50,7 +50,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-component-attributes se-code-editor .se-editor, .demo-component-attributes se-code-editor textarea { min-height: 4.25rem; height: 4.25rem; }
 .demo-component-attributes .demo-default-code .se-editor, .demo-component-attributes .demo-default-code textarea { min-height: 3.25rem; height: 3.25rem; }
 .demo-component-content { display: grid; gap: 1rem; }
-.demo-component-attributes .se-table { overflow: visible; }
+.demo-template-attributes .se-table, .demo-component-attributes .se-table { overflow: visible; }
 .demo-template-table se-list-row { align-items: center; }
 .demo-template-table se-input, .demo-template-table se-select { width: 100%; }
 .demo-template-table .se-label:empty { display: none; }

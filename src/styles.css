@@ -275,7 +275,7 @@ se-button { display: inline-flex; }
 .se-phone__menu header { position: relative; padding: .5rem; background: color-mix(in srgb, var(--se-surface-soft) 50%, transparent); border-bottom: 1px solid var(--se-border); }
 .se-phone__menu header se-icon { position: absolute; top: 50%; left: 1.15rem; width: .875rem; color: var(--se-faint); transform: translateY(-50%); }
 .se-phone__menu header .se-control { min-height: 2rem; padding: .375rem .625rem .375rem 2rem; }
-.se-phone__list { max-height: 15rem; padding: .375rem 0; overflow: auto; }
+.se-phone__list { max-height: 18rem; padding: .375rem 0; overflow: auto; }
 .se-phone__country { display: flex; gap: .75rem; width: 100%; padding: .625rem .75rem; color: var(--se-text); background: transparent; border: 0; cursor: pointer; text-align: left; }
 .se-phone__country:hover { background: var(--se-surface-soft); }
 .se-phone__country[aria-selected="true"] { color: var(--se-brand); background: var(--se-brand-soft); }
