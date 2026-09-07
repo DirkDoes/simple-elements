@@ -1,4 +1,4 @@
-import { componentCatalog, patternCatalog } from './catalog.js?v=8428e24';
+import { componentCatalog, patternCatalog } from './catalog.js?v=d5ddac1';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
