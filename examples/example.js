@@ -1,61 +1,68 @@
-const componentTags = ['badge', 'blockquote', 'button', 'card', 'checkbox', 'code-editor', 'code', 'date-picker', 'datetime-picker', 'drawer', 'file-row', 'file-upload', 'icon', 'input', 'list-header', 'list-row', 'list', 'markdown', 'menu', 'modal', 'phone-input', 'profile', 'radio', 'range', 'select', 'sidebar', 'split-button', 'switch', 'table', 'text', 'time-picker', 'title', 'tooltip', 'wysiwyg'];
+import { componentCatalog } from './catalog.js';
+
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
-const pages = componentTags.map((tag) => [tag, titleFor(tag), tag === 'icon' ? 'sparkles' : tag]);
+const pages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
 
 const requestedPage = location.hash.slice(1) || 'input';
 const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'input';
 const sidebar = document.querySelector('se-sidebar');
 sidebar.options = pages.map(([id, label, icon]) => ({ label, icon, href: `#${id}`, active: id === initialPage }));
 
-const oldSections = [...document.querySelector('#component-samples').content.querySelectorAll('section[data-demo]')];
 const inputPage = document.querySelector('section[data-demo="template"]');
 inputPage.dataset.demo = 'input';
-const samples = new Map();
-oldSections.forEach((section) => section.querySelectorAll('*').forEach((element) => {
-  const tag = element.localName;
-  if (!tag?.startsWith('se-') || tag === 'se-sidebar' || samples.has(tag) || section === inputPage) return;
-  samples.set(tag, element.outerHTML);
-}));
-oldSections.filter((section) => section !== inputPage).forEach((section) => section.remove());
 
-const booleanAttributes = new Set(['checked', 'clearable', 'clickable', 'disabled', 'fixed', 'large', 'multiple', 'readonly', 'required', 'searchable', 'wrap']);
-const describeAttribute = (name) => name.replaceAll('-', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
-const renderComponentPage = (tag) => {
-  const sample = samples.get(`se-${tag}`) || (tag === 'sidebar' ? `<se-sidebar label="Preview" options='[{"label":"Overview","icon":"dashboard","href":"#"}]'></se-sidebar>` : `<se-${tag}></se-${tag}>`);
-  const element = document.createElement('template');
-  element.innerHTML = sample;
-  const source = element.content.firstElementChild;
-  const attributes = [...source.attributes].filter((attribute) => !['class', 'style', 'id', 'name'].includes(attribute.name));
+const escapeAttribute = (value) => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+const controlMarkup = (attribute) => {
+  if (attribute.control === 'boolean') return `<se-switch data-component-attribute="${attribute.name}" label="Enabled"></se-switch>`;
+  if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}" clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value) }))))}"></se-select>`;
+  if (attribute.control === 'code') return `<se-code-editor data-component-attribute="${attribute.name}" language="${attribute.name === 'options' ? 'json' : 'html'}" wrap></se-code-editor>`;
+  return `<se-input data-component-attribute="${attribute.name}" placeholder="No override"></se-input>`;
+};
+const defaultMarkup = (attribute) => {
+  if (attribute.defaultValue === '') return '<span></span>';
+  if (attribute.control === 'code' || String(attribute.defaultValue).length > 32) return `<se-code-editor class="demo-default-code" language="${attribute.name === 'options' ? 'json' : 'html'}" value="${escapeAttribute(attribute.defaultValue)}" readonly wrap></se-code-editor>`;
+  return `<se-badge>${escapeAttribute(attribute.defaultValue)}</se-badge>`;
+};
+const renderComponentPage = (component) => {
+  const { tag, description, markup, attributes } = component;
   const section = document.createElement('section');
   section.dataset.demo = tag;
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>Live ${titleFor(tag)} component reference. Preview the component, inspect its markup, and try attribute overrides.</se-text><div class="demo-stack"><se-card class="demo-component-preview"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-component-code-toggle></se-switch></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes"><se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${attributes.map((attribute) => `<se-list-row><strong data-description="${describeAttribute(attribute.name)} for this component.">${attribute.name}</strong><span>${describeAttribute(attribute.name)} for this component.</span>${attribute.value ? `<se-badge>${attribute.value}</se-badge>` : '<span></span>'}${booleanAttributes.has(attribute.name) ? `<se-switch data-component-attribute="${attribute.name}" label="Override"></se-switch>` : `<se-input data-component-attribute="${attribute.name}" placeholder="Override ${attribute.name}"></se-input>`}</se-list-row>`).join('')}</se-table></se-card></div>`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-component-code-toggle></se-switch></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes"><se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${attributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-table></se-card></div>`;
   document.querySelector('.demo-content').append(section);
   const preview = section.querySelector('[data-component-preview]');
   const code = section.querySelector('[data-component-code]');
   const render = () => {
+    const sourceTemplate = document.createElement('template');
+    sourceTemplate.innerHTML = markup;
+    const source = sourceTemplate.content.firstElementChild;
     const clone = source.cloneNode(true);
     section.querySelectorAll('[data-component-attribute]').forEach((control) => {
+      const name = control.dataset.componentAttribute;
       const value = control.matches('se-switch') ? control.checked : control.value;
-      if (value) clone.setAttribute(control.dataset.componentAttribute, value === true ? '' : value);
-      else clone.removeAttribute(control.dataset.componentAttribute);
+      if (name === 'content' && tag !== 'tooltip') { if (value) clone.innerHTML = value; return; }
+      if (name === 'child-content') { if (value) clone.innerHTML = value; return; }
+      if (control.matches('se-switch')) { if (value) clone.setAttribute(name, ''); else clone.removeAttribute(name); return; }
+      if (value) clone.setAttribute(name, value);
     });
+    const usageMarkup = clone.outerHTML;
     preview.replaceChildren(clone);
-    code.value = clone.outerHTML;
+    if (component.action === 'open') {
+      const opener = document.createElement('se-button');
+      opener.textContent = `Open ${titleFor(tag)}`;
+      opener.addEventListener('click', () => clone.open());
+      preview.prepend(opener);
+    }
+    code.value = usageMarkup;
   };
-  section.addEventListener('input', (event) => { if (event.target.matches('[data-component-attribute]')) render(); });
+  section.addEventListener('input', (event) => { if (event.target.closest('[data-component-attribute]')) render(); });
   section.addEventListener('change', (event) => {
-    if (event.target.matches('[data-component-attribute]')) render();
+    if (event.target.closest('[data-component-attribute]')) render();
     if (event.target.closest('[data-component-code-toggle]')) { const show = section.querySelector('[data-component-code-toggle]').checked; preview.hidden = show; code.hidden = !show; }
   });
   render();
 };
-componentTags.filter((tag) => tag !== 'input').forEach(renderComponentPage);
-
-const iconGrid = document.querySelector('[data-icon-grid]');
-if (iconGrid) iconGrid.innerHTML = customElements.get('se-icon').names
-  .map((name) => `<div class="demo-icon"><se-icon name="${name}"></se-icon><code>${name}</code></div>`)
-  .join('');
+componentCatalog.filter(({ custom }) => !custom).forEach(renderComponentPage);
 
 const showPage = (id) => {
   const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';

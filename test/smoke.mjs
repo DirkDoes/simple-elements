@@ -3,6 +3,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { highlightCode, renderMarkdown } from '../src/syntax.js';
 import { calendarDays, dateValue, parseDate, parseTime, timeValue, wrapNumber } from '../src/calendar.js';
+import { iconNames } from '../src/icon-names.js';
+import { componentCatalog } from '../examples/catalog.js';
 
 const components = (await readdir('src/components')).filter((file) => file.endsWith('.js'));
 const examplePages = (await readdir('examples')).filter((file) => file.endsWith('.html'));
@@ -49,7 +51,7 @@ for (const file of examplePages) assert.match(await readFile(`examples/${file}`,
 const exampleScript = await readFile('examples/example.js', 'utf8');
 assert.doesNotMatch(exampleScript, /const demos\s*=/, 'demo markup belongs in HTML');
 const exampleHtml = await readFile('examples/index.html', 'utf8');
-assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 16, 'expected sixteen page-like sections');
+assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 1, 'only the custom input page should remain in static HTML');
 assert.match(exampleHtml, /data-demo="template"/);
 assert.equal((exampleHtml.match(/data-template-attribute=/g) || []).length, 11, 'expected every relevant input attribute in the template');
 assert.match(exampleScript, /template\.querySelector\('\[data-template-preview\]'\)\.innerHTML = markup/);
@@ -59,6 +61,22 @@ assert.match(exampleScript, /customElements\.get\('se-input'\)\.defaultsFor\(typ
 assert.doesNotMatch(exampleScript, /inputTypeDefaults/);
 assert.match(exampleHtml, /<se-code-editor data-template-code language="html" readonly wrap hidden>/);
 assert.doesNotMatch(exampleHtml, /data-template-wrap-toggle/);
+assert.equal(componentCatalog.length, components.length, 'every component needs a catalog page');
+assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(components), 'catalog tags must match component files');
+assert.equal(new Set(componentCatalog.map(({ tag }) => tag)).size, componentCatalog.length, 'catalog pages must be unique');
+componentCatalog.forEach(({ tag, icon, attributes, custom }) => {
+  assert.ok(iconNames[icon], `${tag} needs a supported sidebar icon`);
+  assert.ok(custom || attributes.length, `${tag} needs editable attributes`);
+});
+for (const { tag, attributes, custom } of componentCatalog) {
+  if (custom) continue;
+  const source = await readFile(`src/components/${tag}.js`, 'utf8');
+  const used = [...source.matchAll(/(?:get|has)Attribute\('([^']+)'\)/g)].map((match) => match[1]).filter((name) => name !== 'id' && !name.startsWith('data-'));
+  const listed = new Set(attributes.map(({ name }) => name));
+  used.forEach((name) => assert.ok(listed.has(name), `${tag} catalog is missing ${name}`));
+}
+assert.match(exampleScript, /closest\('\[data-component-attribute\]'\)/, 'nested form events must resolve to the override component');
+assert.match(exampleScript, /const sourceTemplate = document\.createElement\('template'\)/, 'overrides must rebuild one-shot components');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea name=/, 'code editor must submit through a native textarea');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /hasAttribute\('readonly'\)/, 'code editor must support readonly');
 assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
@@ -81,4 +99,4 @@ assert.equal(wrapNumber(24, 24), 0);
 assert.equal(wrapNumber(-5, 60), 55);
 assert.match(await readFile('src/components/table.js', 'utf8'), /--se-columns/);
 assert.match(await readFile('src/components/datetime-picker.js', 'utf8'), /variant === 'combined'/);
-console.log(`Checked ${components.length} components and 16 example sections.`);
+console.log(`Checked ${components.length} components and ${componentCatalog.length} catalog pages.`);
