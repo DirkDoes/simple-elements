@@ -60,12 +60,8 @@ const renderComponentPage = (component) => {
     }
     code.value = usageMarkup;
   };
-  const changedOverride = (target) => target.closest('.demo-component-attributes [data-component-attribute]');
-  section.addEventListener('input', (event) => { if (changedOverride(event.target)) render(); });
-  section.addEventListener('change', (event) => {
-    if (changedOverride(event.target)) render();
-    if (event.target.closest('[data-component-code-toggle]')) { const show = section.querySelector('[data-component-code-toggle]').checked; preview.hidden = show; code.hidden = !show; }
-  });
+  section.querySelectorAll('.demo-component-attributes [data-component-attribute]').forEach((control) => control.addEventListener(control.matches('se-input, se-code-editor') ? 'input' : 'change', render));
+  section.querySelector('[data-component-code-toggle]').addEventListener('change', (event) => { preview.hidden = event.currentTarget.checked; code.hidden = !event.currentTarget.checked; });
   render();
 };
 componentCatalog.filter(({ custom }) => !custom).forEach(renderComponentPage);
