@@ -37,10 +37,12 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-notice { display: flex; gap: .75rem; margin-top: 1rem; padding: 1rem; background: var(--se-surface-soft); border: 1px solid var(--se-border); border-radius: .75rem; }
 .demo-notice se-icon { width: 1.25rem; height: 1.25rem; color: var(--se-brand); }
 .demo-modal-copy { margin: .5rem 0 0; }
-.demo-template-preview { position: sticky; top: 1rem; z-index: 10; display: grid; min-height: 15rem; align-content: start; gap: 2rem; }
+.demo-template-preview { display: grid; min-height: 10rem; align-content: start; gap: 1.5rem; }
 .demo-template-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.demo-template-toggles { display: flex; align-items: center; gap: 1.5rem; }
 .demo-template-preview [data-template-preview] { width: min(100%, 32rem); margin: auto; }
 .demo-template-preview [data-template-code] { width: 100%; min-width: 0; }
+.demo-template-preview .se-editor, .demo-template-preview .se-editor textarea { height: 4.25rem; min-height: 4.25rem; }
 .demo-template-table se-list-row { align-items: center; }
 .demo-template-table se-input, .demo-template-table se-select { width: 100%; }
 .demo-template-table .se-label:empty { display: none; }

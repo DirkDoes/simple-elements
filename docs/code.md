@@ -13,3 +13,5 @@ Highlighted block code:
 ```
 
 Languages: `json`, `markdown`, `html`, `css`, `javascript`, and `python`. Aliases `js`, `md`, `htm`, and `py` are accepted.
+
+Block code scrolls horizontally by default. Add `wrap` to wrap long visual lines instead.

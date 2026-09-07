@@ -22,6 +22,8 @@ assert.match(compiledCss, /\.se-button/);
 assert.match(compiledCss, /\[hidden\]/);
 assert.match(compiledCss, /\.se-switch\{[^}]*position:relative/);
 assert.match(compiledCss, /textarea:read-only\{[^}]*resize:none/);
+assert.match(compiledCss, /se-code\[block\]\[wrap\]/);
+assert.match(compiledCss, /se-code-editor\[wrap\]/);
 assert.doesNotMatch(compiledCss, /@import\s/);
 const selectSource = await readFile('src/components/select.js', 'utf8');
 assert.match(selectSource, /const trigger = multiple/);
@@ -55,6 +57,7 @@ assert.match(exampleScript, /closest\('se-input\[data-template-attribute\]'\)/, 
 assert.match(exampleScript, /!control\.matches\('se-input'\)/, 'switches and selects should render only once on change');
 assert.match(exampleScript, /customElements\.get\('se-input'\)\.defaultsFor\(type\)/);
 assert.doesNotMatch(exampleScript, /inputTypeDefaults/);
+assert.match(exampleScript, /toggleAttribute\('wrap'/);
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea name=/, 'code editor must submit through a native textarea');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /hasAttribute\('readonly'\)/, 'code editor must support readonly');
 assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
