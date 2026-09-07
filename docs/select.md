@@ -7,4 +7,4 @@
 ]'></se-select>
 ```
 
-Add `multiple` for multi-select and a comma-separated `value` for defaults. Options accept `id`, `label`, `description`, `icon`, `disabled`, `selected`, and `locked`. For JavaScript data, assign `element.options = [...]`. The component emits `change` with `event.detail.value` and creates hidden form inputs using `name`.
+Add `multiple` for multi-select, `clearable` to let users clear the current selection, and a comma-separated `value` for defaults. Options accept `id`, `label`, `description`, `icon`, `disabled`, `selected`, and `locked`. For JavaScript data, assign `element.options = [...]`. The component emits `change` with `event.detail.value` and creates hidden form inputs using `name`.
