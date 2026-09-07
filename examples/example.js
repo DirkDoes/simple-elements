@@ -60,9 +60,10 @@ const renderComponentPage = (component) => {
     }
     code.value = usageMarkup;
   };
-  section.addEventListener('input', (event) => { if (event.target.closest('[data-component-attribute]')) render(); });
+  const changedOverride = (target) => target.closest('.demo-component-attributes [data-component-attribute]');
+  section.addEventListener('input', (event) => { if (changedOverride(event.target)) render(); });
   section.addEventListener('change', (event) => {
-    if (event.target.closest('[data-component-attribute]')) render();
+    if (changedOverride(event.target)) render();
     if (event.target.closest('[data-component-code-toggle]')) { const show = section.querySelector('[data-component-code-toggle]').checked; preview.hidden = show; code.hidden = !show; }
   });
   render();
