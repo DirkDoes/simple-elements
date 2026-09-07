@@ -74,10 +74,6 @@ template.addEventListener('change', (event) => {
     const showCode = template.querySelector('[data-template-code-toggle]').checked;
     template.querySelector('[data-template-preview]').hidden = showCode;
     template.querySelector('[data-template-code]').hidden = !showCode;
-    template.querySelector('[data-template-wrap-toggle]').hidden = !showCode;
-  }
-  if (event.target.closest('[data-template-wrap-toggle]')) {
-    template.querySelector('[data-template-code]').toggleAttribute('wrap', template.querySelector('[data-template-wrap-toggle]').checked);
   }
 });
 renderTemplateInput();

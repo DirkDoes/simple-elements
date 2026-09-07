@@ -57,7 +57,8 @@ assert.match(exampleScript, /closest\('se-input\[data-template-attribute\]'\)/, 
 assert.match(exampleScript, /!control\.matches\('se-input'\)/, 'switches and selects should render only once on change');
 assert.match(exampleScript, /customElements\.get\('se-input'\)\.defaultsFor\(type\)/);
 assert.doesNotMatch(exampleScript, /inputTypeDefaults/);
-assert.match(exampleScript, /toggleAttribute\('wrap'/);
+assert.match(exampleHtml, /<se-code-editor data-template-code language="html" readonly wrap hidden>/);
+assert.doesNotMatch(exampleHtml, /data-template-wrap-toggle/);
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea name=/, 'code editor must submit through a native textarea');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /hasAttribute\('readonly'\)/, 'code editor must support readonly');
 assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
