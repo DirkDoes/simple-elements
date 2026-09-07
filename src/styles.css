@@ -101,7 +101,7 @@ se-markdown .se-code-block { margin: 1rem 0; }
 .se-editor__highlight { pointer-events: none; color: var(--se-text); }
 .se-editor textarea { z-index: 1; width: 100%; min-height: 14rem; resize: vertical; color: transparent; caret-color: var(--se-text); background: transparent; outline: 0; -webkit-text-fill-color: transparent; }
 .se-editor textarea::selection { background: color-mix(in srgb, var(--se-brand) 25%, transparent); }
-.se-editor textarea:read-only { cursor: default; }
+.se-editor textarea:read-only { resize: none; cursor: default; }
 .se-editor textarea:disabled { cursor: not-allowed; }
 
 .se-wysiwyg { overflow: hidden; background: var(--se-surface); border: 1px solid var(--se-border-strong); border-radius: var(--se-radius); box-shadow: var(--se-shadow); }

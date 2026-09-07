@@ -21,6 +21,7 @@ const compiledCss = await readFile('dist/styles.css', 'utf8');
 assert.match(compiledCss, /\.se-button/);
 assert.match(compiledCss, /\[hidden\]/);
 assert.match(compiledCss, /\.se-switch\{[^}]*position:relative/);
+assert.match(compiledCss, /textarea:read-only\{[^}]*resize:none/);
 assert.doesNotMatch(compiledCss, /@import\s/);
 const selectSource = await readFile('src/components/select.js', 'utf8');
 assert.match(selectSource, /const trigger = multiple/);
