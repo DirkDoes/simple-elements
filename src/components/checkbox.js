@@ -1,12 +1,12 @@
-import { define, escapeHtml } from '../helpers.js';
+import { define } from '../helpers.js';
+import { connectChoice } from '../choice.js';
 
 class SeCheckbox extends HTMLElement {
   connectedCallback() {
-    if (this.dataset.ready) return;
-    this.dataset.ready = 'true';
-    this.innerHTML = `<label class="se-choice"><input type="checkbox" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || 'on')}"${this.hasAttribute('checked') ? ' checked' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}><span class="se-choice__box"><se-icon name="check"></se-icon></span><span>${escapeHtml(this.getAttribute('label') || this.textContent)}</span></label>`;
+    connectChoice(this, 'checkbox', 'checkbox');
   }
   get checked() { return this.querySelector('input')?.checked || false; }
+  set checked(value) { if (this.querySelector('input')) this.querySelector('input').checked = Boolean(value); }
 }
 
 define('se-checkbox', SeCheckbox);

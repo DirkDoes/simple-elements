@@ -5,7 +5,7 @@ class SeDatetimePicker extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const variant = this.getAttribute('variant') || 'seperated';
+    const variant = this.getAttribute('variant') || 'combined';
     if (variant === 'combined') return this.connectSingle();
     const [date = '', time = ''] = (this.getAttribute('value') || '').split('T');
     const joined = variant === 'joined';

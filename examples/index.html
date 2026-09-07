@@ -16,7 +16,7 @@
         <div class="demo-content">
           <header class="demo-mobile">
             <span class="demo-mobile__brand"><span class="demo-mobile__logo"><se-icon name="dashboard"></se-icon></span>Simple Elements</span>
-            <button class="demo-mobile__theme" type="button" aria-label="Toggle dark mode"><se-icon name="sun"></se-icon></button>
+            <se-checkbox class="demo-mobile__theme" variant="light-dark-button" label="Toggle dark mode"></se-checkbox>
           </header>
 
           <section data-demo="template" hidden>
@@ -24,7 +24,7 @@
             <se-text muted>A live reference for the standard text input. Change an override to update the real component and its HTML.</se-text>
             <div class="demo-stack">
               <se-card class="demo-template-preview">
-                <div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-template-code-toggle></se-switch></div>
+                <div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-checkbox variant="switch" label="Show code" data-template-code-toggle></se-checkbox></div>
                 <div data-template-preview></div><se-code-editor data-template-code language="html" readonly wrap hidden></se-code-editor>
               </se-card>
               <se-card class="demo-stack demo-template-attributes">
@@ -39,9 +39,9 @@
                   <se-list-row><strong data-description="Overrides the type-aware icon where one is provided.">icon</strong><span>Overrides the type-aware icon where one is provided.</span><span><se-badge data-template-default="icon" hidden></se-badge></span><se-select data-template-attribute="icon" placeholder="Default (automatic)" clearable options='[{"id":"mail","label":"Mail","icon":"mail"},{"id":"lock","label":"Lock","icon":"lock"},{"id":"phone","label":"Phone","icon":"phone"},{"id":"link","label":"Link","icon":"link"},{"id":"search","label":"Search","icon":"search"},{"id":"user","label":"User","icon":"user"}]'></se-select></se-list-row>
                   <se-list-row><strong data-description="Adds supporting text below the field.">hint</strong><span>Adds supporting text below the field.</span><span></span><se-input data-template-attribute="hint" placeholder="Helpful context"></se-input></se-list-row>
                   <se-list-row><strong data-description="Shows an error state and replaces the hint.">error</strong><span>Shows an error state and replaces the hint.</span><span></span><se-input data-template-attribute="error" placeholder="Error message"></se-input></se-list-row>
-                  <se-list-row><strong data-description="Prevents interaction with the native field.">disabled</strong><span>Prevents interaction with the native field.</span><se-badge text="false"></se-badge><se-switch data-template-attribute="disabled" label="Disabled"></se-switch></se-list-row>
-                  <se-list-row><strong data-description="Marks the field as required for form validation.">required</strong><span>Marks the field as required for form validation.</span><se-badge text="false"></se-badge><se-switch data-template-attribute="required" label="Required"></se-switch></se-list-row>
-                  <se-list-row><strong data-description="Disables resizing when the type is textarea.">fixed</strong><span>Disables resizing when the type is textarea.</span><se-badge text="false"></se-badge><se-switch data-template-attribute="fixed" label="Fixed height"></se-switch></se-list-row>
+                  <se-list-row><strong data-description="Prevents interaction with the native field.">disabled</strong><span>Prevents interaction with the native field.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="disabled" label="Disabled"></se-checkbox></se-list-row>
+                  <se-list-row><strong data-description="Marks the field as required for form validation.">required</strong><span>Marks the field as required for form validation.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="required" label="Required"></se-checkbox></se-list-row>
+                  <se-list-row><strong data-description="Disables resizing when the type is textarea.">fixed</strong><span>Disables resizing when the type is textarea.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="fixed" label="Fixed height"></se-checkbox></se-list-row>
                 </se-table>
               </se-card>
             </div>

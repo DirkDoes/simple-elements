@@ -14,3 +14,5 @@ The native textarea submits normally in HTML and Ruby on Rails forms. Languages:
 Add `readonly` to allow focus, selection, copying, and form submission without allowing edits or resizing. Use `disabled` when the editor should also be skipped during form submission.
 
 Long lines scroll horizontally by default. Add `wrap` to wrap them visually; wrapped segments do not add line numbers.
+
+Tab inserts two spaces at the caret. With a selection, Tab indents every selected line and remains undoable with the browser's normal undo command.

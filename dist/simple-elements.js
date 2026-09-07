@@ -295,11 +295,10 @@ define('se-input', SeInput);
 
 class SeCheckbox extends HTMLElement {
   connectedCallback() {
-    if (this.dataset.ready) return;
-    this.dataset.ready = 'true';
-    this.innerHTML = `<label class="se-choice"><input type="checkbox" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || 'on')}"${this.hasAttribute('checked') ? ' checked' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}><span class="se-choice__box"><se-icon name="check"></se-icon></span><span>${escapeHtml(this.getAttribute('label') || this.textContent)}</span></label>`;
+    connectChoice(this, 'checkbox', 'checkbox');
   }
   get checked() { return this.querySelector('input')?.checked || false; }
+  set checked(value) { if (this.querySelector('input')) this.querySelector('input').checked = Boolean(value); }
 }
 
 define('se-checkbox', SeCheckbox);
@@ -307,25 +306,13 @@ define('se-checkbox', SeCheckbox);
 
 class SeRadio extends HTMLElement {
   connectedCallback() {
-    if (this.dataset.ready) return;
-    this.dataset.ready = 'true';
-    this.innerHTML = `<label class="se-choice"><input type="radio" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || 'on')}"${this.hasAttribute('checked') ? ' checked' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}><span class="se-choice__box se-choice__box--radio"></span><span>${escapeHtml(this.getAttribute('label') || this.textContent)}</span></label>`;
+    connectChoice(this, 'radio', 'radio');
   }
+  get checked() { return this.querySelector('input')?.checked || false; }
+  set checked(value) { if (this.querySelector('input')) this.querySelector('input').checked = Boolean(value); }
 }
 
 define('se-radio', SeRadio);
-
-
-class SeSwitch extends HTMLElement {
-  connectedCallback() {
-    if (this.dataset.ready) return;
-    this.dataset.ready = 'true';
-    this.innerHTML = `<label class="se-switch"><span>${escapeHtml(this.getAttribute('label') || this.textContent)}</span><span><input type="checkbox" name="${escapeHtml(this.getAttribute('name') || '')}"${this.hasAttribute('checked') ? ' checked' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}><span class="se-switch__track"></span></span></label>`;
-  }
-  get checked() { return this.querySelector('input')?.checked || false; }
-}
-
-define('se-switch', SeSwitch);
 
 
 class SeRange extends HTMLElement {
@@ -480,12 +467,15 @@ class SeFileUpload extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    this.innerHTML = `<div class="se-upload"><label class="se-label">${escapeHtml(this.getAttribute('label') || 'Dropzone')}</label><label class="se-upload__zone"><span><span class="se-upload__icon"><se-icon name="upload"></se-icon></span><strong>${escapeHtml(this.getAttribute('prompt') || 'Upload a file')}<span class="se-upload__or">or drag and drop</span></strong><small>${escapeHtml(this.getAttribute('hint') || 'PNG, JPG, PDF up to 10MB')}</small></span><input type="file" name="${escapeHtml(this.getAttribute('name') || 'files')}"${this.hasAttribute('multiple') ? ' multiple' : ''}${this.getAttribute('accept') ? ` accept="${escapeHtml(this.getAttribute('accept'))}"` : ''}></label></div>`;
+    const prompt = escapeHtml(this.getAttribute('prompt') || 'Upload a file');
+    const subprompt = escapeHtml(this.getAttribute('subprompt') || 'or drag and drop');
+    const promptMarkup = `${prompt}<span class="se-upload__or"> ${subprompt}</span>`;
+    this.innerHTML = `<div class="se-upload"><label class="se-label">${escapeHtml(this.getAttribute('label') || 'Dropzone')}</label><label class="se-upload__zone"><span><span class="se-upload__icon"><se-icon name="upload"></se-icon></span><strong>${promptMarkup}</strong><small>${escapeHtml(this.getAttribute('hint') || 'PNG, JPG, PDF up to 10MB')}</small></span><input type="file" name="${escapeHtml(this.getAttribute('name') || 'files')}"${this.hasAttribute('multiple') ? ' multiple' : ''}${this.getAttribute('accept') ? ` accept="${escapeHtml(this.getAttribute('accept'))}"` : ''}></label></div>`;
     const root = this.querySelector('.se-upload');
     const zone = this.querySelector('.se-upload__zone');
     const input = this.querySelector('input');
     ['dragenter', 'dragover'].forEach((name) => zone.addEventListener(name, (event) => { event.preventDefault(); root.classList.add('se-upload--drag'); this.querySelector('.se-upload__zone strong').textContent = 'Drop file here'; }));
-    ['dragleave', 'drop'].forEach((name) => zone.addEventListener(name, (event) => { event.preventDefault(); root.classList.remove('se-upload--drag'); this.querySelector('.se-upload__zone strong').innerHTML = 'Upload a file<span class="se-upload__or"> or drag and drop</span>'; }));
+    ['dragleave', 'drop'].forEach((name) => zone.addEventListener(name, (event) => { event.preventDefault(); root.classList.remove('se-upload--drag'); this.querySelector('.se-upload__zone strong').innerHTML = promptMarkup; }));
     zone.addEventListener('drop', (event) => emit(this, 'files', { files: [...event.dataTransfer.files] }));
     input.addEventListener('change', () => emit(this, 'files', { files: [...input.files] }));
   }
@@ -500,7 +490,7 @@ class SeFileRow extends HTMLElement {
     this.dataset.ready = 'true';
     const clickable = this.hasAttribute('clickable');
     const action = this.getAttribute('action');
-    const content = `<span class="se-file__icon"><se-icon name="file"></se-icon></span><span class="se-file__content"><strong>${escapeHtml(this.getAttribute('filename') || '')}</strong><small>${escapeHtml(this.getAttribute('size') || '')}</small></span>`;
+    const content = `<span class="se-file__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'file')}"></se-icon></span><span class="se-file__content"><strong>${escapeHtml(this.getAttribute('filename') || '')}</strong><small>${escapeHtml(this.getAttribute('subtext') || '')}</small></span>`;
     this.innerHTML = `<div class="se-file">${clickable ? `<button class="se-file__main" type="button">${content}</button>` : `<span class="se-file__main">${content}</span>`}${action ? `<button class="se-file__remove" type="button" aria-label="Remove ${escapeHtml(this.getAttribute('filename') || 'file')}"><se-icon name="${action === 'trash' ? 'trash' : 'x'}"></se-icon></button>` : ''}<svg class="se-file__fold" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24"/><path d="M1 1v20a3 3 0 0 0 3 3h20Z"/></svg></div>`;
     this.querySelector('.se-file__remove')?.addEventListener('click', (event) => { event.stopPropagation(); emit(this, 'remove', { filename: this.getAttribute('filename') }); });
   }
@@ -618,10 +608,10 @@ class SeSidebar extends HTMLElement {
   connectedCallback() { if (!this.dataset.ready) { this.dataset.ready = 'true'; this.render(); } }
   render() {
     const options = parseOptions(this);
-    this.innerHTML = `<aside class="se-sidebar"><header class="se-sidebar__header"><span class="se-sidebar__brand"><span class="se-sidebar__logo"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'dashboard')}"></se-icon></span><span>${escapeHtml(this.getAttribute('label') || 'Simple Elements')}</span></span><button class="se-close se-sidebar__collapse" type="button" aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button></header><nav class="se-sidebar__nav"><se-title level="sidebar">${escapeHtml(this.getAttribute('heading') || 'Components')}</se-title>${options.map((option, index) => `<a class="se-sidebar__link${option.active || (!options.some((item) => item.active) && index === 0) ? ' se-sidebar__link--active' : ''}" href="${escapeHtml(option.href || '#')}" data-index="${index}" title="${escapeHtml(option.label)}">${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span>${escapeHtml(option.label)}</span></a>`).join('')}</nav><footer class="se-sidebar__footer"><div class="se-sidebar__theme-row"><span>Theme</span><button class="se-sidebar__theme" type="button" aria-label="Toggle dark mode"><span class="se-sidebar__theme-knob"><se-icon name="sun"></se-icon></span></button></div></footer></aside>`;
+    this.innerHTML = `<aside class="se-sidebar"><header class="se-sidebar__header"><span class="se-sidebar__brand"><span class="se-sidebar__logo"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'dashboard')}"></se-icon></span><span>${escapeHtml(this.getAttribute('label') || 'Simple Elements')}</span></span><button class="se-close se-sidebar__collapse" type="button" aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button></header><nav class="se-sidebar__nav"><se-title level="sidebar">${escapeHtml(this.getAttribute('heading') || 'Components')}</se-title>${options.map((option, index) => `<a class="se-sidebar__link${option.active || (!options.some((item) => item.active) && index === 0) ? ' se-sidebar__link--active' : ''}" href="${escapeHtml(option.href || '#')}" data-index="${index}" title="${escapeHtml(option.label)}">${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span>${escapeHtml(option.label)}</span></a>`).join('')}</nav><footer class="se-sidebar__footer"><div class="se-sidebar__theme-row"><span>Theme</span><se-checkbox variant="light-dark-switch" label="Toggle dark mode" data-theme-control${document.documentElement.dataset.theme === 'dark' ? ' checked' : ''}></se-checkbox></div></footer></aside>`;
     const root = this.querySelector('.se-sidebar');
     this.querySelector('.se-sidebar__collapse').addEventListener('click', (event) => { root.classList.toggle('se-sidebar--collapsed'); event.currentTarget.innerHTML = `<se-icon name="${root.classList.contains('se-sidebar--collapsed') ? 'panel-left-open' : 'panel-left-close'}"></se-icon>`; });
-    this.querySelector('.se-sidebar__theme').addEventListener('click', () => { document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; this.querySelector('.se-sidebar__theme-knob').innerHTML = `<se-icon name="${document.documentElement.dataset.theme === 'dark' ? 'moon' : 'sun'}"></se-icon>`; emit(this, 'themechange', { theme: document.documentElement.dataset.theme }); });
+    this.querySelector('[data-theme-control]').addEventListener('change', (event) => { const control = event.currentTarget; document.documentElement.dataset.theme = control.checked ? 'dark' : 'light'; emit(this, 'themechange', { theme: document.documentElement.dataset.theme }); });
     this.querySelectorAll('[data-index]').forEach((link) => link.addEventListener('click', () => { this.querySelector('.se-sidebar__link--active')?.classList.remove('se-sidebar__link--active'); link.classList.add('se-sidebar__link--active'); }));
   }
 }
@@ -687,8 +677,22 @@ class SeCodeEditor extends HTMLElement {
     textarea.addEventListener('keydown', (event) => {
       if (event.key !== 'Tab') return;
       event.preventDefault();
-      textarea.setRangeText('  ', textarea.selectionStart, textarea.selectionEnd, 'end');
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const lineStart = start === end ? start : textarea.value.lastIndexOf('\n', start - 1) + 1;
+      const selectedEnd = start === end ? end : end - (textarea.value[end - 1] === '\n');
+      const lineEnd = start === end ? end : (textarea.value.indexOf('\n', selectedEnd) + 1 || textarea.value.length + 1) - 1;
+      const replacement = start === end ? '  ' : textarea.value.slice(lineStart, lineEnd).replace(/^/gm, '  ');
+      textarea.setSelectionRange(lineStart, lineEnd);
+      if (!document.execCommand('insertText', false, replacement)) {
+        textarea.setRangeText(replacement, lineStart, lineEnd, 'end');
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      if (start !== end) {
+        const lines = replacement.split('\n').length;
+        textarea.setSelectionRange(start + 2, end + (lines * 2));
+      }
+      sync();
     });
     sync();
   }
@@ -885,7 +889,7 @@ class SeDatetimePicker extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const variant = this.getAttribute('variant') || 'seperated';
+    const variant = this.getAttribute('variant') || 'combined';
     if (variant === 'combined') return this.connectSingle();
     const [date = '', time = ''] = (this.getAttribute('value') || '').split('T');
     const joined = variant === 'joined';

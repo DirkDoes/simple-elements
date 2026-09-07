@@ -24,7 +24,6 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Input](input.md)
 - [Checkbox](checkbox.md)
 - [Radio](radio.md)
-- [Switch](switch.md)
 - [Range](range.md)
 - [Select](select.md)
 - [Phone input](phone-input.md)

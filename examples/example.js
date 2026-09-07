@@ -13,24 +13,26 @@ inputPage.dataset.demo = 'input';
 
 const escapeAttribute = (value) => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;');
 const controlMarkup = (attribute) => {
-  if (attribute.control === 'boolean') return `<se-switch data-component-attribute="${attribute.name}" label="Enabled"></se-switch>`;
-  if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}" clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value) }))))}"></se-select>`;
+  if (attribute.control === 'boolean') return `<se-checkbox variant="switch" data-component-attribute="${attribute.name}" label="Enabled"></se-checkbox>`;
+  if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}" clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value), ...(attribute.name === 'icon' ? { icon: value } : {}) }))))}"></se-select>`;
   if (attribute.control === 'code') return `<se-code-editor data-component-attribute="${attribute.name}" language="${attribute.name === 'options' ? 'json' : 'html'}" wrap></se-code-editor>`;
   return `<se-input data-component-attribute="${attribute.name}" placeholder="No override"></se-input>`;
 };
 const defaultMarkup = (attribute) => {
   if (attribute.defaultValue === '') return '<span></span>';
+  if (attribute.defaultValue === '[]') return '<se-badge text="[]"></se-badge>';
   if (attribute.control === 'code' || String(attribute.defaultValue).length > 32) return `<se-code-editor class="demo-default-code" language="${attribute.name === 'options' ? 'json' : 'html'}" value="${escapeAttribute(attribute.defaultValue)}" readonly wrap></se-code-editor>`;
   return `<se-badge text="${escapeAttribute(attribute.defaultValue)}"></se-badge>`;
 };
 const renderComponentPage = (component) => {
   const { tag, description, markup, attributes } = component;
   const contentAttribute = attributes.find(({ control }) => control === 'content');
-  const tableAttributes = attributes.filter(({ control }) => control !== 'content');
+  const order = ({ name }) => name === 'variant' ? 0 : name === 'type' ? 1 : 2;
+  const tableAttributes = attributes.filter(({ control }) => control !== 'content').sort((left, right) => order(left) - order(right));
   const section = document.createElement('section');
   section.dataset.demo = tag;
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-switch label="Show code" data-component-code-toggle></se-switch></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-table>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(contentAttribute.defaultValue)}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-checkbox variant="switch" label="Show code" data-component-code-toggle></se-checkbox></div><div data-component-preview></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-table>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(contentAttribute.defaultValue)}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
   document.querySelector('.demo-content').append(section);
   const preview = section.querySelector('[data-component-preview]');
   const code = section.querySelector('[data-component-code]');
@@ -41,13 +43,14 @@ const renderComponentPage = (component) => {
     const clone = source.cloneNode(true);
     section.querySelectorAll('[data-component-attribute]').forEach((control) => {
       const name = control.dataset.componentAttribute;
-      const value = control.matches('se-switch') ? control.checked : control.value;
+      const value = control.matches('se-checkbox') ? control.checked : control.value;
       if (name === 'content' && tag !== 'tooltip') { if (value) clone.innerHTML = value; return; }
       if (name === 'child-content') { if (value) clone.innerHTML = value; return; }
-      if (control.matches('se-switch')) { if (value) clone.setAttribute(name, ''); else clone.removeAttribute(name); return; }
+      if (control.matches('se-checkbox')) { if (value) clone.setAttribute(name, ''); else clone.removeAttribute(name); return; }
       if (value) clone.setAttribute(name, value);
     });
-    const usageMarkup = clone.outerHTML;
+    let usageMarkup = clone.outerHTML;
+    section.querySelectorAll('se-checkbox[data-component-attribute]').forEach((control) => { if (control.checked) usageMarkup = usageMarkup.replace(` ${control.dataset.componentAttribute}=""`, ` ${control.dataset.componentAttribute}`); });
     preview.replaceChildren(clone);
     if (component.action === 'open') {
       const opener = document.createElement('se-button');
@@ -69,7 +72,7 @@ componentCatalog.filter(({ custom }) => !custom).forEach(renderComponentPage);
 const showPage = (id) => {
   const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';
   document.querySelectorAll('[data-demo]').forEach((section) => { section.hidden = section.dataset.demo !== selected; });
-  document.querySelectorAll('.se-sidebar__link').forEach((link) => link.classList.toggle('se-sidebar__link--active', link.getAttribute('href') === `#${selected}`));
+  sidebar.querySelectorAll('.se-sidebar__link').forEach((link) => link.classList.toggle('se-sidebar__link--active', link.getAttribute('href') === `#${selected}`));
   document.querySelector('.demo-main').scrollTop = 0;
 };
 
@@ -80,16 +83,13 @@ sidebar.addEventListener('click', (event) => {
 });
 addEventListener('hashchange', () => showPage(location.hash.slice(1)));
 document.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.open).open()));
-document.querySelector('.demo-mobile__theme').addEventListener('click', (event) => {
-  document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-  event.currentTarget.innerHTML = `<se-icon name="${document.documentElement.dataset.theme === 'dark' ? 'moon' : 'sun'}"></se-icon>`;
-});
+document.querySelector('.demo-mobile__theme').addEventListener('change', (event) => { document.documentElement.dataset.theme = event.currentTarget.checked ? 'dark' : 'light'; });
 
 const template = document.querySelector('[data-demo="input"]');
 const renderTemplateInput = () => {
   const attributes = [...template.querySelectorAll('[data-template-attribute]')].flatMap((control) => {
     const name = control.dataset.templateAttribute;
-    const value = control.matches('se-switch') ? control.checked : control.value;
+    const value = control.matches('se-checkbox') ? control.checked : control.value;
     if (!value) return [];
     return [value === true ? name : `${name}="${String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;')}"`];
   });

@@ -6,7 +6,6 @@ import './components/button.js';
 import './components/input.js';
 import './components/checkbox.js';
 import './components/radio.js';
-import './components/switch.js';
 import './components/range.js';
 import './components/select.js';
 import './components/phone-input.js';

@@ -23,7 +23,7 @@ assert.equal(spawnSync(process.execPath, ['--check', 'dist/simple-elements.js'])
 const compiledCss = await readFile('dist/styles.css', 'utf8');
 assert.match(compiledCss, /\.se-button/);
 assert.match(compiledCss, /\[hidden\]/);
-assert.match(compiledCss, /\.se-switch\{[^}]*position:relative/);
+assert.match(compiledCss, /\.se-choice--switch/);
 assert.match(compiledCss, /textarea:read-only\{[^}]*resize:none/);
 assert.match(compiledCss, /se-code\[block\]\[wrap\]/);
 assert.match(compiledCss, /se-code-editor\[wrap\]/);
@@ -54,7 +54,7 @@ const phoneSource = await readFile('src/components/phone-input.js', 'utf8');
 assert.equal((phoneSource.match(/[A-Z]{2}\|[^;`]+\|\d+/g) || []).length, 245, 'expected complete phone country data');
 assert.match(phoneSource, /No countries found\./);
 assert.equal(spawnSync(process.execPath, ['--check', 'examples/example.js']).status, 0);
-assert.ok(components.length >= 34, 'expected the complete component set');
+assert.ok(components.length >= 33, 'expected the complete component set');
 assert.equal(examplePages.length, 1, 'expected one example HTML page');
 for (const file of examplePages) assert.match(await readFile(`examples/${file}`, 'utf8'), /data-demo=/);
 const exampleScript = await readFile('examples/example.js', 'utf8');

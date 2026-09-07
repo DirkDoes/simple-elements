@@ -20,8 +20,22 @@ class SeCodeEditor extends HTMLElement {
     textarea.addEventListener('keydown', (event) => {
       if (event.key !== 'Tab') return;
       event.preventDefault();
-      textarea.setRangeText('  ', textarea.selectionStart, textarea.selectionEnd, 'end');
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const lineStart = start === end ? start : textarea.value.lastIndexOf('\n', start - 1) + 1;
+      const selectedEnd = start === end ? end : end - (textarea.value[end - 1] === '\n');
+      const lineEnd = start === end ? end : (textarea.value.indexOf('\n', selectedEnd) + 1 || textarea.value.length + 1) - 1;
+      const replacement = start === end ? '  ' : textarea.value.slice(lineStart, lineEnd).replace(/^/gm, '  ');
+      textarea.setSelectionRange(lineStart, lineEnd);
+      if (!document.execCommand('insertText', false, replacement)) {
+        textarea.setRangeText(replacement, lineStart, lineEnd, 'end');
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      if (start !== end) {
+        const lines = replacement.split('\n').length;
+        textarea.setSelectionRange(start + 2, end + (lines * 2));
+      }
+      sync();
     });
     sync();
   }
