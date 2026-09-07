@@ -10,7 +10,9 @@ class SeDrawer extends HTMLElement {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
     const content = this.innerHTML.trim();
-    this.innerHTML = `<div class="se-overlay se-drawer" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Drawer')}"><div class="se-drawer__panel"><header class="se-drawer__header"><se-title level="card">${escapeHtml(this.getAttribute('title') || '')}</se-title><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-drawer__body">${content}</div></div></div>`;
+    const requested = this.getAttribute('mode') || 'overlay';
+    const mode = ['overlay', 'overlay-clear', 'push'].includes(requested) ? requested : 'overlay';
+    this.innerHTML = `<div class="se-overlay se-drawer se-drawer--${mode}" role="dialog" aria-modal="${mode !== 'push'}" aria-label="${escapeHtml(this.getAttribute('title') || 'Drawer')}"><div class="se-drawer__panel"><header class="se-drawer__header"><se-title level="card">${escapeHtml(this.getAttribute('title') || '')}</se-title><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-drawer__body">${content}</div></div></div>`;
     this.querySelector('.se-close').addEventListener('click', () => this.close());
     this.querySelector('.se-overlay').addEventListener('click', (event) => { if (event.target === event.currentTarget) this.close(); });
     this._escape = (event) => { if (event.key === 'Escape' && this.opened) this.close(); };

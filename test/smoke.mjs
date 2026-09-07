@@ -74,7 +74,8 @@ assert.doesNotMatch(exampleHtml, /data-template-wrap-toggle/);
 const documentedComponents = components.filter((file) => file !== 'sidebar.js');
 assert.equal(componentCatalog.length, documentedComponents.length, 'every standalone component needs a catalog page');
 assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(documentedComponents), 'catalog tags must match standalone component files');
-assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['sidebar'], 'sidebar must be documented as a pattern');
+assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['page-layout'], 'page layout must be documented as a pattern');
+assert.ok(patternCatalog.every(({ examples }) => examples?.length), 'each pattern needs named examples');
 assert.equal(new Set(componentCatalog.map(({ tag }) => tag)).size, componentCatalog.length, 'catalog pages must be unique');
 componentCatalog.forEach(({ tag, icon, attributes, custom }) => {
   assert.ok(iconNames[icon], `${tag} needs a supported sidebar icon`);

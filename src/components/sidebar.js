@@ -4,6 +4,7 @@ class SeSidebar extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
+    if (this.hasAttribute('collapsible')) this.insertAdjacentHTML('beforeend', '<button class="se-sidebar__edge-collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="chevron"></se-icon></button>');
     this.addEventListener('click', (event) => {
       if (!event.target.closest('[data-sidebar-collapse]')) return;
       this.toggleAttribute('collapsed');

@@ -44,6 +44,7 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Modal](modal.md)
 - [Drawer](drawer.md)
 - [Badge](badge.md)
+- [Empty state](empty-state.md)
 
 ## Navigation
 
@@ -53,10 +54,15 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Sidebar brand](sidebar-brand.md)
 - [Sidebar section](sidebar-section.md)
 - [Sidebar button](sidebar-button.md)
+- [Sidebar group](sidebar-group.md)
+- [Top bar](topbar.md)
+- [Top bar start](topbar-start.md)
+- [Top bar body](topbar-body.md)
+- [Top bar end](topbar-end.md)
 
 ## Patterns
 
-- [Sidebar](sidebar.md)
+- [Page layout](page-layout.md)
 
 ## Data display
 

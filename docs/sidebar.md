@@ -1,7 +1,7 @@
-# Sidebar pattern
+# Sidebar
 
 ```html
-<se-sidebar>
+<se-sidebar collapsible>
   <se-sidebar-header>
     <se-sidebar-brand label="Simple Elements" icon="dashboard" collapsible></se-sidebar-brand>
   </se-sidebar-header>
@@ -22,4 +22,4 @@
 </se-sidebar>
 ```
 
-The header, body, and footer are optional. Add any number of sections to the body. The pattern composes existing controls and the dedicated sidebar components rather than accepting an options configuration object. It emits `collapsechange` and `themechange` events.
+The header, body, and footer are optional. Add `collapsible` for the circular edge control. Alternatively, put `collapsible` on `se-sidebar-brand` for a header control. In a collapsed branded sidebar the logo remains visible and changes to the collapse control on hover. It emits `collapsechange` and `themechange`. See the [Page Layout pattern](page-layout.md).
