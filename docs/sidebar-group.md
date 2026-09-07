@@ -1,9 +1,9 @@
 # Sidebar group
 
 ```html
-<se-sidebar-group label="Dossiers" icon="folder" href="/dossiers" subtext="Recent" variant="recent">
+<se-sidebar-group variant="page" label="Dossiers" icon="folder" href="/dossiers" subtext="Recent">
   <se-sidebar-button label="Project Atlas" href="/dossiers/atlas"></se-sidebar-button>
 </se-sidebar-group>
 ```
 
-Attributes: `label`, `icon`, `href`, `subtext`, `variant` (`default` or `recent`), and `collapsed`. When `href` is present, the label navigates while the separate chevron toggles the nested buttons.
+Attributes: `variant` (`group` or `page`), `label`, `icon`, `href`, `subtext`, and `collapsed`. `group` is a disclosure only. With `page`, the label navigates through `href` while a separate chevron toggles the nested buttons. Supporting `subtext` is shown only while the nested items are open.

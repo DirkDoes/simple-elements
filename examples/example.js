@@ -10,10 +10,10 @@ const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage :
 const sidebar = document.querySelector('se-sidebar');
 const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-sidebar-button label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-sidebar-button>`).join('');
 const groups = [
-  ['Page layout', 'panel-left-open', ['sidebar-body', 'sidebar-brand', 'sidebar-button', 'sidebar-footer', 'sidebar-group', 'sidebar-header', 'sidebar-section', 'topbar', 'topbar-body', 'topbar-end', 'topbar-start']],
+  ['Page layout', 'panel-left-open', ['profile', 'sidebar-body', 'sidebar-brand', 'sidebar-button', 'sidebar-footer', 'sidebar-group', 'sidebar-header', 'sidebar-section', 'topbar', 'topbar-body', 'topbar-end', 'topbar-start']],
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'tooltip']],
-  ['Composing', 'list', ['card', 'empty-state', 'file-row', 'list', 'list-header', 'list-row', 'profile', 'split-button', 'table']],
+  ['Composing', 'list', ['card', 'empty-state', 'file-row', 'list', 'list-header', 'list-row', 'split-button', 'table']],
   ['Styling', 'badge', ['badge', 'blockquote', 'button', 'code', 'icon', 'markdown', 'text', 'title']],
 ];
 const componentById = new Map(componentPages.map((page) => [page[0], page]));
@@ -96,7 +96,7 @@ const renderPatternPage = ({ tag, description, examples }) => {
   section.dataset.demo = tag;
   section.className = 'demo-pattern-page';
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text>${examples.map(({ title, description: exampleDescription, markup }) => `<article class="demo-pattern-example"><header><se-title level="card">${title}</se-title><se-text muted>${exampleDescription}</se-text></header><se-card class="demo-pattern-code"><se-title level="sidebar">Code</se-title><se-code-editor language="html" value="${escapeAttribute(formatHtml(markup))}" wrap></se-code-editor></se-card><div class="demo-pattern-result"><se-title level="sidebar">Preview</se-title><div data-pattern-preview></div></div></article>`).join('')}`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text>${examples.map(({ title, description: exampleDescription, markup }) => `<article class="demo-pattern-example"><header><se-title level="card">${title}</se-title><se-text muted>${exampleDescription}</se-text></header><se-card class="demo-pattern-code"><se-title level="sidebar">Code</se-title><se-code-editor language="html" value="${escapeAttribute(formatHtml(markup))}" wrap></se-code-editor></se-card><div class="demo-pattern-result"><se-title level="sidebar">Preview</se-title><se-card class="demo-pattern-preview-card"><div data-pattern-preview></div></se-card></div></article>`).join('')}`;
   document.querySelector('.demo-content').append(section);
   section.querySelectorAll('.demo-pattern-example').forEach((example) => {
     const editor = example.querySelector('se-code-editor');

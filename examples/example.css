@@ -57,6 +57,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-pattern-code > se-title, .demo-pattern-result > se-title { display: block; margin-bottom: 1rem; }
 .demo-pattern-code .se-editor, .demo-pattern-code .se-editor textarea { min-height: 15rem; height: 15rem; }
 .demo-pattern-result [data-pattern-preview] { height: 32rem; overflow: hidden; }
+.demo-pattern-preview-card { padding: 0; overflow: hidden; }
 .demo-pattern-result se-sidebar { display: flex; }
 .demo-template-attributes .se-table, .demo-component-attributes .se-table { overflow: visible; }
 .demo-template-table se-list-row { align-items: center; }
