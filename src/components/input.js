@@ -1,5 +1,16 @@
 import { define, escapeHtml } from '../helpers.js';
 
+const typeDefaults = {
+  text: { placeholder: 'Enter some text...' },
+  email: { placeholder: 'you@example.com', icon: 'mail' },
+  password: { placeholder: 'Enter your password', icon: 'lock' },
+  number: { placeholder: 'Enter a number...' },
+  tel: { placeholder: 'Enter a phone number...', icon: 'phone' },
+  url: { placeholder: 'https://example.com', icon: 'link' },
+  search: { placeholder: 'Search...', icon: 'search' },
+  textarea: { placeholder: 'Enter some text...' },
+};
+
 class SeInput extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
@@ -7,12 +18,14 @@ class SeInput extends HTMLElement {
     const id = this.getAttribute('id') || `se-input-${crypto.randomUUID()}`;
     const type = this.getAttribute('type') || 'text';
     const textarea = type === 'textarea';
-    const icon = this.getAttribute('icon');
+    const defaults = typeDefaults[type] || {};
+    const icon = this.hasAttribute('icon') ? this.getAttribute('icon') : defaults.icon;
+    const placeholder = this.hasAttribute('placeholder') ? this.getAttribute('placeholder') : defaults.placeholder || '';
     const error = this.getAttribute('error');
     const attrs = [
       `id="${id}"`,
       `name="${escapeHtml(this.getAttribute('name') || '')}"`,
-      `placeholder="${escapeHtml(this.getAttribute('placeholder') || '')}"`,
+      `placeholder="${escapeHtml(placeholder)}"`,
       this.hasAttribute('disabled') ? 'disabled' : '',
       this.hasAttribute('required') ? 'required' : '',
       this.hasAttribute('value') ? `value="${escapeHtml(this.getAttribute('value'))}"` : '',

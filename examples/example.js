@@ -46,6 +46,11 @@ document.querySelector('.demo-mobile__theme').addEventListener('click', (event) 
 });
 
 const template = document.querySelector('[data-demo="template"]');
+const inputTypeDefaults = {
+  text: ['Enter some text...', 'none'], email: ['you@example.com', 'mail'], password: ['Enter your password', 'lock'],
+  number: ['Enter a number...', 'none'], tel: ['Enter a phone number...', 'phone'], url: ['https://example.com', 'link'],
+  search: ['Search...', 'search'], textarea: ['Enter some text...', 'none'],
+};
 const renderTemplateInput = () => {
   const attributes = [...template.querySelectorAll('[data-template-attribute]')].flatMap((control) => {
     const name = control.dataset.templateAttribute;
@@ -56,6 +61,9 @@ const renderTemplateInput = () => {
   const markup = `<se-input${attributes.length ? ` ${attributes.join(' ')}` : ''}></se-input>`;
   template.querySelector('[data-template-preview]').innerHTML = markup;
   template.querySelector('[data-template-code]').value = markup;
+  const defaults = inputTypeDefaults[template.querySelector('[data-template-attribute="type"]').value || 'text'];
+  template.querySelector('[data-template-default="placeholder"]').textContent = defaults[0];
+  template.querySelector('[data-template-default="icon"]').textContent = defaults[1];
 };
 
 template.addEventListener('input', (event) => {
