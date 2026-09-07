@@ -20,6 +20,7 @@ for (const file of components) {
 
 assert.equal(spawnSync(process.execPath, ['--check', 'src/index.js']).status, 0);
 assert.equal(spawnSync(process.execPath, ['--check', 'dist/simple-elements.js']).status, 0);
+assert.match(await readFile('dist/simple-elements.js', 'utf8'), /const connectChoice =/, 'shared choice renderer must be included in the browser bundle');
 const compiledCss = await readFile('dist/styles.css', 'utf8');
 assert.match(compiledCss, /\.se-button/);
 assert.match(compiledCss, /\[hidden\]/);
