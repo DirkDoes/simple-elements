@@ -55,6 +55,9 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-component-attributes se-code-editor .se-editor, .demo-component-attributes se-code-editor textarea { min-height: 4.25rem; height: 4.25rem; }
 .demo-component-attributes .demo-default-code .se-editor, .demo-component-attributes .demo-default-code textarea { min-height: 3.25rem; height: 3.25rem; }
 .demo-component-content { display: grid; gap: 1rem; }
+.demo-context-heading { display: flex; align-items: center; gap: .35rem; }
+.demo-context-heading se-tooltip { display: inline-flex; color: var(--se-muted); }
+.demo-context-heading se-icon { width: .875rem; height: .875rem; }
 .demo-pattern-page > se-text { display: block; margin-top: .25rem; }
 .demo-pattern-example { display: grid; gap: 1.5rem; margin-top: 3rem; }
 .demo-pattern-example-card { display: grid; gap: 2rem; }

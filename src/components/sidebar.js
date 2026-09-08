@@ -1,6 +1,10 @@
 import { define, emit } from '../helpers.js';
 
 class SeSidebar extends HTMLElement {
+  static get observedAttributes() { return ['collapsed']; }
+  attributeChangedCallback(name) {
+    if (name === 'collapsed') this.toggleAttribute('data-sidebar-collapsed', this.hasAttribute('collapsed'));
+  }
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
@@ -16,10 +20,12 @@ class SeSidebar extends HTMLElement {
       document.documentElement.dataset.theme = control.checked ? 'dark' : 'light';
       emit(this, 'themechange', { theme: document.documentElement.dataset.theme });
     });
+    this.collapsed = this.collapsed;
   }
   get collapsed() { return this.hasAttribute('collapsed'); }
   set collapsed(value) {
     this.toggleAttribute('collapsed', Boolean(value));
+    this.toggleAttribute('data-sidebar-collapsed', Boolean(value));
     if (value) this.querySelectorAll('se-sidebar-group').forEach((group) => { group.collapsed = true; });
     this.querySelectorAll('[data-sidebar-collapse]').forEach((button) => {
       button.setAttribute('aria-label', value ? 'Expand sidebar' : 'Collapse sidebar');

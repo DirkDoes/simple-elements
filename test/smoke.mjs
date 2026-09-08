@@ -95,7 +95,7 @@ for (const { tag, attributes, custom } of componentCatalog) {
   const listed = new Set(attributes.map(({ name }) => name));
   used.forEach((name) => assert.ok(listed.has(name), `${tag} catalog is missing ${name}`));
 }
-assert.match(exampleScript, /querySelectorAll\('\.demo-component-attributes \[data-component-attribute\]'\)/, 'only attribute controls may rebuild a preview');
+assert.match(exampleScript, /querySelectorAll\('\.demo-component-attributes \[data-component-attribute\], \.demo-component-attributes \[data-component-context\]'\)/, 'attribute and context controls may rebuild a preview');
 assert.match(exampleScript, /const sourceTemplate = document\.createElement\('template'\)/, 'overrides must rebuild one-shot components');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /<textarea name=/, 'code editor must submit through a native textarea');
 assert.match(await readFile('src/components/code-editor.js', 'utf8'), /hasAttribute\('readonly'\)/, 'code editor must support readonly');

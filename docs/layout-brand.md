@@ -1,7 +1,7 @@
 # Layout brand
 
 ```html
-<se-layout-brand label="Simple Elements" icon="dashboard" collapsible></se-layout-brand>
+<se-layout-brand icon="/assets/brand.svg" compact-icon="/assets/brand-compact.svg" collapsible></se-layout-brand>
 ```
 
-Attributes: `label`, `icon`, and `collapsible`. The collapse button controls the nearest `se-sidebar` when present, while the brand itself can also be used in a top bar.
+Attributes: `icon`, `compact-icon`, `dark-icon`, `compact-dark-icon`, `label`, `compact`, and `collapsible`. SVG artwork is rendered as-is and is never recolored. The collapse button controls the nearest `se-sidebar` when present, while the brand itself can also be used in a top bar.
