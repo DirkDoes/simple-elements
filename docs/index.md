@@ -48,17 +48,12 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 
 ## Navigation
 
-- [Sidebar header](sidebar-header.md)
-- [Sidebar body](sidebar-body.md)
-- [Sidebar footer](sidebar-footer.md)
-- [Sidebar brand](sidebar-brand.md)
-- [Sidebar section](sidebar-section.md)
+- [Sidebar](sidebar.md)
+- [Layout brand](layout-brand.md)
+- [Sidebar chapter](sidebar-chapter.md)
 - [Sidebar button](sidebar-button.md)
 - [Sidebar group](sidebar-group.md)
 - [Top bar](topbar.md)
-- [Top bar start](topbar-start.md)
-- [Top bar body](topbar-body.md)
-- [Top bar end](topbar-end.md)
 
 ## Patterns
 

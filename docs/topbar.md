@@ -2,10 +2,10 @@
 
 ```html
 <se-topbar>
-  <se-topbar-start>Brand</se-topbar-start>
-  <se-topbar-body>Search</se-topbar-body>
-  <se-topbar-end>User</se-topbar-end>
+  <section data-start>Brand</section>
+  <section data-center><se-input type="search"></se-input></section>
+  <section data-end>User</section>
 </se-topbar>
 ```
 
-Compose the top bar from its start, body, and end regions.
+Use native elements marked with `data-start`, `data-center`, and `data-end` for the three top-bar regions.

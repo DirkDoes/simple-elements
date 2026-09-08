@@ -78,7 +78,7 @@ assert.match(exampleScript, /customElements\.get\('se-input'\)\.defaultsFor\(typ
 assert.doesNotMatch(exampleScript, /inputTypeDefaults/);
 assert.match(exampleHtml, /<se-code-editor data-template-code language="html" readonly wrap hidden>/);
 assert.doesNotMatch(exampleHtml, /data-template-wrap-toggle/);
-const documentedComponents = components.filter((file) => file !== 'sidebar.js');
+const documentedComponents = components;
 assert.equal(componentCatalog.length, documentedComponents.length, 'every standalone component needs a catalog page');
 assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(documentedComponents), 'catalog tags must match standalone component files');
 assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['page-layout'], 'page layout must be documented as a pattern');

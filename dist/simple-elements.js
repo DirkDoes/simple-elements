@@ -658,40 +658,34 @@ class SeSidebar extends HTMLElement {
 
 define('se-sidebar', SeSidebar);
 
-define('se-sidebar-header', class extends HTMLElement {});
 
-define('se-sidebar-body', class extends HTMLElement {});
-
-define('se-sidebar-footer', class extends HTMLElement {});
-
-
-class SeSidebarBrand extends HTMLElement {
+class SeLayoutBrand extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    this.innerHTML = `<span class="se-sidebar-brand__identity"><span class="se-sidebar-brand__logo"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'dashboard')}"></se-icon></span><strong>${escapeHtml(this.getAttribute('label') || 'Simple Elements')}</strong></span>${this.hasAttribute('collapsible') ? '<button class="se-close se-sidebar-brand__collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button>' : ''}`;
+    this.innerHTML = `<span class="se-layout-brand__identity"><span class="se-layout-brand__logo"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'dashboard')}"></se-icon></span><strong>${escapeHtml(this.getAttribute('label') || 'Simple Elements')}</strong></span>${this.hasAttribute('collapsible') ? '<button class="se-close se-layout-brand__collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button>' : ''}`;
   }
 }
 
-define('se-sidebar-brand', SeSidebarBrand);
+define('se-layout-brand', SeLayoutBrand);
 
 
-class SeSidebarSection extends HTMLElement {
+class SeSidebarChapter extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
     const content = this.innerHTML;
     const collapsible = this.hasAttribute('collapsible');
     const expanded = !this.hasAttribute('collapsed');
-    this.innerHTML = `${collapsible ? `<button class="se-sidebar-section__title" type="button" aria-expanded="${expanded}"><span>${escapeHtml(this.getAttribute('title') || 'Section')}</span><se-icon name="chevron"></se-icon></button>` : `<se-title level="sidebar">${escapeHtml(this.getAttribute('title') || 'Section')}</se-title>`}<div class="se-sidebar-section__content"><div>${content}</div></div>`;
-    this.querySelector('.se-sidebar-section__title')?.addEventListener('click', (event) => {
+    this.innerHTML = `${collapsible ? `<button class="se-sidebar-chapter__title" type="button" aria-expanded="${expanded}"><span>${escapeHtml(this.getAttribute('title') || 'Chapter')}</span><se-icon name="chevron"></se-icon></button>` : `<se-title level="sidebar">${escapeHtml(this.getAttribute('title') || 'Chapter')}</se-title>`}<div class="se-sidebar-chapter__content"><div>${content}</div></div>`;
+    this.querySelector('.se-sidebar-chapter__title')?.addEventListener('click', (event) => {
       this.toggleAttribute('collapsed');
       event.currentTarget.setAttribute('aria-expanded', String(!this.hasAttribute('collapsed')));
     });
   }
 }
 
-define('se-sidebar-section', SeSidebarSection);
+define('se-sidebar-chapter', SeSidebarChapter);
 
 
 class SeSidebarButton extends HTMLElement {
@@ -745,12 +739,6 @@ class SeSidebarGroup extends HTMLElement {
 define('se-sidebar-group', SeSidebarGroup);
 
 define('se-topbar', class extends HTMLElement {});
-
-define('se-topbar-start', class extends HTMLElement {});
-
-define('se-topbar-body', class extends HTMLElement {});
-
-define('se-topbar-end', class extends HTMLElement {});
 
 
 class SeEmptyState extends HTMLElement {
