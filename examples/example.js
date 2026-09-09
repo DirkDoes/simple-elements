@@ -10,7 +10,7 @@ const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage :
 const sidebar = document.querySelector('se-sidebar');
 const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-sidebar-button label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-sidebar-button>`).join('');
 const groups = [
-  ['Page layout', 'panel-left-open', ['profile', 'layout-brand', 'sidebar', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],
+  ['Page layout', 'panel-left-open', ['profile', 'layout-brand', 'sidebar', 'sidebar-toggle', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'tooltip']],
   ['Composing', 'list', ['card', 'empty-state', 'file-row', 'list', 'list-header', 'list-row', 'split-button', 'table']],
@@ -68,9 +68,8 @@ const renderComponentPage = (component) => {
     sourceTemplate.innerHTML = markup;
     const source = sourceTemplate.content.firstElementChild;
     const clone = source.cloneNode(true);
-    section.querySelectorAll('[data-component-context]').forEach((control) => {
-      if (control.dataset.componentContext === 'sidebar-collapsed') preview.toggleAttribute('data-sidebar-collapsed', control.checked);
-    });
+    const contextMarkers = { 'sidebar-collapsed': 'data-sidebar-collapsed' };
+    section.querySelectorAll('[data-component-context]').forEach((control) => { const marker = contextMarkers[control.dataset.componentContext]; if (marker) preview.toggleAttribute(marker, control.checked); });
     section.querySelectorAll('[data-component-attribute]').forEach((control) => {
       const name = control.dataset.componentAttribute;
       const value = control.matches('se-checkbox') ? control.checked : control.value;
@@ -116,7 +115,7 @@ const showPage = (id) => {
   const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';
   document.querySelectorAll('[data-demo]').forEach((section) => { section.hidden = section.dataset.demo !== selected; });
   sidebar.querySelectorAll('se-sidebar-button').forEach((button) => button.toggleAttribute('active', button.querySelector('a')?.getAttribute('href') === `#${selected}`));
-  document.querySelector('.demo-main').scrollTop = 0;
+  document.querySelector('.demo-scroll').scrollTop = 0;
 };
 
 showPage(initialPage);

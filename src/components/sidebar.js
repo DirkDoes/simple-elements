@@ -1,9 +1,10 @@
 import { define, emit } from '../helpers.js';
 
 class SeSidebar extends HTMLElement {
-  static get observedAttributes() { return ['collapsed']; }
+  static get observedAttributes() { return ['collapsed', 'closed']; }
   attributeChangedCallback(name) {
     if (name === 'collapsed') this.toggleAttribute('data-sidebar-collapsed', this.hasAttribute('collapsed'));
+    if (name === 'closed') { this.setAttribute('aria-hidden', String(this.hasAttribute('closed'))); emit(this, 'closedchange', { closed: this.hasAttribute('closed') }); }
   }
   connectedCallback() {
     if (this.dataset.ready) return;
@@ -32,6 +33,8 @@ class SeSidebar extends HTMLElement {
       if (!button.classList.contains('se-sidebar__edge-collapse')) button.querySelector('se-icon')?.setAttribute('name', value ? 'panel-left-open' : 'panel-left-close');
     });
   }
+  get closed() { return this.hasAttribute('closed'); }
+  set closed(value) { this.toggleAttribute('closed', Boolean(value)); }
 }
 
 define('se-sidebar', SeSidebar);

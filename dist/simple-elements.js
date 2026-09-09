@@ -504,8 +504,8 @@ class SeFileRow extends HTMLElement {
     this.dataset.ready = 'true';
     const clickable = this.hasAttribute('clickable');
     const action = this.getAttribute('action');
-    const requestedTone = this.getAttribute('tone') || 'gray';
-    const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'gray';
+    const requestedTone = this.getAttribute('tone') || 'brand';
+    const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'brand';
     const content = `<span class="se-file__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'file')}"></se-icon></span><span class="se-file__content"><strong>${escapeHtml(this.getAttribute('filename') || '')}</strong><small>${escapeHtml(this.getAttribute('subtext') || '')}</small></span>`;
     this.innerHTML = `<div class="se-file se-file--${tone}">${clickable ? `<button class="se-file__main" type="button">${content}</button>` : `<span class="se-file__main">${content}</span>`}${action ? `<button class="se-file__remove" type="button" aria-label="Remove ${escapeHtml(this.getAttribute('filename') || 'file')}"><se-icon name="${action === 'trash' ? 'trash' : 'x'}"></se-icon></button>` : ''}<svg class="se-file__fold" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24"/><path d="M1 1v20a3 3 0 0 0 3 3h20Z"/></svg></div>`;
     this.querySelector('.se-file__remove')?.addEventListener('click', (event) => { event.stopPropagation(); emit(this, 'remove', { filename: this.getAttribute('filename') }); });
@@ -631,9 +631,10 @@ define('se-drawer', SeDrawer);
 
 
 class SeSidebar extends HTMLElement {
-  static get observedAttributes() { return ['collapsed']; }
+  static get observedAttributes() { return ['collapsed', 'closed']; }
   attributeChangedCallback(name) {
     if (name === 'collapsed') this.toggleAttribute('data-sidebar-collapsed', this.hasAttribute('collapsed'));
+    if (name === 'closed') { this.setAttribute('aria-hidden', String(this.hasAttribute('closed'))); emit(this, 'closedchange', { closed: this.hasAttribute('closed') }); }
   }
   connectedCallback() {
     if (this.dataset.ready) return;
@@ -662,9 +663,51 @@ class SeSidebar extends HTMLElement {
       if (!button.classList.contains('se-sidebar__edge-collapse')) button.querySelector('se-icon')?.setAttribute('name', value ? 'panel-left-open' : 'panel-left-close');
     });
   }
+  get closed() { return this.hasAttribute('closed'); }
+  set closed(value) { this.toggleAttribute('closed', Boolean(value)); }
 }
 
 define('se-sidebar', SeSidebar);
+
+
+class SeSidebarToggle extends HTMLElement {
+  connectedCallback() {
+    if (this.dataset.ready) return;
+    this.dataset.ready = 'true';
+    this.innerHTML = `<button class="se-sidebar-toggle" type="button"><se-icon name="menu"></se-icon></button>`;
+    this.addEventListener('click', (event) => {
+      if (!event.target.closest('button')) return;
+      const sidebar = this.sidebar;
+      if (!sidebar) return;
+      sidebar.closed = !sidebar.closed;
+      this.sync();
+    });
+    this.sync();
+  }
+  disconnectedCallback() { this._sidebar?.removeEventListener('closedchange', this._sync); }
+  get sidebar() {
+    const id = this.getAttribute('for');
+    return (id ? document.getElementById(id.replace(/^#/, '')) : this.closest('se-sidebar')) || null;
+  }
+  sync() {
+    const button = this.querySelector('button');
+    if (!button) return;
+    const sidebar = this.sidebar;
+    if (sidebar !== this._sidebar) {
+      this._sidebar?.removeEventListener('closedchange', this._sync);
+      this._sidebar = sidebar;
+      this._sync = () => this.sync();
+      sidebar?.addEventListener('closedchange', this._sync);
+    }
+    const closed = !sidebar || sidebar.closed;
+    button.disabled = !sidebar;
+    if (sidebar?.id) button.setAttribute('aria-controls', sidebar.id);
+    button.setAttribute('aria-expanded', String(!closed));
+    button.setAttribute('aria-label', this.getAttribute('label') || (closed ? 'Open sidebar' : 'Close sidebar'));
+  }
+}
+
+define('se-sidebar-toggle', SeSidebarToggle);
 
 
 class SeLayoutBrand extends HTMLElement {
@@ -675,13 +718,16 @@ class SeLayoutBrand extends HTMLElement {
     const compactIcon = this.getAttribute('compact-icon') || icon;
     const darkIcon = this.getAttribute('dark-icon');
     const compactDarkIcon = this.getAttribute('compact-dark-icon');
+    const href = this.getAttribute('href');
     this.toggleAttribute('data-has-dark-icon', Boolean(darkIcon));
     this.toggleAttribute('data-has-compact-dark-icon', Boolean(compactDarkIcon));
     const isAsset = (source) => /^(?:data:|https?:|[./\\])|\.svg(?:$|[?#])/i.test(source);
     const renderIcon = (source) => isAsset(source) ? `<img src="${escapeHtml(source)}" alt="">` : `<se-icon name="${escapeHtml(source)}"></se-icon>`;
     this.toggleAttribute('data-wide-icon', isAsset(icon));
     const asset = (source, mode) => source ? `<span class="se-layout-brand__asset se-layout-brand__asset--${mode}">${renderIcon(source)}</span>` : '';
-    this.innerHTML = `<span class="se-layout-brand__identity"><span class="se-layout-brand__logo">${asset(icon, 'full-light')}${asset(darkIcon, 'full-dark')}${asset(compactIcon, 'compact-light')}${asset(compactDarkIcon, 'compact-dark')}</span>${this.hasAttribute('label') ? `<strong>${escapeHtml(this.getAttribute('label'))}</strong>` : ''}</span>${this.hasAttribute('collapsible') ? '<button class="se-close se-layout-brand__collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button>' : ''}`;
+    const identity = href ? 'a' : 'span';
+    const identityAttributes = href ? ` href="${escapeHtml(href)}"${this.hasAttribute('label') ? '' : ' aria-label="Home"'}` : '';
+    this.innerHTML = `<${identity} class="se-layout-brand__identity"${identityAttributes}><span class="se-layout-brand__logo">${asset(icon, 'full-light')}${asset(darkIcon, 'full-dark')}${asset(compactIcon, 'compact-light')}${asset(compactDarkIcon, 'compact-dark')}</span>${this.hasAttribute('label') ? `<strong>${escapeHtml(this.getAttribute('label'))}</strong>` : ''}</${identity}>${this.hasAttribute('collapsible') ? '<button class="se-close se-layout-brand__collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button>' : ''}`;
   }
 }
 
@@ -1115,7 +1161,9 @@ class SeDatetimePicker extends HTMLElement {
     const selected = this._date ? dateValue(this._date) : '';
     const min = this.getAttribute('min')?.split('T')[0] || '';
     const max = this.getAttribute('max')?.split('T')[0] || '';
-    this.querySelector('.se-datetime-single__trigger span').textContent = this._date && this._time ? `${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(this._date)} · ${timeValue(this._time)}` : this.getAttribute('placeholder') || 'Choose date and time';
+    const dateText = this._date ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(this._date) : '';
+    const timeText = this._time ? timeValue(this._time) : '';
+    this.querySelector('.se-datetime-single__trigger span').textContent = [dateText, timeText].filter(Boolean).join(' · ') || this.getAttribute('placeholder') || 'Choose date and time';
     this.querySelector('.se-datetime-single__title').textContent = this._mode === 'date' ? '' : 'Choose time';
     this.querySelector('[data-date-panel]').hidden = this._mode !== 'date';
     this.querySelector('[data-time-panel]').hidden = this._mode !== 'time';

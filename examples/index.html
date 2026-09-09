@@ -4,27 +4,29 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Simple Elements</title>
-    <link rel="stylesheet" href="../dist/styles.css?v=20260909">
-    <link rel="stylesheet" href="./example.css?v=20260909">
-    <script defer src="../dist/simple-elements.js?v=20260909"></script>
-    <script type="module" src="./example.js?v=20260909"></script>
+    <link rel="stylesheet" href="../dist/styles.css?v=20260911">
+    <link rel="stylesheet" href="./example.css?v=20260911">
+    <script defer src="../dist/simple-elements.js?v=20260911"></script>
+    <script type="module" src="./example.js?v=20260911"></script>
   </head>
   <body>
     <div class="demo-shell">
-      <se-sidebar>
-        <header><se-layout-brand label="Simple Elements" icon="package" collapsible></se-layout-brand></header>
-        <section>
-          <se-sidebar-chapter title="Components" data-component-section collapsible></se-sidebar-chapter>
-          <se-sidebar-chapter title="Patterns" data-pattern-section collapsible></se-sidebar-chapter>
-        </section>
-        <footer><div class="se-sidebar-theme"><span>Theme</span><se-checkbox variant="light-dark-switch" label="Toggle dark mode" data-sidebar-theme></se-checkbox></div></footer>
-      </se-sidebar>
       <main class="demo-main">
-        <div class="demo-content">
-          <header class="demo-mobile">
-            <span class="demo-mobile__brand"><span class="demo-mobile__logo"><se-icon name="dashboard"></se-icon></span>Simple Elements</span>
-            <se-checkbox class="demo-mobile__theme" variant="light-dark-button" label="Toggle dark mode"></se-checkbox>
-          </header>
+        <se-topbar><section data-start><se-layout-brand label="Simple Elements" icon="package"></se-layout-brand></section></se-topbar>
+        <div class="demo-body">
+          <se-sidebar id="example-sidebar" collapsible>
+            <section>
+              <se-sidebar-chapter title="Components" data-component-section collapsible></se-sidebar-chapter>
+              <se-sidebar-chapter title="Patterns" data-pattern-section collapsible></se-sidebar-chapter>
+            </section>
+            <footer><div class="se-sidebar-theme"><span>Theme</span><se-checkbox variant="light-dark-switch" label="Toggle dark mode" data-sidebar-theme></se-checkbox></div></footer>
+          </se-sidebar>
+          <div class="demo-scroll">
+            <div class="demo-content">
+            <header class="demo-mobile">
+              <span class="demo-mobile__brand"><span class="demo-mobile__logo"><se-icon name="dashboard"></se-icon></span>Simple Elements</span>
+              <se-checkbox class="demo-mobile__theme" variant="light-dark-button" label="Toggle dark mode"></se-checkbox>
+            </header>
 
           <section data-demo="template" hidden>
             <se-title level="section">Input</se-title>
@@ -53,6 +55,8 @@
               </se-card>
             </div>
           </section>
+            </div>
+          </div>
         </div>
       </main>
     </div>

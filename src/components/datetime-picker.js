@@ -77,7 +77,9 @@ class SeDatetimePicker extends HTMLElement {
     const selected = this._date ? dateValue(this._date) : '';
     const min = this.getAttribute('min')?.split('T')[0] || '';
     const max = this.getAttribute('max')?.split('T')[0] || '';
-    this.querySelector('.se-datetime-single__trigger span').textContent = this._date && this._time ? `${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(this._date)} · ${timeValue(this._time)}` : this.getAttribute('placeholder') || 'Choose date and time';
+    const dateText = this._date ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(this._date) : '';
+    const timeText = this._time ? timeValue(this._time) : '';
+    this.querySelector('.se-datetime-single__trigger span').textContent = [dateText, timeText].filter(Boolean).join(' · ') || this.getAttribute('placeholder') || 'Choose date and time';
     this.querySelector('.se-datetime-single__title').textContent = this._mode === 'date' ? '' : 'Choose time';
     this.querySelector('[data-date-panel]').hidden = this._mode !== 'date';
     this.querySelector('[data-time-panel]').hidden = this._mode !== 'time';

@@ -1,7 +1,10 @@
 html { scroll-behavior: smooth; }
 body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: var(--se-font); transition: color .2s, background .2s; }
 .demo-shell { position: fixed; inset: 0; display: flex; overflow: hidden; }
-.demo-main { min-width: 0; min-height: 0; flex: 1; overflow: auto; }
+.demo-main { display: flex; min-width: 0; min-height: 0; flex: 1; flex-direction: column; overflow: hidden; }
+.demo-body { display: flex; min-height: 0; flex: 1; overflow: hidden; }
+.demo-body > se-sidebar { height: 100%; }
+.demo-scroll { min-width: 0; min-height: 0; flex: 1; overflow: auto; }
 .demo-content { width: min(100% - 6rem, 72rem); margin: auto; padding: 3rem 0 8rem; }
 .demo-heading { margin-bottom: 2rem; }
 .demo-heading se-text { margin-top: .5rem; }
@@ -82,6 +85,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
   .demo-template-attributes .se-list__header > :nth-child(3), .demo-template-attributes .se-list__row > :nth-child(3), .demo-component-attributes .se-list__header > :nth-child(3), .demo-component-attributes .se-list__row > :nth-child(3) { display: none; }
 }
 @media (max-width: 767px) {
+  .demo-main > se-topbar { display: none; }
   .demo-content { width: min(100% - 4rem, 72rem); padding-top: 2rem; }
   .demo-grid, .demo-fields, .demo-controls, .demo-code-grid { grid-template-columns: 1fr; }
   .demo-wide { grid-column: auto; }
