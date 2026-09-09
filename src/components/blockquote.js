@@ -4,8 +4,8 @@ const blockquoteVariants = new Set(['gray', 'brand', 'success', 'warning', 'erro
 
 class SeBlockquote extends HTMLElement {
   connectedCallback() {
-    const variant = this.getAttribute('variant') || 'brand';
-    this.classList.add('se-blockquote', `se-blockquote--${blockquoteVariants.has(variant) ? variant : 'brand'}`);
+    const tone = this.getAttribute('tone') || 'brand';
+    this.classList.add('se-blockquote', `se-blockquote--${blockquoteVariants.has(tone) ? tone : 'brand'}`);
   }
 }
 

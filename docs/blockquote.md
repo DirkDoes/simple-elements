@@ -2,8 +2,8 @@
 
 ```html
 <se-blockquote>Simple components compose well.</se-blockquote>
-<se-blockquote variant="success">Saved successfully.</se-blockquote>
-<se-blockquote variant="error">Something went wrong.</se-blockquote>
+<se-blockquote tone="success">Saved successfully.</se-blockquote>
+<se-blockquote tone="error">Something went wrong.</se-blockquote>
 ```
 
-Variants match badges: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `important`. The default is `brand`.
+Tones match badges: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `important`. The default is `brand`.

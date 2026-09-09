@@ -517,7 +517,18 @@ se-empty-state { display: block; }
 .se-empty-state__icon se-icon { width: 1.5rem; height: 1.5rem; }
 .se-empty-state--gray .se-empty-state__icon { color: var(--se-muted); background: var(--se-surface-soft); }
 .se-empty-state--brand .se-empty-state__icon { color: var(--se-brand); background: var(--se-brand-soft); }
+.se-empty-state--success .se-empty-state__icon { color: #047857; background: #ecfdf5; }
+.se-empty-state--warning .se-empty-state__icon { color: #b45309; background: #fffbeb; }
 .se-empty-state--error .se-empty-state__icon { color: var(--se-danger); background: var(--se-danger-soft); }
+.se-empty-state--info .se-empty-state__icon { color: #0369a1; background: #f0f9ff; }
+.se-empty-state--important .se-empty-state__icon { color: #7e22ce; background: #faf5ff; }
+[data-theme="dark"] .se-empty-state--gray .se-empty-state__icon { color: #cbd5e1; background: #1e293b; }
+[data-theme="dark"] .se-empty-state--brand .se-empty-state__icon { color: #93c5fd; background: #1e3a8a66; }
+[data-theme="dark"] .se-empty-state--success .se-empty-state__icon { color: #6ee7b7; background: #064e3b; }
+[data-theme="dark"] .se-empty-state--warning .se-empty-state__icon { color: #fcd34d; background: #78350f; }
+[data-theme="dark"] .se-empty-state--error .se-empty-state__icon { color: #fca5a5; background: #7f1d1d; }
+[data-theme="dark"] .se-empty-state--info .se-empty-state__icon { color: #7dd3fc; background: #0c4a6e; }
+[data-theme="dark"] .se-empty-state--important .se-empty-state__icon { color: #d8b4fe; background: #581c87; }
 .se-empty-state se-text { max-width: 28rem; margin-top: .375rem; }
 .se-empty-state__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .75rem; margin-top: 1.25rem; }
 

@@ -4,7 +4,7 @@
 <se-list-row>
   <se-icon name="user"></se-icon>
   <span><strong>Emma joined</strong><small>Two minutes ago</small></span>
-  <se-badge variant="success" text="New"></se-badge>
+  <se-badge tone="success" text="New"></se-badge>
 </se-list-row>
 ```
 

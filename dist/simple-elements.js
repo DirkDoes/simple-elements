@@ -504,10 +504,10 @@ class SeFileRow extends HTMLElement {
     this.dataset.ready = 'true';
     const clickable = this.hasAttribute('clickable');
     const action = this.getAttribute('action');
-    const requestedVariant = this.getAttribute('variant') || 'gray';
-    const variant = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedVariant) ? requestedVariant : 'gray';
+    const requestedTone = this.getAttribute('tone') || 'gray';
+    const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'gray';
     const content = `<span class="se-file__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'file')}"></se-icon></span><span class="se-file__content"><strong>${escapeHtml(this.getAttribute('filename') || '')}</strong><small>${escapeHtml(this.getAttribute('subtext') || '')}</small></span>`;
-    this.innerHTML = `<div class="se-file se-file--${variant}">${clickable ? `<button class="se-file__main" type="button">${content}</button>` : `<span class="se-file__main">${content}</span>`}${action ? `<button class="se-file__remove" type="button" aria-label="Remove ${escapeHtml(this.getAttribute('filename') || 'file')}"><se-icon name="${action === 'trash' ? 'trash' : 'x'}"></se-icon></button>` : ''}<svg class="se-file__fold" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24"/><path d="M1 1v20a3 3 0 0 0 3 3h20Z"/></svg></div>`;
+    this.innerHTML = `<div class="se-file se-file--${tone}">${clickable ? `<button class="se-file__main" type="button">${content}</button>` : `<span class="se-file__main">${content}</span>`}${action ? `<button class="se-file__remove" type="button" aria-label="Remove ${escapeHtml(this.getAttribute('filename') || 'file')}"><se-icon name="${action === 'trash' ? 'trash' : 'x'}"></se-icon></button>` : ''}<svg class="se-file__fold" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24"/><path d="M1 1v20a3 3 0 0 0 3 3h20Z"/></svg></div>`;
     this.querySelector('.se-file__remove')?.addEventListener('click', (event) => { event.stopPropagation(); emit(this, 'remove', { filename: this.getAttribute('filename') }); });
   }
 }
@@ -555,8 +555,8 @@ class SeProfile extends HTMLElement {
     this.dataset.ready = 'true';
     const tag = this.hasAttribute('clickable') ? 'button' : 'div';
     const variants = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'];
-    const variant = variants.includes(this.getAttribute('variant')) ? this.getAttribute('variant') : 'brand';
-    this.innerHTML = `<${tag} class="se-profile se-profile--${variant}"${tag === 'button' ? ' type="button"' : ''}><span class="se-profile__avatar">${escapeHtml(this.getAttribute('initials') || '')}</span><span><strong>${escapeHtml(this.getAttribute('name') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span></${tag}>`;
+    const tone = variants.includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'brand';
+    this.innerHTML = `<${tag} class="se-profile se-profile--${tone}"${tag === 'button' ? ' type="button"' : ''}><span class="se-profile__avatar">${escapeHtml(this.getAttribute('initials') || '')}</span><span><strong>${escapeHtml(this.getAttribute('name') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span></${tag}>`;
   }
 }
 
@@ -576,14 +576,14 @@ class SeModal extends HTMLElement {
     const requestedSize = this.getAttribute('size') || 'small';
     const size = ['small', 'medium', 'large'].includes(requestedSize) ? requestedSize : 'small';
     const expanded = size !== 'small';
-    const requestedVariant = this.getAttribute('variant') || 'error';
-    const variant = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedVariant) ? requestedVariant : 'error';
+    const requestedTone = this.getAttribute('tone') || 'error';
+    const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'error';
     const title = escapeHtml(this.getAttribute('title') || '');
-    const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${variant}"><se-icon name="${escapeHtml(this.getAttribute('icon'))}"></se-icon></span>` : '';
+    const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${tone}"><se-icon name="${escapeHtml(this.getAttribute('icon'))}"></se-icon></span>` : '';
     const actions = `<div class="se-modal__actions"><se-button variant="${expanded ? 'secondary' : 'ghost'}" text="${escapeHtml(this.getAttribute('cancel-label') || (expanded ? 'Close' : 'Cancel'))}" data-cancel></se-button><se-button variant="${escapeHtml(this.getAttribute('confirm-variant') || 'brand')}" text="${escapeHtml(this.getAttribute('confirm-label') || 'Confirm')}" data-confirm></se-button></div>`;
     const body = expanded
       ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`
-      : `<div class="se-modal__body"><se-empty-state variant="${variant}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
+      : `<div class="se-modal__body"><se-empty-state tone="${tone}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
     this.innerHTML = `<div class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
     this.querySelector('[data-cancel]').addEventListener('click', () => this.close());
     this.querySelector('[data-confirm]').addEventListener('click', () => { emit(this, 'confirm', {}); this.close(); });
@@ -764,9 +764,9 @@ class SeEmptyState extends HTMLElement {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
     const content = this.innerHTML.trim();
-    const variant = ['brand', 'error', 'gray'].includes(this.getAttribute('variant')) ? this.getAttribute('variant') : 'gray';
+    const tone = ['brand', 'gray', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'gray';
     const icon = this.getAttribute('icon') === 'none' ? '' : `<span class="se-empty-state__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'package')}"></se-icon></span>`;
-    this.innerHTML = `<div class="se-empty-state se-empty-state--${variant}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('text') ? `<se-text muted>${escapeHtml(this.getAttribute('text'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
+    this.innerHTML = `<div class="se-empty-state se-empty-state--${tone}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('text') ? `<se-text muted>${escapeHtml(this.getAttribute('text'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
   }
 }
 
@@ -791,8 +791,8 @@ const blockquoteVariants = new Set(['gray', 'brand', 'success', 'warning', 'erro
 
 class SeBlockquote extends HTMLElement {
   connectedCallback() {
-    const variant = this.getAttribute('variant') || 'brand';
-    this.classList.add('se-blockquote', `se-blockquote--${blockquoteVariants.has(variant) ? variant : 'brand'}`);
+    const tone = this.getAttribute('tone') || 'brand';
+    this.classList.add('se-blockquote', `se-blockquote--${blockquoteVariants.has(tone) ? tone : 'brand'}`);
   }
 }
 
@@ -886,15 +886,15 @@ define('se-wysiwyg', SeWysiwyg);
 const variants = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'important']);
 
 class SeBadge extends HTMLElement {
-  static observedAttributes = ['variant', 'icon', 'text', 'aria-label'];
+  static observedAttributes = ['tone', 'icon', 'text', 'aria-label'];
   connectedCallback() { this.render(); }
   attributeChangedCallback() { if (this.isConnected) this.render(); }
   render() {
-    const variant = this.getAttribute('variant') || 'gray';
+    const tone = this.getAttribute('tone') || 'gray';
     const icon = this.getAttribute('icon') || '';
     const text = this.getAttribute('text') || (icon ? '' : 'Badge');
     variants.forEach((name) => this.classList.remove(`se-badge--${name}`));
-    this.classList.add('se-badge', `se-badge--${variants.has(variant) ? variant : 'gray'}`);
+    this.classList.add('se-badge', `se-badge--${variants.has(tone) ? tone : 'gray'}`);
     this.classList.toggle('se-badge--icon', Boolean(icon && !text));
     if (icon && !text) this.setAttribute('role', 'img'); else this.removeAttribute('role');
     this.innerHTML = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;

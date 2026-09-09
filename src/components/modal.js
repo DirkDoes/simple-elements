@@ -13,14 +13,14 @@ class SeModal extends HTMLElement {
     const requestedSize = this.getAttribute('size') || 'small';
     const size = ['small', 'medium', 'large'].includes(requestedSize) ? requestedSize : 'small';
     const expanded = size !== 'small';
-    const requestedVariant = this.getAttribute('variant') || 'error';
-    const variant = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedVariant) ? requestedVariant : 'error';
+    const requestedTone = this.getAttribute('tone') || 'error';
+    const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'error';
     const title = escapeHtml(this.getAttribute('title') || '');
-    const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${variant}"><se-icon name="${escapeHtml(this.getAttribute('icon'))}"></se-icon></span>` : '';
+    const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${tone}"><se-icon name="${escapeHtml(this.getAttribute('icon'))}"></se-icon></span>` : '';
     const actions = `<div class="se-modal__actions"><se-button variant="${expanded ? 'secondary' : 'ghost'}" text="${escapeHtml(this.getAttribute('cancel-label') || (expanded ? 'Close' : 'Cancel'))}" data-cancel></se-button><se-button variant="${escapeHtml(this.getAttribute('confirm-variant') || 'brand')}" text="${escapeHtml(this.getAttribute('confirm-label') || 'Confirm')}" data-confirm></se-button></div>`;
     const body = expanded
       ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`
-      : `<div class="se-modal__body"><se-empty-state variant="${variant}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
+      : `<div class="se-modal__body"><se-empty-state tone="${tone}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
     this.innerHTML = `<div class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
     this.querySelector('[data-cancel]').addEventListener('click', () => this.close());
     this.querySelector('[data-confirm]').addEventListener('click', () => { emit(this, 'confirm', {}); this.close(); });
