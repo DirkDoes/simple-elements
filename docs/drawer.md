@@ -5,4 +5,4 @@
 <script>document.querySelector('#notifications').open()</script>
 ```
 
-Methods: `open()` and `close()`. `mode` accepts blurred `overlay` (default), `overlay-clear`, or `push`. The drawer emits `close`; Escape and backdrop clicks close it.
+Methods: `open()` and `close()`. `mode` accepts blurred `overlay` (default), `overlay-clear`, or `push`. Set `width` to any valid CSS width; it defaults to `24rem`. Push mode reserves the configured drawer width so the page stays visible beside it. `overlay-clear` leaves the uncovered page interactive and does not close on outside clicks. The drawer emits `close`; Escape closes it, and the blurred overlay also closes on backdrop clicks.

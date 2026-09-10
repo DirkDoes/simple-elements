@@ -3,16 +3,16 @@ import { componentCatalog, patternCatalog } from './catalog.js?v=20260909';
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
 const patternPages = patternCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
-const pages = [...componentPages, ...patternPages];
-
-const requestedPage = location.hash.slice(1) || 'input';
-const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'input';
+const pages = [['dashboard', 'Dashboard', 'dashboard'], ...componentPages, ...patternPages];
+const requestedPage = location.hash.slice(1) || 'dashboard';
+const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'dashboard';
 const sidebar = document.querySelector('se-sidebar');
 const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-sidebar-button label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-sidebar-button>`).join('');
 const groups = [
   ['Page layout', 'panel-left-open', ['profile', 'layout-brand', 'sidebar', 'sidebar-toggle', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'tooltip']],
+  ['Chat', 'message-square', ['chat-context', 'chat-message', 'thought-train']],
   ['Composing', 'list', ['card', 'empty-state', 'file-row', 'list', 'list-header', 'list-row', 'split-button', 'table']],
   ['Styling', 'badge', ['badge', 'blockquote', 'button', 'code', 'icon', 'markdown', 'text', 'title']],
 ];
@@ -67,6 +67,7 @@ const renderComponentPage = (component) => {
     const sourceTemplate = document.createElement('template');
     sourceTemplate.innerHTML = markup;
     const source = sourceTemplate.content.firstElementChild;
+    attributes.forEach(({ name }) => source.removeAttribute(name));
     const clone = source.cloneNode(true);
     const contextMarkers = { 'sidebar-collapsed': 'data-sidebar-collapsed' };
     section.querySelectorAll('[data-component-context]').forEach((control) => { const marker = contextMarkers[control.dataset.componentContext]; if (marker) preview.toggleAttribute(marker, control.checked); });
@@ -113,6 +114,7 @@ patternCatalog.forEach(renderPatternPage);
 
 const showPage = (id) => {
   const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';
+  if (selected !== 'dashboard') document.getElementById('dashboard-chat')?.close?.();
   document.querySelectorAll('[data-demo]').forEach((section) => { section.hidden = section.dataset.demo !== selected; });
   sidebar.querySelectorAll('se-sidebar-button').forEach((button) => button.toggleAttribute('active', button.querySelector('a')?.getAttribute('href') === `#${selected}`));
   document.querySelector('.demo-scroll').scrollTop = 0;

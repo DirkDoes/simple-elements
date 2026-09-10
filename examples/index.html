@@ -12,10 +12,11 @@
   <body>
     <div class="demo-shell">
       <main class="demo-main">
-        <se-topbar><section data-start><se-layout-brand label="Simple Elements" icon="package"></se-layout-brand></section></se-topbar>
+        <se-topbar><section data-start><se-layout-brand label="Simple Elements" icon="package" href="#dashboard"></se-layout-brand></section></se-topbar>
         <div class="demo-body">
           <se-sidebar id="example-sidebar" collapsible>
             <section>
+              <se-sidebar-chapter title="Overview"><se-sidebar-button label="Dashboard" icon="dashboard" href="#dashboard"></se-sidebar-button></se-sidebar-chapter>
               <se-sidebar-chapter title="Components" data-component-section collapsible></se-sidebar-chapter>
               <se-sidebar-chapter title="Patterns" data-pattern-section collapsible></se-sidebar-chapter>
             </section>
@@ -27,6 +28,64 @@
               <span class="demo-mobile__brand"><span class="demo-mobile__logo"><se-icon name="dashboard"></se-icon></span>Simple Elements</span>
               <se-checkbox class="demo-mobile__theme" variant="light-dark-button" label="Toggle dark mode"></se-checkbox>
             </header>
+
+          <section data-demo="dashboard" hidden>
+            <div class="demo-dashboard-hero">
+              <div class="demo-dashboard-hero-copy">
+                <se-badge tone="info" icon="zap" text="Framework-free UI building blocks"></se-badge>
+                <se-title level="page">Build a simpler interface.</se-title>
+                <se-text>Simple Elements gives your product a calm, consistent foundation with native web components that work anywhere.</se-text>
+                <div class="demo-row"><se-button variant="secondary" text="Browse components" icon="send"></se-button><se-button variant="ghost" text="Read the docs" icon="file"></se-button></div>
+              </div>
+              <se-card class="demo-dashboard-overview">
+                <div class="demo-dashboard-overview__heading"><span class="demo-dashboard-overview__icon"><se-icon name="dashboard"></se-icon></span><div><se-title level="card">Your workspace</se-title><se-text muted small>Everything is ready to explore.</se-text></div><se-button variant="secondary" icon="message-square" text="Ask Nova" data-open="dashboard-chat"></se-button></div>
+                <se-list><se-list-row><span><strong>40</strong><small>components</small></span><se-badge tone="success" icon="check" text="Ready"></se-badge></se-list-row><se-list-row><span><strong>0</strong><small>frameworks required</small></span><se-badge tone="brand" icon="code" text="Native"></se-badge></se-list-row><se-list-row><span><strong>100%</strong><small>HTML friendly</small></span><se-badge tone="important" icon="package" text="Portable"></se-badge></se-list-row></se-list>
+              </se-card>
+            </div>
+
+            <div class="demo-dashboard-layout">
+              <se-card class="demo-dashboard-form-card">
+                <div class="demo-dashboard-card-heading"><div><se-title level="section">Create a workspace</se-title><se-text muted>Try a few native form controls together.</se-text></div><se-badge tone="brand" text="Demo form"></se-badge></div>
+                <form class="demo-dashboard-form">
+                  <div class="demo-fields"><se-input label="Workspace name" name="workspace[name]" placeholder="e.g. Northstar"></se-input><se-input type="email" label="Your email" name="workspace[email]" placeholder="you@example.com"></se-input></div>
+                  <se-select label="Workspace type" name="workspace[type]" value="design" searchable clearable options='[{"id":"design","label":"Design system","description":"Tokens, components, and patterns","icon":"package"},{"id":"analytics","label":"Analytics dashboard","description":"Metrics and reporting views","icon":"activity"},{"id":"operations","label":"Operations hub","description":"People, tasks, and workflows","icon":"settings"}]'></se-select>
+                  <se-datetime-picker label="First review" name="workspace[review_at]" value="2026-09-10T09:30" variant="joined"></se-datetime-picker>
+                  <div class="demo-dashboard-form__options"><se-checkbox variant="switch" label="Send me the weekly digest" checked></se-checkbox><se-range label="Priority" value="68" suffix="%"></se-range></div>
+                  <div class="demo-row"><se-button variant="brand" text="Create workspace" icon="send" type="button"></se-button><se-button variant="ghost" text="Save as draft" type="button"></se-button></div>
+                </form>
+              </se-card>
+
+              <div class="demo-stack">
+                <se-card class="demo-dashboard-tip"><span class="demo-dashboard-tip__icon"><se-icon name="info"></se-icon></span><div><se-title level="card">Designed to compose</se-title><se-text muted small>Combine small elements into useful product surfaces without a framework or build step.</se-text></div></se-card>
+                <se-card><se-title level="section">Recent activity</se-title><se-list><se-list-row><se-icon name="edit"></se-icon><span><strong>Editor updated</strong><small>WYSIWYG and Markdown modes</small></span><se-badge tone="success" text="New"></se-badge></se-list-row><se-list-row><se-icon name="calendar-clock"></se-icon><span><strong>Scheduling added</strong><small>Date and time in one field</small></span><se-badge tone="info" text="Live"></se-badge></se-list-row><se-list-row><se-icon name="users"></se-icon><span><strong>Team invited</strong><small>Workspace members are ready</small></span><se-badge tone="gray" text="3 min"></se-badge></se-list-row></se-list></se-card>
+              </div>
+            </div>
+            <se-drawer id="dashboard-chat" mode="overlay-clear" width="30rem" title="Ask Nova">
+              <div class="demo-chat demo-dashboard-chat">
+                <div class="demo-chat__messages">
+                  <se-chat-message mode="received" title="Nova" profile icon="zap" timestamp="Now">Hi! I can help you explore Simple Elements or plan your interface.</se-chat-message>
+                  <se-chat-context variant="info" icon="package">Using the Simple Elements component library.</se-chat-context>
+                  <se-chat-message mode="sent" title="You" initials="YO" profile>What should I put at the top of the page?</se-chat-message>
+                  <se-chat-message mode="received" title="Nova" profile icon="zap">Lead with one clear purpose and the action people use most often.</se-chat-message>
+                  <se-chat-message mode="sent" title="You" initials="YO" profile>Should the form stay visible?</se-chat-message>
+                  <se-chat-message mode="received" title="Nova" profile icon="zap">Yes. It is the primary workflow, so keeping it in the main view reduces extra navigation.</se-chat-message>
+                  <se-chat-context variant="success" icon="check">Dashboard structure reviewed.</se-chat-context>
+                  <se-chat-message mode="sent" title="You" initials="YO" profile>How would you structure this dashboard?</se-chat-message>
+                  <se-thought-train title="Reviewing the dashboard" icon="activity" variant="brand" collapsible>Looking at the navigation, overview, form, and recent activity sections.</se-thought-train>
+                  <se-chat-message mode="received" title="Nova" profile icon="zap"><p>Keep the overview concise and let the main form carry the primary action.</p><p>This drawer works well for assistance without hiding the dashboard context.</p></se-chat-message>
+                  <se-chat-message mode="sent" title="You" initials="YO" profile>What about recent activity?</se-chat-message>
+                  <se-chat-message mode="received" title="Nova" profile icon="zap">Keep it secondary and show only enough detail to help people decide where to go next.</se-chat-message>
+                  <se-chat-message mode="sent" title="You" initials="YO" profile>That sounds good. Give me one final recommendation.</se-chat-message>
+                  <se-chat-message mode="received" title="Nova" profile icon="zap">Use progressive disclosure: keep the dashboard calm, and place contextual help here in the drawer.</se-chat-message>
+                </div>
+                <div class="demo-chat__composer">
+                  <se-select value="nova" options='[{"id":"nova","label":"Nova","description":"Fast everyday assistant","icon":"zap"},{"id":"atlas","label":"Atlas","description":"Deep analysis model","icon":"activity"}]'></se-select>
+                  <se-input type="textarea" autosize placeholder="Ask about the dashboard..."></se-input>
+                  <se-button variant="brand" icon="send" aria-label="Send prompt"></se-button>
+                </div>
+              </div>
+            </se-drawer>
+          </section>
 
           <section data-demo="template" hidden>
             <se-title level="section">Input</se-title>
@@ -51,6 +110,7 @@
                   <se-list-row><strong data-description="Prevents interaction with the native field.">disabled</strong><span>Prevents interaction with the native field.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="disabled" label="Disabled"></se-checkbox></se-list-row>
                   <se-list-row><strong data-description="Marks the field as required for form validation.">required</strong><span>Marks the field as required for form validation.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="required" label="Required"></se-checkbox></se-list-row>
                   <se-list-row><strong data-description="Disables resizing when the type is textarea.">fixed</strong><span>Disables resizing when the type is textarea.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="fixed" label="Fixed height"></se-checkbox></se-list-row>
+                  <se-list-row><strong data-description="Grows a textarea with its content without a resize handle.">autosize</strong><span>Grows a textarea with its content without a resize handle.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="autosize" label="Autosize"></se-checkbox></se-list-row>
                 </se-table>
               </se-card>
             </div>

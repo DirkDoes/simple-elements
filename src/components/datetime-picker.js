@@ -70,7 +70,7 @@ class SeDatetimePicker extends HTMLElement {
     this._resizeTimer = setTimeout(() => { popover.style.height = ''; }, 220);
   }
   adjustSingleTime(part, direction) { const step = part === 'minute' ? Math.max(1, Math.min(30, Math.round(Number(this.getAttribute('step') || 300) / 60))) : 1; this._draftTime[part] = wrapNumber(this._draftTime[part] + direction * step, part === 'hour' ? 24 : 60); this._time = { ...this._draftTime }; this.syncSingle(); }
-  selectSingleDate(date) { this._date = date; this._view = date; this.syncSingle(); this.setMode('time'); }
+  selectSingleDate(date) { this._date = date; this._view = date; this._time = { ...this._draftTime }; this.syncSingle(); this.setMode('time'); }
 
   renderSingle() {
     const locale = this.getAttribute('locale') || undefined;

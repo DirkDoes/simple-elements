@@ -15,4 +15,6 @@ Add `readonly` to allow focus, selection, copying, and form submission without a
 
 Long lines scroll horizontally by default. Add `wrap` to wrap them visually; wrapped segments do not add line numbers.
 
+Add `autosize` to grow and shrink the editor with its content while disabling manual resizing.
+
 Tab inserts two spaces at the caret. With a selection, Tab indents every selected line and remains undoable with the browser's normal undo command.

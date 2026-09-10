@@ -37,11 +37,17 @@ class SeInput extends HTMLElement {
     this.innerHTML = `${label ? `<label class="se-label" for="${id}">${escapeHtml(label)}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label>` : ''}
       <div class="se-input-wrap${icon ? ' se-input-wrap--icon' : ''}">
         ${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}
-        ${textarea ? `<textarea class="se-control" ${attrs}${this.hasAttribute('fixed') ? ' data-fixed' : ''}>${escapeHtml(this.getAttribute('value') || '')}</textarea>` : `<input class="se-control" type="${escapeHtml(type)}" ${attrs}>`}
+        ${textarea ? `<textarea class="se-control" ${attrs}${this.hasAttribute('autosize') ? ' data-autosize' : this.hasAttribute('fixed') ? ' data-fixed' : ''}>${escapeHtml(this.getAttribute('value') || '')}</textarea>` : `<input class="se-control" type="${escapeHtml(type)}" ${attrs}>`}
         ${error ? '<se-icon name="alert"></se-icon>' : ''}
         ${type === 'password' ? '<button class="se-password-toggle" type="button" aria-label="Show password"><se-icon name="eye"></se-icon></button>' : ''}
       </div>
       ${error || this.getAttribute('hint') ? `<small class="se-hint${error ? ' se-hint--error' : ''}">${escapeHtml(error || this.getAttribute('hint'))}</small>` : ''}`;
+    const autosizeInput = this.querySelector('textarea[data-autosize]');
+    if (autosizeInput) {
+      const resize = () => { autosizeInput.style.height = '0px'; autosizeInput.style.height = `${autosizeInput.scrollHeight}px`; };
+      autosizeInput.addEventListener('input', resize);
+      resize();
+    }
     this.querySelector('.se-password-toggle')?.addEventListener('click', (event) => {
       const input = this.querySelector('input');
       input.type = input.type === 'password' ? 'text' : 'password';

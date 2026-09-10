@@ -8,7 +8,7 @@
 
 Supports native input types plus `type="textarea"`. Common types provide useful placeholders automatically. Email, password, telephone, URL, and search fields also default to matching icons; explicit `placeholder` and `icon` attributes override those defaults. The submitted `value` remains empty unless supplied.
 
-Attributes: `label`, `name`, `type`, `value`, `placeholder`, `icon`, `hint`, `error`, `required`, `disabled`, and `fixed` for a non-resizable textarea. Read or set the element's `value` property.
+Attributes: `label`, `name`, `type`, `value`, `placeholder`, `icon`, `hint`, `error`, `required`, `disabled`, and `fixed` for a non-resizable textarea. Use `autosize` on a textarea to start at normal input height and grow with its content without a resize handle. Read or set the element's `value` property.
 
 Read the defaults for any type from the component itself:
 

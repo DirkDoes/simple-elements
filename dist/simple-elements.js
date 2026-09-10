@@ -287,11 +287,17 @@ class SeInput extends HTMLElement {
     this.innerHTML = `${label ? `<label class="se-label" for="${id}">${escapeHtml(label)}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label>` : ''}
       <div class="se-input-wrap${icon ? ' se-input-wrap--icon' : ''}">
         ${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}
-        ${textarea ? `<textarea class="se-control" ${attrs}${this.hasAttribute('fixed') ? ' data-fixed' : ''}>${escapeHtml(this.getAttribute('value') || '')}</textarea>` : `<input class="se-control" type="${escapeHtml(type)}" ${attrs}>`}
+        ${textarea ? `<textarea class="se-control" ${attrs}${this.hasAttribute('autosize') ? ' data-autosize' : this.hasAttribute('fixed') ? ' data-fixed' : ''}>${escapeHtml(this.getAttribute('value') || '')}</textarea>` : `<input class="se-control" type="${escapeHtml(type)}" ${attrs}>`}
         ${error ? '<se-icon name="alert"></se-icon>' : ''}
         ${type === 'password' ? '<button class="se-password-toggle" type="button" aria-label="Show password"><se-icon name="eye"></se-icon></button>' : ''}
       </div>
       ${error || this.getAttribute('hint') ? `<small class="se-hint${error ? ' se-hint--error' : ''}">${escapeHtml(error || this.getAttribute('hint'))}</small>` : ''}`;
+    const autosizeInput = this.querySelector('textarea[data-autosize]');
+    if (autosizeInput) {
+      const resize = () => { autosizeInput.style.height = '0px'; autosizeInput.style.height = `${autosizeInput.scrollHeight}px`; };
+      autosizeInput.addEventListener('input', resize);
+      resize();
+    }
     this.querySelector('.se-password-toggle')?.addEventListener('click', (event) => {
       const input = this.querySelector('input');
       input.type = input.type === 'password' ? 'text' : 'password';
@@ -330,17 +336,99 @@ define('se-radio', SeRadio);
 
 
 class SeRange extends HTMLElement {
+  set labels(value) { this._labels = value; if (this.isConnected) this.render(); }
+  get labels() { return this._labels; }
+
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const value = this.getAttribute('value') || '50';
-    this.innerHTML = `<div class="se-range"><div class="se-range__head"><label class="se-label">${escapeHtml(this.getAttribute('label') || 'Range')}</label><output class="se-range__value">${escapeHtml(value)}${escapeHtml(this.getAttribute('suffix') || '')}</output></div><input type="range" name="${escapeHtml(this.getAttribute('name') || '')}" min="${escapeHtml(this.getAttribute('min') || '0')}" max="${escapeHtml(this.getAttribute('max') || '100')}" value="${escapeHtml(value)}"></div>`;
+    this.render();
+  }
+
+  render() {
+    const min = Number(this.getAttribute('min') || 0);
+    const max = Number(this.getAttribute('max') || 100);
+    const requestedSteps = this.getAttribute('steps');
+    const steps = requestedSteps === null || requestedSteps === '' ? 0 : Math.max(2, Number.parseInt(requestedSteps, 10) || 2);
+    const step = steps && max !== min ? (max - min) / (steps - 1) : 'any';
+    const decimals = Math.max(0, Math.min(10, Number.parseInt(this.getAttribute('decimals') ?? '1', 10) || 0));
+    const requestedValue = Number(this.getAttribute('value') ?? 50);
+    const clamp = (value) => Math.max(Math.min(min, max), Math.min(Math.max(min, max), value));
+    const snap = (value) => step === 'any' ? clamp(value) : clamp(min + Math.round((clamp(value) - min) / step) * step);
+    const value = snap(Number.isFinite(requestedValue) ? requestedValue : 50);
+    const labels = Array.isArray(this._labels) ? this._labels : (() => { try { const parsed = JSON.parse(this.getAttribute('labels') || '[]'); return Array.isArray(parsed) ? parsed : []; } catch { return []; } })();
+    const positions = Array.from({ length: steps }, (_, index) => index);
+    this.innerHTML = `<div class="se-range${this.hasAttribute('fill') ? ' se-range--fill' : ''}"><div class="se-range__head"><label class="se-label">${escapeHtml(this.getAttribute('label') || 'Range')}</label><output class="se-range__value"></output></div><div class="se-range__control"><input type="range" name="${escapeHtml(this.getAttribute('name') || '')}" min="${escapeHtml(min)}" max="${escapeHtml(max)}" step="${escapeHtml(step)}" value="${escapeHtml(value)}"><div class="se-range__ticks" aria-hidden="true">${positions.map((index) => `<span style="left:${index / (steps - 1) * 100}%"></span>`).join('')}</div></div>${steps ? `<div class="se-range__labels" aria-hidden="true">${labels.slice(0, steps).map((label, index) => `<span style="left:${index / (steps - 1) * 100}%">${escapeHtml(label)}</span>`).join('')}</div>` : ''}</div>`;
     const input = this.querySelector('input');
-    input.addEventListener('input', () => { this.querySelector('output').textContent = input.value + (this.getAttribute('suffix') || ''); });
+    const range = this.querySelector('.se-range');
+    const update = () => { const current = snap(Number(input.value)); input.value = current; const progress = max === min ? 0 : (current - min) / (max - min) * 100; range.style.setProperty('--se-range-progress', `${Math.max(0, Math.min(100, progress))}%`); this.querySelector('output').textContent = Number(current.toFixed(decimals)) + (this.getAttribute('suffix') || ''); };
+    input.addEventListener('input', update);
+    update();
   }
 }
 
 define('se-range', SeRange);
+
+
+class SeChatMessage extends HTMLElement {
+  connectedCallback() {
+    if (this.dataset.ready) return;
+    this.dataset.ready = 'true';
+    this.render();
+  }
+
+  render() {
+    const mode = this.getAttribute('mode') === 'sent' ? 'sent' : 'received';
+    const content = this.getAttribute('content') ?? this.innerHTML.trim();
+    const title = this.getAttribute('title') || (mode === 'sent' ? 'You' : 'Assistant');
+    const timestamp = this.getAttribute('timestamp');
+    const profile = this.hasAttribute('profile');
+    const initials = this.getAttribute('initials');
+    const avatar = initials ? escapeHtml(initials) : `<se-icon name="${escapeHtml(this.getAttribute('icon') || (mode === 'sent' ? 'user' : 'zap'))}"></se-icon>`;
+    const time = timestamp ? `<time>${escapeHtml(timestamp)}</time>` : '';
+    this.innerHTML = `<article class="se-chat-message se-chat-message--${mode}"><div class="se-chat-message__row">${profile ? `<span class="se-chat-message__avatar">${avatar}</span>` : ''}<div class="se-chat-message__bubble"><header>${this.getAttribute('timestamp-position') === 'start' ? time : ''}<strong>${escapeHtml(title)}</strong>${this.getAttribute('timestamp-position') !== 'start' ? time : ''}</header><div class="se-chat-message__content">${content}</div></div></div></article>`;
+  }
+}
+
+define('se-chat-message', SeChatMessage);
+
+
+class SeChatContext extends HTMLElement {
+  connectedCallback() {
+    if (this.dataset.ready) return;
+    this.dataset.ready = 'true';
+    const content = this.getAttribute('content') ?? this.innerHTML.trim();
+    const variant = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('variant')) ? this.getAttribute('variant') : 'brand';
+    this.innerHTML = `<div class="se-chat-context se-chat-context--${variant}" role="status"><span class="se-chat-context__line"></span><span class="se-chat-context__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'info')}"></se-icon></span><span class="se-chat-context__content">${content}</span>${this.getAttribute('timestamp') ? `<time>${escapeHtml(this.getAttribute('timestamp'))}</time>` : ''}<span class="se-chat-context__line"></span></div>`;
+  }
+}
+
+define('se-chat-context', SeChatContext);
+
+
+class SeThoughtTrain extends HTMLElement {
+  connectedCallback() {
+    if (this.dataset.ready) return;
+    this.dataset.ready = 'true';
+    this.render();
+  }
+
+  render() {
+    const collapsible = this.hasAttribute('collapsible');
+    const clickable = this.hasAttribute('clickable');
+    const expanded = collapsible && this.hasAttribute('open');
+    const tag = collapsible || clickable ? 'button' : 'div';
+    const content = this.getAttribute('content') ?? this.innerHTML.trim();
+    const variant = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('variant')) ? this.getAttribute('variant') : 'brand';
+    this.innerHTML = `<div class="se-thought-train se-thought-train--${variant}"><${tag} class="se-thought-train__head"${tag === 'button' ? ' type="button"' : ''}${collapsible ? ` aria-expanded="${expanded}"` : ''}><span class="se-thought-train__marker"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'activity')}"></se-icon></span><strong>${escapeHtml(this.getAttribute('title') || 'Thought process')}</strong>${collapsible ? '<se-icon class="se-thought-train__chevron" name="chevron"></se-icon>' : ''}</${tag}>${content ? `<div class="se-thought-train__content${collapsible && !expanded ? ' se-thought-train__content--collapsed' : ''}"${collapsible ? ` aria-hidden="${!expanded}"` : ''}><div>${content}</div></div>` : ''}</div>`;
+    if (!collapsible) return;
+    const trigger = this.querySelector('.se-thought-train__head');
+    const details = this.querySelector('.se-thought-train__content');
+    trigger.addEventListener('click', () => { const open = trigger.attributes.getNamedItem('aria-expanded')?.value !== 'true'; trigger.setAttribute('aria-expanded', String(open)); if (details) { details.classList.toggle('se-thought-train__content--collapsed', !open); details.setAttribute('aria-hidden', String(!open)); } });
+  }
+}
+
+define('se-thought-train', SeThoughtTrain);
 
 
 class SeSelect extends HTMLElement {
@@ -378,7 +466,7 @@ class SeSelect extends HTMLElement {
     const trigger = multiple
       ? `<div class="se-select__trigger" role="button" tabindex="${disabled ? '-1' : '0'}" aria-haspopup="listbox" aria-expanded="false" aria-disabled="${disabled}">${value}<span class="se-select__chevron"><se-icon name="chevron"></se-icon></span></div>`
       : `<button class="se-select__trigger" type="button" aria-haspopup="listbox" aria-expanded="false"${disabled ? ' disabled' : ''}>${value}<span class="se-select__chevron"><se-icon name="chevron"></se-icon></span></button>`;
-    this.innerHTML = `<div class="se-select${multiple ? ' se-select--multiple' : ''}${disabled ? ' se-select--disabled' : ''}${clearable ? ' se-select--clearable' : ''}"><label class="se-label">${escapeHtml(this.getAttribute('label') || '')}</label>${hidden}<div class="se-select__control">${trigger}${clearable ? `<button class="se-select__clear" type="button" aria-label="Clear ${multiple ? 'selections' : 'selection'}"><se-icon name="x"></se-icon></button>` : ''}</div><div class="se-select__menu">${this.hasAttribute('searchable') ? '<div class="se-select__search"><se-icon name="search"></se-icon><input class="se-control" type="search" placeholder="Search options..." aria-label="Search options"></div>' : ''}<div class="se-select__options" role="listbox"${multiple ? ' aria-multiselectable="true"' : ''}>${available.map((option) => `<button class="se-select__option" type="button" role="option" data-id="${escapeHtml(option.id)}" aria-selected="${this._selected.has(String(option.id))}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label)}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}<div class="se-select__empty"${available.length ? ' hidden' : ''}>No options ${multiple ? 'available' : 'found'}.</div></div></div></div>`;
+    this.innerHTML = `<div class="se-select${multiple ? ' se-select--multiple' : ''}${disabled ? ' se-select--disabled' : ''}${clearable ? ' se-select--clearable' : ''}${this.getAttribute('size') === 'small' ? ' se-select--small' : ''}"><label class="se-label">${escapeHtml(this.getAttribute('label') || '')}</label>${hidden}<div class="se-select__control">${trigger}${clearable ? `<button class="se-select__clear" type="button" aria-label="Clear ${multiple ? 'selections' : 'selection'}"><se-icon name="x"></se-icon></button>` : ''}</div><div class="se-select__menu">${this.hasAttribute('searchable') ? '<div class="se-select__search"><se-icon name="search"></se-icon><input class="se-control" type="search" placeholder="Search options..." aria-label="Search options"></div>' : ''}<div class="se-select__options" role="listbox"${multiple ? ' aria-multiselectable="true"' : ''}>${available.map((option) => `<button class="se-select__option" type="button" role="option" data-id="${escapeHtml(option.id)}" aria-selected="${this._selected.has(String(option.id))}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label)}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}<div class="se-select__empty"${available.length ? ' hidden' : ''}>No options ${multiple ? 'available' : 'found'}.</div></div></div></div>`;
     this.querySelector('.se-select__trigger').addEventListener('click', () => this.querySelector('.se-select').classList.contains('se-select--open') ? this.close() : this.open());
     if (multiple) this.querySelector('.se-select__trigger').addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.querySelector('.se-select__trigger').click(); }
@@ -553,10 +641,17 @@ class SeProfile extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const tag = this.hasAttribute('clickable') ? 'button' : 'div';
+    const options = parseOptions(this);
+    const tag = !options.length && this.hasAttribute('clickable') ? 'button' : 'div';
     const variants = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'];
     const tone = variants.includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'brand';
-    this.innerHTML = `<${tag} class="se-profile se-profile--${tone}"${tag === 'button' ? ' type="button"' : ''}><span class="se-profile__avatar">${escapeHtml(this.getAttribute('initials') || '')}</span><span><strong>${escapeHtml(this.getAttribute('name') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span></${tag}>`;
+    const identity = `<span class="se-profile__avatar">${escapeHtml(this.getAttribute('initials') || '')}</span><span><strong>${escapeHtml(this.getAttribute('name') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span>`;
+    if (!options.length) { this.innerHTML = `<${tag} class="se-profile se-profile--${tone}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
+    this.innerHTML = `<div class="se-profile-menu"><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
+    const menu = this.querySelector('.se-profile-menu');
+    const trigger = this.querySelector('.se-profile');
+    trigger.addEventListener('click', () => { menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(menu.classList.contains('se-profile-menu--open'))); });
+    this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { menu.classList.remove('se-profile-menu--open'); trigger.setAttribute('aria-expanded', 'false'); emit(this, 'select', options[Number(button.dataset.index)]); }));
   }
 }
 
@@ -611,20 +706,25 @@ class SeDrawer extends HTMLElement {
   render() {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.innerHTML.trim();
+    const content = [...this.childNodes];
     const requested = this.getAttribute('mode') || 'overlay';
     const mode = ['overlay', 'overlay-clear', 'push'].includes(requested) ? requested : 'overlay';
-    this.innerHTML = `<div class="se-overlay se-drawer se-drawer--${mode}" role="dialog" aria-modal="${mode !== 'push'}" aria-label="${escapeHtml(this.getAttribute('title') || 'Drawer')}"><div class="se-drawer__panel"><header class="se-drawer__header"><se-title level="card">${escapeHtml(this.getAttribute('title') || '')}</se-title><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-drawer__body">${content}</div></div></div>`;
+    const requestedWidth = this.getAttribute('width') || '24rem';
+    this._mode = mode;
+    this._width = CSS.supports('width', requestedWidth) ? requestedWidth : '24rem';
+    this.innerHTML = `<div class="se-overlay se-drawer se-drawer--${mode}" role="dialog" aria-modal="${mode === 'overlay'}" aria-label="${escapeHtml(this.getAttribute('title') || 'Drawer')}"><div class="se-drawer__panel"><header class="se-drawer__header"><se-title level="card">${escapeHtml(this.getAttribute('title') || '')}</se-title><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-drawer__body"></div></div></div>`;
+    this.querySelector('.se-drawer__body').append(...content);
+    this.querySelector('.se-drawer').style.setProperty('--se-drawer-width', this._width);
     this.querySelector('.se-close').addEventListener('click', () => this.close());
-    this.querySelector('.se-overlay').addEventListener('click', (event) => { if (event.target === event.currentTarget) this.close(); });
+    this.querySelector('.se-overlay').addEventListener('click', (event) => { if (mode === 'overlay' && event.target === event.currentTarget) this.close(); });
     this._escape = (event) => { if (event.key === 'Escape' && this.opened) this.close(); };
     document.addEventListener('keydown', this._escape);
     if (this.hasAttribute('open')) this.open();
   }
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
-  open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); this.querySelector('.se-close')?.focus(); }
-  close() { this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
+  open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); if (this._mode === 'push') document.body.style.setProperty('--se-drawer-push-width', `min(100%, ${this._width})`); this.querySelector('.se-close')?.focus(); }
+  close() { this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); if (this._mode === 'push') document.body.style.removeProperty('--se-drawer-push-width'); emit(this, 'close', {}); }
 }
 
 define('se-drawer', SeDrawer);
@@ -864,13 +964,14 @@ class SeCodeEditor extends HTMLElement {
     this.dataset.ready = 'true';
     const value = this.getAttribute('value') || this.textContent.trim();
     const language = this.getAttribute('language') || 'javascript';
-    this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-editor"><pre class="se-editor__lines" aria-hidden="true"></pre><pre class="se-editor__highlight" aria-hidden="true"><code></code></pre><textarea name="${escapeHtml(this.getAttribute('name') || '')}" aria-label="${escapeHtml(this.getAttribute('label') || 'Code editor')}" spellcheck="false"${this.hasAttribute('readonly') ? ' readonly' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}>${escapeHtml(value)}</textarea></div>`;
+    this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-editor"><pre class="se-editor__lines" aria-hidden="true"></pre><pre class="se-editor__highlight" aria-hidden="true"><code></code></pre><textarea name="${escapeHtml(this.getAttribute('name') || '')}" aria-label="${escapeHtml(this.getAttribute('label') || 'Code editor')}" spellcheck="false"${this.hasAttribute('autosize') ? ' data-autosize' : ''}${this.hasAttribute('readonly') ? ' readonly' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}>${escapeHtml(value)}</textarea></div>`;
     const textarea = this.querySelector('textarea');
     const highlight = this.querySelector('.se-editor__highlight');
     const lines = this.querySelector('.se-editor__lines');
     const sync = () => {
       highlight.querySelector('code').innerHTML = `${highlightCode(textarea.value, language)}\n`;
       lines.textContent = Array.from({ length: textarea.value.split('\n').length }, (_, index) => index + 1).join('\n');
+      if (textarea.dataset.autosize !== undefined) { textarea.style.height = '0px'; textarea.style.height = `${textarea.scrollHeight}px`; }
     };
     textarea.addEventListener('input', sync);
     textarea.addEventListener('scroll', () => { highlight.scrollTop = textarea.scrollTop; highlight.scrollLeft = textarea.scrollLeft; lines.scrollTop = textarea.scrollTop; });
@@ -903,27 +1004,121 @@ class SeCodeEditor extends HTMLElement {
 define('se-code-editor', SeCodeEditor);
 
 
+const wysiwygInlineMarkdown = (value) => escapeHtml(value)
+  .replace(/`([^`]+)`/g, '<code>$1</code>')
+  .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+  .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+  .replace(/_([^_]+)_/g, '<em>$1</em>');
+
+const wysiwygMarkdownToHtml = (source) => {
+  const lines = source.split(/\r?\n/);
+  const html = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.trim()) continue;
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
+    if (heading) { html.push(`<h${heading[1].length}>${wysiwygInlineMarkdown(heading[2])}</h${heading[1].length}>`); continue; }
+    const list = /^\s*([-*]|\d+\.)\s+/.exec(line);
+    if (list) {
+      const ordered = /\d/.test(list[1]);
+      const items = [];
+      const pattern = ordered ? /^\s*\d+\.\s+/ : /^\s*[-*]\s+/;
+      do { items.push(`<li>${wysiwygInlineMarkdown(lines[index].replace(pattern, ''))}</li>`); index += 1; } while (index < lines.length && pattern.test(lines[index]));
+      index -= 1;
+      html.push(`<${ordered ? 'ol' : 'ul'}>${items.join('')}</${ordered ? 'ol' : 'ul'}>`);
+      continue;
+    }
+    if (/^>\s?/.test(line)) { html.push(`<blockquote>${wysiwygInlineMarkdown(line.replace(/^>\s?/, ''))}</blockquote>`); continue; }
+    html.push(`<p>${wysiwygInlineMarkdown(line)}</p>`);
+  }
+  return html.join('');
+};
+
+const wysiwygHtmlToMarkdown = (html) => {
+  const template = document.createElement('template');
+  template.innerHTML = html
+    .replace(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi, (_, level, content) => `${'#'.repeat(Number(level))} ${content}\n\n`)
+    .replace(/<(strong|b)[^>]*>([\s\S]*?)<\/\1>/gi, '**$2**')
+    .replace(/<(em|i)[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*')
+    .replace(/<u[^>]*>([\s\S]*?)<\/u>/gi, '__$1__')
+    .replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (_, items) => `${items.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '- $1\n')}\n`)
+    .replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (_, items) => { let index = 0; return `${items.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_item, content) => `${++index}. ${content}\n`)}\n`; })
+    .replace(/<br\s*\/?>(?=.)/gi, '\n')
+    .replace(/<\/(p|div|blockquote)>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '');
+  return template.content.textContent
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+};
+
 class SeWysiwyg extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     const initial = this.getAttribute('value') || this.innerHTML.trim();
+    this._formatMode = ['html', 'markdown', 'both'].includes(this.getAttribute('format')) ? this.getAttribute('format') : 'markdown';
+    this._format = this._formatMode === 'html' ? 'html' : 'markdown';
+    this._html = this._format === 'markdown' ? wysiwygMarkdownToHtml(initial) : initial;
+    this._sourceVisible = false;
     this.dataset.ready = 'true';
     const controls = [['bold', 'bold', 'Bold'], ['italic', 'italic', 'Italic'], ['underline', 'underline', 'Underline'], ['insertUnorderedList', 'list', 'Bulleted list'], ['insertOrderedList', 'list-ordered', 'Numbered list']];
-    this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-wysiwyg"><div class="se-wysiwyg__toolbar">${controls.map(([command, icon, label]) => `<button type="button" data-command="${command}" aria-label="${label}"${this.hasAttribute('disabled') ? ' disabled' : ''}><se-icon name="${icon}"></se-icon></button>`).join('')}</div><div class="se-wysiwyg__editor" contenteditable="${!this.hasAttribute('disabled')}" role="textbox" aria-multiline="true" data-placeholder="${escapeHtml(this.getAttribute('placeholder') || 'Start writing...')}">${initial}</div><textarea hidden name="${escapeHtml(this.getAttribute('name') || '')}">${escapeHtml(initial)}</textarea></div>`;
+    this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-wysiwyg"><div class="se-wysiwyg__toolbar">${controls.map(([command, icon, label]) => `<button type="button" data-command="${command}" aria-label="${label}"${this.hasAttribute('disabled') ? ' disabled' : ''}><se-icon name="${icon}"></se-icon></button>`).join('')}<span class="se-wysiwyg__spacer"></span>${this._formatMode === 'both' ? `<se-select data-format size="small" value="markdown" aria-label="Source format" options='[{"id":"html","label":"HTML"},{"id":"markdown","label":"Markdown"}]'${this.hasAttribute('disabled') ? ' disabled' : ''}></se-select>` : ''}<button type="button" data-source-toggle aria-label="Show source" aria-pressed="false"${this.hasAttribute('disabled') ? ' disabled' : ''}><se-icon name="code"></se-icon></button></div><div class="se-wysiwyg__editor" contenteditable="${!this.hasAttribute('disabled')}" role="textbox" aria-multiline="true" data-placeholder="${escapeHtml(this.getAttribute('placeholder') || 'Start writing...')}">${this._html}</div><div class="se-wysiwyg__source-wrap" hidden><pre aria-hidden="true"><code></code></pre><textarea class="se-wysiwyg__source" spellcheck="false"${this.hasAttribute('disabled') ? ' disabled' : ''}></textarea></div><textarea hidden name="${escapeHtml(this.getAttribute('name') || '')}" data-value></textarea></div>`;
     const editor = this.querySelector('.se-wysiwyg__editor');
-    const input = this.querySelector('textarea');
-    const sync = () => { input.value = editor.innerHTML; };
-    editor.addEventListener('input', sync);
-    this.querySelectorAll('[data-command]').forEach((button) => button.addEventListener('click', () => {
+    const source = this.querySelector('.se-wysiwyg__source');
+    const sourceWrap = this.querySelector('.se-wysiwyg__source-wrap');
+    const sourceHighlight = sourceWrap.querySelector('code');
+    const value = this.querySelector('[data-value]');
+    const format = this.querySelector('se-select[data-format]');
+    const toggle = this.querySelector('[data-source-toggle]');
+    if (format) format.hidden = true;
+    const sourceValue = () => this._format === 'markdown' ? wysiwygHtmlToMarkdown(this._html) : this._html;
+    const highlightSource = () => { sourceHighlight.innerHTML = `${highlightCode(source.value, this._format)}\n`; };
+    const sync = () => { this._html = editor.innerHTML; value.value = this._html; if (!this._sourceVisible) source.value = sourceValue(); };
+    const convertTypedMarkdown = () => {
+      const text = editor.textContent;
+      if (text && /(^|\n)\s*(#{1,6}\s|[-*]\s|\d+\.\s|>\s|\*\*|__)/.test(text) && !editor.querySelector('*')) { editor.innerHTML = wysiwygMarkdownToHtml(text); }
+    };
+    editor.addEventListener('input', () => { convertTypedMarkdown(); sync(); });
+    editor.addEventListener('paste', (event) => {
+      const text = event.clipboardData?.getData('text/plain') || '';
+      if (!/(^|\n)\s*(#{1,6}\s|[-*]\s|\d+\.\s|>\s|\*\*|__)/.test(text)) return;
+      event.preventDefault();
+      document.execCommand('insertHTML', false, wysiwygMarkdownToHtml(text));
+      sync();
+    });
+    const applyRaw = (command) => {
+      const wraps = { bold: ['**', '**'], italic: ['*', '*'], underline: ['<u>', '</u>'] }[command];
+      if (!wraps) return;
+      const start = source.selectionStart;
+      const end = source.selectionEnd;
+      const [open, close] = this._format === 'markdown' ? wraps : ({ bold: ['<strong>', '</strong>'], italic: ['<em>', '</em>'], underline: ['<u>', '</u>'] }[command]);
+      source.setRangeText(`${open}${source.value.slice(start, end)}${close}`, start, end);
+      source.setSelectionRange(start + open.length, end + open.length);
+      source.focus();
+      source.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    const runCommand = (command) => {
+      if (this._sourceVisible) { applyRaw(command); return; }
       editor.focus();
       // ponytail: execCommand keeps this dependency-free; replace with Selection/Range commands if browser support becomes insufficient.
-      document.execCommand(button.dataset.command, false);
+      document.execCommand(command, false);
       sync();
-    }));
-    this.closest('form')?.addEventListener('reset', () => queueMicrotask(() => { editor.innerHTML = input.defaultValue; }));
+    };
+    this.querySelectorAll('[data-command]').forEach((button) => button.addEventListener('click', () => runCommand(button.dataset.command)));
+    editor.addEventListener('keydown', (event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') { event.preventDefault(); runCommand('bold'); } });
+    source.addEventListener('keydown', (event) => { const command = { b: 'bold', i: 'italic' }[event.key.toLowerCase()]; if ((event.ctrlKey || event.metaKey) && command) { event.preventDefault(); applyRaw(command); } });
+    source.addEventListener('input', () => { this._html = this._format === 'markdown' ? wysiwygMarkdownToHtml(source.value) : source.value; editor.innerHTML = this._html; value.value = this._html; highlightSource(); });
+    source.addEventListener('scroll', () => { sourceWrap.querySelector('pre').scrollTop = source.scrollTop; sourceWrap.querySelector('pre').scrollLeft = source.scrollLeft; });
+    format?.addEventListener('change', (event) => { this._html = this._format === 'markdown' ? wysiwygMarkdownToHtml(source.value) : source.value; this._format = event.detail.value; source.value = sourceValue(); editor.innerHTML = this._html; value.value = this._html; highlightSource(); });
+    toggle.addEventListener('click', () => { if (!this._sourceVisible) this._html = editor.innerHTML; this._sourceVisible = !this._sourceVisible; source.value = sourceValue(); editor.innerHTML = this._html; sourceWrap.hidden = !this._sourceVisible; editor.hidden = this._sourceVisible; if (format) format.hidden = !this._sourceVisible; toggle.innerHTML = `<se-icon name="${this._sourceVisible ? 'type' : 'code'}"></se-icon>`; toggle.setAttribute('aria-label', this._sourceVisible ? 'Show text editor' : 'Show source'); toggle.setAttribute('aria-pressed', String(this._sourceVisible)); value.value = this._html; highlightSource(); });
+    value.value = this._html;
+    value.defaultValue = this._html;
+    source.value = sourceValue();
+    highlightSource();
+    this.closest('form')?.addEventListener('reset', () => queueMicrotask(() => { editor.innerHTML = value.defaultValue; this._html = value.defaultValue; sync(); }));
   }
-  get value() { return this.querySelector('textarea')?.value || ''; }
-  set value(value) { const editor = this.querySelector('.se-wysiwyg__editor'); const input = this.querySelector('textarea'); if (editor && input) { editor.innerHTML = value; input.value = value; } }
+  get value() { return this.querySelector('[data-value]')?.value || ''; }
+  set value(value) { const editor = this.querySelector('.se-wysiwyg__editor'); const input = this.querySelector('[data-value]'); if (editor && input) { editor.innerHTML = value; input.value = value; this._html = value; } }
 }
 
 define('se-wysiwyg', SeWysiwyg);
@@ -1154,7 +1349,7 @@ class SeDatetimePicker extends HTMLElement {
     this._resizeTimer = setTimeout(() => { popover.style.height = ''; }, 220);
   }
   adjustSingleTime(part, direction) { const step = part === 'minute' ? Math.max(1, Math.min(30, Math.round(Number(this.getAttribute('step') || 300) / 60))) : 1; this._draftTime[part] = wrapNumber(this._draftTime[part] + direction * step, part === 'hour' ? 24 : 60); this._time = { ...this._draftTime }; this.syncSingle(); }
-  selectSingleDate(date) { this._date = date; this._view = date; this.syncSingle(); this.setMode('time'); }
+  selectSingleDate(date) { this._date = date; this._view = date; this._time = { ...this._draftTime }; this.syncSingle(); this.setMode('time'); }
 
   renderSingle() {
     const locale = this.getAttribute('locale') || undefined;

@@ -9,20 +9,25 @@ class SeDrawer extends HTMLElement {
   render() {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.innerHTML.trim();
+    const content = [...this.childNodes];
     const requested = this.getAttribute('mode') || 'overlay';
     const mode = ['overlay', 'overlay-clear', 'push'].includes(requested) ? requested : 'overlay';
-    this.innerHTML = `<div class="se-overlay se-drawer se-drawer--${mode}" role="dialog" aria-modal="${mode !== 'push'}" aria-label="${escapeHtml(this.getAttribute('title') || 'Drawer')}"><div class="se-drawer__panel"><header class="se-drawer__header"><se-title level="card">${escapeHtml(this.getAttribute('title') || '')}</se-title><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-drawer__body">${content}</div></div></div>`;
+    const requestedWidth = this.getAttribute('width') || '24rem';
+    this._mode = mode;
+    this._width = CSS.supports('width', requestedWidth) ? requestedWidth : '24rem';
+    this.innerHTML = `<div class="se-overlay se-drawer se-drawer--${mode}" role="dialog" aria-modal="${mode === 'overlay'}" aria-label="${escapeHtml(this.getAttribute('title') || 'Drawer')}"><div class="se-drawer__panel"><header class="se-drawer__header"><se-title level="card">${escapeHtml(this.getAttribute('title') || '')}</se-title><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-drawer__body"></div></div></div>`;
+    this.querySelector('.se-drawer__body').append(...content);
+    this.querySelector('.se-drawer').style.setProperty('--se-drawer-width', this._width);
     this.querySelector('.se-close').addEventListener('click', () => this.close());
-    this.querySelector('.se-overlay').addEventListener('click', (event) => { if (event.target === event.currentTarget) this.close(); });
+    this.querySelector('.se-overlay').addEventListener('click', (event) => { if (mode === 'overlay' && event.target === event.currentTarget) this.close(); });
     this._escape = (event) => { if (event.key === 'Escape' && this.opened) this.close(); };
     document.addEventListener('keydown', this._escape);
     if (this.hasAttribute('open')) this.open();
   }
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
-  open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); this.querySelector('.se-close')?.focus(); }
-  close() { this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
+  open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); if (this._mode === 'push') document.body.style.setProperty('--se-drawer-push-width', `min(100%, ${this._width})`); this.querySelector('.se-close')?.focus(); }
+  close() { this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); if (this._mode === 'push') document.body.style.removeProperty('--se-drawer-push-width'); emit(this, 'close', {}); }
 }
 
 define('se-drawer', SeDrawer);

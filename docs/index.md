@@ -43,6 +43,9 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Profile](profile.md)
 - [Modal](modal.md)
 - [Drawer](drawer.md)
+- [Chat message](chat-message.md)
+- [Chat context](chat-context.md)
+- [Thought train](thought-train.md)
 - [Badge](badge.md)
 - [Empty state](empty-state.md)
 
@@ -58,6 +61,7 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 ## Patterns
 
 - [Page layout](page-layout.md)
+- [Chats](chats.md)
 
 ## Data display
 
