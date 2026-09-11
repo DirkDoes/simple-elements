@@ -38,6 +38,7 @@ import './components/list.js';
 import './components/list-header.js';
 import './components/list-row.js';
 import './components/table.js';
+import './components/color-picker.js';
 import './components/date-picker.js';
 import './components/time-picker.js';
 import './components/datetime-picker.js';

@@ -681,6 +681,34 @@ se-date-picker { position: relative; }
 .se-date__footer { display: flex; justify-content: space-between; margin-top: .5rem; padding-top: .625rem; border-top: 1px solid var(--se-border); }
 .se-date__footer button { padding: .375rem .5rem; color: var(--se-brand); font-size: .75rem; font-weight: 600; }
 
+se-color-picker { position: relative; display: block; font-family: var(--se-font); }
+.se-color-picker { position: relative; }
+.se-color-picker__body, .se-color-picker__popover { width: 19rem; padding: .75rem; color: var(--se-text); background: var(--se-surface); border: 1px solid var(--se-border); border-radius: .75rem; box-shadow: var(--se-shadow-lg); }
+.se-color-picker--inline .se-color-picker__body { margin-top: .5rem; box-shadow: none; }
+.se-color-picker--popover .se-color-picker__popover { position: absolute; top: calc(100% + .5rem); left: 0; z-index: 40; }
+.se-color-picker__popover > .se-color-picker__body { width: auto; padding: 0; background: transparent; border: 0; box-shadow: none; }
+.se-color-picker__trigger { display: flex; margin-top: .5rem; align-items: center; gap: .625rem; text-align: left; }
+.se-color-picker__trigger-value { min-width: 0; flex: 1; overflow: hidden; text-transform: uppercase; text-overflow: ellipsis; }
+.se-color-picker__trigger > se-icon { width: 1rem; height: 1rem; color: var(--se-faint); }
+.se-color-picker__gradient { position: relative; height: 12rem; overflow: hidden; background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, hsl(var(--se-color-hue) 100% 50%)); border-radius: .5rem; cursor: crosshair; touch-action: none; }
+.se-color-picker__gradient::after { position: absolute; top: calc(var(--se-color-brightness) - .5rem); left: calc(var(--se-color-saturation) - .5rem); width: 1rem; height: 1rem; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 0 1px rgb(15 23 42 / .35); content: ''; pointer-events: none; }
+.se-color-picker__gradient:focus { outline: 2px solid var(--se-brand); outline-offset: 2px; }
+.se-color-picker__hue { display: block; width: 100%; height: 1rem; margin: .875rem 0 .75rem; appearance: none; background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); border-radius: 999px; cursor: pointer; }
+.se-color-picker__hue::-webkit-slider-thumb { width: 1rem; height: 1rem; appearance: none; background: var(--se-surface); border: 2px solid white; border-radius: 50%; box-shadow: 0 0 0 1px rgb(15 23 42 / .35); }
+.se-color-picker__hue::-moz-range-thumb { width: .75rem; height: .75rem; background: var(--se-surface); border: 2px solid white; border-radius: 50%; box-shadow: 0 0 0 1px rgb(15 23 42 / .35); }
+.se-color-picker__hue:focus { outline: 2px solid var(--se-brand); outline-offset: 2px; }
+.se-color-picker__value { display: flex; align-items: center; gap: .625rem; margin-top: .75rem; }
+.se-color-picker__value .se-control { min-width: 0; min-height: 2.25rem; padding: .5rem .625rem; box-shadow: none; font-size: .8125rem; text-transform: uppercase; }
+.se-color-picker__value output { color: var(--se-muted); font: 600 .8125rem/1.25rem ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; }
+.se-color-picker__swatch { display: block; width: 1.25rem; height: 1.25rem; flex: 0 0 auto; background: var(--se-color, var(--se-brand)); border: 1px solid rgb(15 23 42 / .2); border-radius: .3rem; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .35); }
+.se-color-picker__palette { display: grid; grid-template-columns: repeat(8, 1fr); gap: .375rem; }
+.se-color-picker__palette button { display: grid; width: 100%; aspect-ratio: 1; padding: .125rem; place-items: center; background: transparent; border: 1px solid transparent; border-radius: .375rem; cursor: pointer; }
+.se-color-picker__palette button span { display: block; width: 100%; height: 100%; border: 1px solid rgb(15 23 42 / .15); border-radius: .35rem; box-shadow: inset 0 0 0 1px rgb(255 255 255 / .3); }
+.se-color-picker__palette button:hover { background: var(--se-surface-soft); }
+.se-color-picker__palette button:focus { outline: 2px solid var(--se-brand); outline-offset: 1px; }
+.se-color-picker__palette button[aria-pressed="true"] { border-color: var(--se-brand); box-shadow: 0 0 0 2px color-mix(in srgb, var(--se-brand) 18%, transparent); }
+.se-color-picker__palette button:disabled { opacity: .45; cursor: not-allowed; }
+
 .se-time { position: relative; margin-top: .5rem; }
 .se-time__trigger { display: flex; margin-top: 0; align-items: center; justify-content: space-between; text-align: left; }
 .se-time__trigger se-icon { color: var(--se-faint); }
