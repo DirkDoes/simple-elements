@@ -106,9 +106,33 @@ const renderPatternPage = ({ tag, description, examples }) => {
   section.querySelectorAll('.demo-pattern-example').forEach((example) => {
     const editor = example.querySelector('se-code-editor');
     const preview = example.querySelector('[data-pattern-preview]');
-    const render = () => { const template = document.createElement('template'); template.innerHTML = editor.value; preview.replaceChildren(template.content.cloneNode(true)); };
+    const resizeFrame = () => {
+      const frame = preview.querySelector('.demo-pattern-frame');
+      const result = preview.closest('.demo-pattern-result');
+      const availableWidth = result.clientWidth - (preview.parentElement.offsetWidth - preview.parentElement.clientWidth);
+      if (!frame || !availableWidth) return;
+      const scale = Math.min(1, availableWidth / 1024);
+      frame.style.transform = `scale(${scale})`;
+      preview.style.width = `${1024 * scale}px`;
+      preview.style.height = `${576 * scale}px`;
+    };
+    const render = () => {
+      if (tag === 'page-layout') {
+        const frame = document.createElement('iframe');
+        frame.className = 'demo-pattern-frame';
+        frame.title = `${example.querySelector('header se-title').textContent} preview`;
+        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260911"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260911"></script></head><body>${editor.value}</body></html>`;
+        preview.replaceChildren(frame);
+        resizeFrame();
+        return;
+      }
+      const template = document.createElement('template');
+      template.innerHTML = editor.value;
+      preview.replaceChildren(template.content.cloneNode(true));
+    };
     editor.addEventListener('input', render);
     render();
+    if (tag === 'page-layout') new ResizeObserver(resizeFrame).observe(preview.closest('.demo-pattern-result'));
   });
 };
 patternCatalog.forEach(renderPatternPage);

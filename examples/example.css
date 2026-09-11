@@ -71,8 +71,11 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-pattern-result [data-pattern-preview] { overflow: visible; }
 .demo-pattern-preview-card { padding: 0; overflow: visible; }
 .demo-pattern-result se-sidebar { display: flex; }
-.demo-pattern-page[data-demo="page-layout"] [data-pattern-preview] { height: 32rem; overflow: hidden; }
-.demo-pattern-page[data-demo="page-layout"] [data-pattern-preview] > .se-page-layout { height: 100%; }
+.demo-pattern-page[data-demo="page-layout"] .demo-pattern-result { min-width: 0; }
+.demo-pattern-page[data-demo="page-layout"] .demo-pattern-result > se-title { text-align: center; }
+.demo-pattern-page[data-demo="page-layout"] .demo-pattern-preview-card { width: fit-content; max-width: 100%; margin-inline: auto; overflow: hidden; }
+.demo-pattern-page[data-demo="page-layout"] [data-pattern-preview] { overflow: hidden; }
+.demo-pattern-frame { display: block; width: 64rem; height: 36rem; background: var(--se-bg); border: 0; transform-origin: top left; }
 .demo-pattern-page[data-demo="chats"] .demo-pattern-result { width: min(100%, 40rem); margin-inline: auto; }
 .demo-pattern-page[data-demo="chats"] .demo-pattern-preview-card { padding: 2rem 1.5rem; }
 .demo-dashboard-hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(20rem, .75fr); gap: 1.5rem; margin-bottom: 1.5rem; }

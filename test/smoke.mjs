@@ -87,6 +87,8 @@ assert.equal(examplePages.length, 1, 'expected one example HTML page');
 for (const file of examplePages) assert.match(await readFile(`examples/${file}`, 'utf8'), /data-demo=/);
 const exampleScript = await readFile('examples/example.js', 'utf8');
 assert.doesNotMatch(exampleScript, /const demos\s*=/, 'demo markup belongs in HTML');
+assert.match(exampleScript, /tag === 'page-layout'[\s\S]*document\.createElement\('iframe'\)/, 'page layout patterns must render in isolated desktop iframes');
+assert.match(exampleScript, /new ResizeObserver\(resizeFrame\)/, 'desktop pattern frames must scale with their preview cards');
 const exampleHtml = await readFile('examples/index.html', 'utf8');
 assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 2, 'dashboard and custom input pages should remain in static HTML');
 assert.match(exampleHtml, /data-demo="dashboard"/);
