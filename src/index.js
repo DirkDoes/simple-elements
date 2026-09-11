@@ -1,3 +1,5 @@
+import { setBrandTheme } from './theme.js';
+export { setBrandTheme };
 import './components/icon.js';
 import './components/text.js';
 import './components/title.js';

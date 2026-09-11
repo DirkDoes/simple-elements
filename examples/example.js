@@ -1,3 +1,4 @@
+import { setBrandTheme } from '../src/theme.js';
 import { componentCatalog, patternCatalog } from './catalog.js?v=20260909';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
@@ -128,6 +129,7 @@ sidebar.addEventListener('click', (event) => {
 addEventListener('hashchange', () => showPage(location.hash.slice(1)));
 document.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.open).open()));
 document.querySelector('.demo-mobile__theme').addEventListener('change', (event) => { document.documentElement.dataset.theme = event.currentTarget.checked ? 'dark' : 'light'; });
+document.querySelector('.demo-dashboard-brand-color')?.addEventListener('change', (event) => { setBrandTheme({ primary: event.detail.value }); });
 
 const template = document.querySelector('[data-demo="input"]');
 const renderTemplateInput = () => {

@@ -51,6 +51,7 @@
                   <se-select label="Workspace type" name="workspace[type]" value="design" searchable clearable options='[{"id":"design","label":"Design system","description":"Tokens, components, and patterns","icon":"package"},{"id":"analytics","label":"Analytics dashboard","description":"Metrics and reporting views","icon":"activity"},{"id":"operations","label":"Operations hub","description":"People, tasks, and workflows","icon":"settings"}]'></se-select>
                   <se-datetime-picker label="First review" name="workspace[review_at]" value="2026-09-10T09:30" variant="joined"></se-datetime-picker>
                   <div class="demo-dashboard-form__options"><se-checkbox variant="switch" label="Send me the weekly digest" checked></se-checkbox><se-range label="Priority" value="68" suffix="%"></se-range></div>
+                  <div class="demo-dashboard-theme-control"><div><se-title level="card">Brand theme</se-title><se-text muted small>Change the primary color used across the library.</se-text></div><se-color-picker class="demo-dashboard-brand-color" label="Primary color" name="theme[primary]" value="#2563eb"></se-color-picker></div>
                   <div class="demo-row"><se-button variant="brand" text="Create workspace" icon="send" type="button"></se-button><se-button variant="ghost" text="Save as draft" type="button"></se-button></div>
                 </form>
               </se-card>

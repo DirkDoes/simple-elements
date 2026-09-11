@@ -20,7 +20,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-icon se-icon { width: 1.5rem; height: 1.5rem; }
 .demo-icon code, .demo-custom-icon code { color: var(--se-muted); font-size: .6875rem; }
 .demo-custom-icon { display: flex; align-items: center; gap: 1rem; }
-.demo-custom-icon img { width: 3rem; height: 3rem; padding: .625rem; background: var(--se-brand-soft); border-radius: .625rem; }
+.demo-custom-icon img { width: 3rem; height: 3rem; padding: .625rem; background: var(--se-primary-soft); border-radius: .625rem; }
 .demo-custom-icon code { display: block; margin-top: .5rem; }
 .demo-code-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; }
 .demo-card-title { margin-bottom: 1rem; }
@@ -31,13 +31,13 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-profile-static { display: grid; gap: 1rem; padding: 1rem; background: color-mix(in srgb, var(--se-surface-soft) 50%, transparent); border: 1px solid var(--se-border); border-radius: .5rem; }
 .demo-mobile { display: none; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--se-border); }
 .demo-mobile__brand { display: flex; align-items: center; gap: .5rem; font-size: 1.125rem; font-weight: 700; }
-.demo-mobile__logo { display: grid; width: 2rem; height: 2rem; place-items: center; color: white; background: var(--se-brand); border-radius: .5rem; }
+.demo-mobile__logo { display: grid; width: 2rem; height: 2rem; place-items: center; color: var(--se-primary-contrast); background: var(--se-primary); border-radius: .5rem; }
 .demo-mobile__theme { display: block; }
 .demo-wide { grid-column: 1 / -1; }
 .demo-divider { height: 1px; margin: .5rem 0; background: var(--se-border); }
-.demo-tooltip-text { color: var(--se-brand); font-size: .875rem; font-weight: 600; text-decoration: underline dashed; text-underline-offset: .25rem; cursor: help; }
+.demo-tooltip-text { color: var(--se-primary); font-size: .875rem; font-weight: 600; text-decoration: underline dashed; text-underline-offset: .25rem; cursor: help; }
 .demo-notice { display: flex; gap: .75rem; margin-top: 1rem; padding: 1rem; background: var(--se-surface-soft); border: 1px solid var(--se-border); border-radius: .75rem; }
-.demo-notice se-icon { width: 1.25rem; height: 1.25rem; color: var(--se-brand); }
+.demo-notice se-icon { width: 1.25rem; height: 1.25rem; color: var(--se-primary); }
 .demo-modal-copy { margin: .5rem 0 0; }
 .demo-template-preview { display: grid; min-height: 10rem; align-content: start; gap: 1.5rem; }
 .demo-template-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -76,14 +76,14 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-pattern-page[data-demo="chats"] .demo-pattern-result { width: min(100%, 40rem); margin-inline: auto; }
 .demo-pattern-page[data-demo="chats"] .demo-pattern-preview-card { padding: 2rem 1.5rem; }
 .demo-dashboard-hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(20rem, .75fr); gap: 1.5rem; margin-bottom: 1.5rem; }
-.demo-dashboard-hero-copy { display: grid; align-content: center; gap: 1rem; padding: 2.5rem; color: white; background: linear-gradient(135deg, #1d4ed8, #4338ca); border-radius: 1rem; box-shadow: var(--se-shadow-lg); }
+.demo-dashboard-hero-copy { display: grid; align-content: center; gap: 1rem; padding: 2.5rem; color: white; background: linear-gradient(135deg, var(--se-primary), var(--se-primary-deep)); border-radius: 1rem; box-shadow: var(--se-shadow-lg); }
 .demo-dashboard-hero-copy .se-title--page { color: white; }
-.demo-dashboard-hero-copy .se-text { max-width: 38rem; color: #dbeafe; }
+.demo-dashboard-hero-copy .se-text { max-width: 38rem; color: color-mix(in srgb, white 78%, transparent); }
 .demo-dashboard-hero-copy .se-button--ghost { color: white; }
 .demo-dashboard-overview { display: grid; gap: 1.25rem; }
 .demo-dashboard-overview__heading, .demo-dashboard-card-heading, .demo-dashboard-tip { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
 .demo-dashboard-overview__heading { align-items: center; }
-.demo-dashboard-overview__icon, .demo-dashboard-tip__icon { display: grid; width: 2.5rem; height: 2.5rem; flex: 0 0 auto; place-items: center; color: var(--se-brand); background: var(--se-brand-soft); border-radius: .75rem; }
+.demo-dashboard-overview__icon, .demo-dashboard-tip__icon { display: grid; width: 2.5rem; height: 2.5rem; flex: 0 0 auto; place-items: center; color: var(--se-primary); background: var(--se-primary-soft); border-radius: .75rem; }
 .demo-dashboard-overview__icon se-icon, .demo-dashboard-tip__icon se-icon { width: 1.25rem; height: 1.25rem; }
 .demo-dashboard-overview .se-list, .demo-dashboard-layout .se-list { margin-top: 0; }
 .demo-dashboard-overview .se-list__row { justify-content: space-between; }
@@ -93,6 +93,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-dashboard-form-card { display: grid; gap: 1.5rem; }
 .demo-dashboard-form { display: grid; gap: 1.25rem; }
 .demo-dashboard-form__options { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1fr); align-items: end; gap: 1.5rem; }
+.demo-dashboard-theme-control { display: grid; grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem); align-items: end; gap: 1rem; padding-top: 1.25rem; border-top: 1px solid var(--se-border); }
 .demo-dashboard-form__options se-range { min-width: 0; }
 .demo-dashboard-tip { justify-content: flex-start; }
 .demo-dashboard-layout > .demo-stack > se-card > .se-title { display: block; margin-bottom: 1rem; }
@@ -129,7 +130,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 @media (max-width: 767px) {
   .demo-main > se-topbar { display: none; }
   .demo-content { width: min(100% - 4rem, 72rem); padding-top: 2rem; }
-  .demo-grid, .demo-fields, .demo-controls, .demo-code-grid, .demo-dashboard-hero, .demo-dashboard-layout, .demo-dashboard-form__options { grid-template-columns: 1fr; }
+  .demo-grid, .demo-fields, .demo-controls, .demo-code-grid, .demo-dashboard-hero, .demo-dashboard-layout, .demo-dashboard-form__options, .demo-dashboard-theme-control { grid-template-columns: 1fr; }
   .demo-wide { grid-column: auto; }
   .demo-controls se-range { grid-column: auto; }
   .demo-mobile { display: flex; }

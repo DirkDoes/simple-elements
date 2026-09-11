@@ -23,6 +23,14 @@ Set the theme on any ancestor (normally `<html>`):
 document.documentElement.dataset.theme = 'dark'; // or 'light'
 ```
 
+Set the primary brand color at runtime; the library derives light and dark role colors in OKLCH:
+
+```js
+import { setBrandTheme } from 'simple-elements';
+
+setBrandTheme({ primary: '#7c3aed' });
+```
+
 Consumers do not need a build step or Tailwind configuration: the package ships compiled CSS. Tailwind is a development dependency used for the library's theme tokens and CSS build, so it does not reset or couple the host application's styles.
 
 Icons are supplied by the framework-free `lucide` package. The browser bundle embeds only the curated icons exposed through `<se-icon>`.

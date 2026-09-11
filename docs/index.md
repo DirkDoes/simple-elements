@@ -8,6 +8,8 @@ npm install github:DirkDoes/simple-elements
 
 Then import `simple-elements` and its precompiled `simple-elements/styles.css`, and use the elements in ordinary HTML. The CSS is built with Tailwind, but consuming applications need no Tailwind configuration. Set `data-theme="light"` or `data-theme="dark"` on `<html>`.
 
+See [Brand theme](theme.md) to configure the primary color at runtime.
+
 ## Foundations
 
 - [Icon](icon.md)
