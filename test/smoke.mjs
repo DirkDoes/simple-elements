@@ -33,7 +33,16 @@ assert.equal(generatedTheme.light.base, '#2563eb');
 assert.notEqual(generatedTheme.light.hover, generatedTheme.light.base);
 assert.notEqual(generatedTheme.dark.base, generatedTheme.light.base);
 assert.equal(generatedTheme.dark.contrast, '#ffffff');
-assert.equal(primaryTheme('#f97316').dark.contrast, '#0f172a');
+assert.equal(primaryTheme('#f97316').dark.contrast, '#0a0a0a');
+assert.deepEqual(primaryTheme().light, {
+  base: '#2563eb',
+  hover: '#1e58d7',
+  soft: '#e8f0ff',
+  text: '#1e58d7',
+  border: '#c4d3ef',
+  deep: '#1649b7',
+  contrast: '#ffffff',
+});
 assert.equal(primaryTheme('#abc').light.base, '#aabbcc');
 const themeStyles = {};
 globalThis.document = { documentElement: { style: { setProperty: (name, value) => { themeStyles[name] = value; } } } };
@@ -48,6 +57,8 @@ assert.match(compiledCss, /\.se-choice--switch/);
 assert.match(compiledCss, /textarea:read-only\{[^}]*resize:none/);
 assert.match(compiledCss, /se-code\[block\]\[wrap\]/);
 assert.match(compiledCss, /se-code-editor\[wrap\]/);
+assert.match(compiledCss, /\[data-theme=dark\]\{[^}]*--se-bg:#090909[^}]*--se-surface:#141414/, 'dark surfaces must use neutral black and gray');
+assert.match(compiledCss, /\[data-theme=dark\]\{[^}]*--se-shadow:none[^}]*--se-shadow-lg:none/, 'dark elevation must not use shadows');
 assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\]\{[^}]*position:absolute/, 'mobile sidebars must overlay page content');
 assert.match(compiledCss, /se-sidebar\[overlay\]:not\(\[collapsed\]\):not\(\[closed\]\)\{[^}]*position:absolute/, 'expanded overlay sidebars must leave page content in place');
 assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\] \[data-sidebar-collapse\]\{display:none/, 'mobile sidebars must hide desktop collapse controls');

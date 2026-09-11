@@ -166,7 +166,7 @@ sidebar.addEventListener('click', (event) => {
 });
 addEventListener('hashchange', () => showPage(location.hash.slice(1)));
 document.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.open).open()));
-document.querySelector('.demo-mobile__theme').addEventListener('change', (event) => { document.documentElement.dataset.theme = event.currentTarget.checked ? 'dark' : 'light'; });
+document.querySelector('.demo-theme').addEventListener('change', (event) => { document.documentElement.dataset.theme = event.currentTarget.checked ? 'dark' : 'light'; });
 document.querySelector('.demo-dashboard-brand-color')?.addEventListener('change', (event) => { setBrandTheme({ primary: event.detail.value }); });
 
 const template = document.querySelector('[data-demo="input"]');

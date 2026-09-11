@@ -101,13 +101,14 @@ const makePalette = (primary) => {
   const darkBase = tone(Math.min(.72, source.l + .08), source.c * .85);
   const darkHover = tone(Math.min(.8, source.l + .15), source.c * .7);
   const darkDeep = tone(Math.max(.18, source.l - .14), source.c * .7);
-  const darkSoft = mix(darkBase, '#0f172a', .35);
+  const darkSoft = mix(darkBase, '#141414', .22);
   const darkText = tone(Math.min(.84, source.l + .2), source.c * .5);
-  const darkBorder = tone(Math.min(.78, source.l + .04), source.c * .6);
+  const darkBorder = mix(darkBase, '#626262', .45);
+  const darkContrast = contrastFor(darkBase) === '#0f172a' ? '#0a0a0a' : '#ffffff';
 
   return {
     light: { base: lightBase, hover: lightHover, soft: lightSoft, text: lightText, border: lightBorder, deep: lightDeep, contrast: contrastFor(lightBase) },
-    dark: { base: darkBase, hover: darkHover, soft: darkSoft, text: darkText, border: darkBorder, deep: darkDeep, contrast: contrastFor(darkBase) },
+    dark: { base: darkBase, hover: darkHover, soft: darkSoft, text: darkText, border: darkBorder, deep: darkDeep, contrast: darkContrast },
   };
 };
 
