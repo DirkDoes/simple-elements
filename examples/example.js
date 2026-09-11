@@ -41,7 +41,7 @@ const formatHtml = (source) => {
 };
 const controlMarkup = (attribute) => {
   if (attribute.control === 'boolean') return `<se-checkbox variant="switch" data-component-attribute="${attribute.name}" label="Enabled"></se-checkbox>`;
-  if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}" clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value), ...(['icon', 'name'].includes(attribute.name) ? { icon: value } : {}) }))))}"></se-select>`;
+  if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}"${attribute.name === 'layout-mode' ? ` value="${attribute.defaultValue}"` : ''} clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value), ...(['icon', 'name'].includes(attribute.name) ? { icon: value } : {}) }))))}"></se-select>`;
   if (attribute.control === 'code') return `<se-code-editor data-component-attribute="${attribute.name}" language="${attribute.name === 'options' ? 'json' : 'html'}" wrap></se-code-editor>`;
   return `<se-input data-component-attribute="${attribute.name}" placeholder="No override"></se-input>`;
 };
@@ -98,11 +98,15 @@ const renderComponentPage = (component) => {
 componentCatalog.filter(({ custom }) => !custom).forEach(renderComponentPage);
 const renderPatternPage = ({ tag, description, examples }) => {
   const section = document.createElement('section');
+  const viewportOptions = [{ id: '1024x576', label: 'Desktop · 1024 × 576' }, { id: '768x1024', label: 'Tablet · 768 × 1024' }, { id: '390x844', label: 'Phone · 390 × 844' }];
   section.dataset.demo = tag;
   section.className = 'demo-pattern-page';
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text>${examples.map(({ title, description: exampleDescription, markup }) => `<article class="demo-pattern-example"><header><se-title level="card">${title}</se-title><se-text muted>${exampleDescription}</se-text></header><se-card class="demo-pattern-example-card"><div class="demo-pattern-code"><se-title level="sidebar">Code</se-title><se-code-editor language="html" value="${escapeAttribute(formatHtml(markup))}" wrap></se-code-editor></div><div class="demo-pattern-result"><se-title level="sidebar">Preview</se-title><se-card class="demo-pattern-preview-card"><div data-pattern-preview></div></se-card></div></se-card></article>`).join('')}`;
+  const heading = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text>`;
+  section.innerHTML = `${tag === 'page-layout' ? `<header class="demo-pattern-heading"><div>${heading}</div><se-select data-pattern-viewport label="Preview viewport" value="1024x576" options="${escapeAttribute(JSON.stringify(viewportOptions))}"></se-select></header>` : heading}${examples.map(({ title, description: exampleDescription, markup }) => `<article class="demo-pattern-example"><header><se-title level="card">${title}</se-title><se-text muted>${exampleDescription}</se-text></header><se-card class="demo-pattern-example-card"><div class="demo-pattern-code"><se-title level="sidebar">Code</se-title><se-code-editor language="html" value="${escapeAttribute(formatHtml(markup))}" wrap></se-code-editor></div><div class="demo-pattern-result"><se-title level="sidebar">Preview</se-title><se-card class="demo-pattern-preview-card"><div data-pattern-preview></div></se-card></div></se-card></article>`).join('')}`;
   document.querySelector('.demo-content').append(section);
+  const viewport = section.querySelector('[data-pattern-viewport]');
+  const renders = [];
   section.querySelectorAll('.demo-pattern-example').forEach((example) => {
     const editor = example.querySelector('se-code-editor');
     const preview = example.querySelector('[data-pattern-preview]');
@@ -111,16 +115,24 @@ const renderPatternPage = ({ tag, description, examples }) => {
       const result = preview.closest('.demo-pattern-result');
       const availableWidth = result.clientWidth - (preview.parentElement.offsetWidth - preview.parentElement.clientWidth);
       if (!frame || !availableWidth) return;
-      const scale = Math.min(1, availableWidth / 1024);
+      const frameWidth = Number(frame.dataset.width);
+      const frameHeight = Number(frame.dataset.height);
+      const scale = Math.min(1, availableWidth / frameWidth);
       frame.style.transform = `scale(${scale})`;
-      preview.style.width = `${1024 * scale}px`;
-      preview.style.height = `${576 * scale}px`;
+      preview.style.width = `${frameWidth * scale}px`;
+      preview.style.height = `${frameHeight * scale}px`;
+      result.style.setProperty('--demo-pattern-preview-width', `${frameWidth * scale + preview.parentElement.offsetWidth - preview.parentElement.clientWidth}px`);
     };
     const render = () => {
       if (tag === 'page-layout') {
+        const [frameWidth, frameHeight] = (viewport?.value || '1024x576').split('x').map(Number);
         const frame = document.createElement('iframe');
         frame.className = 'demo-pattern-frame';
         frame.title = `${example.querySelector('header se-title').textContent} preview`;
+        frame.dataset.width = frameWidth;
+        frame.dataset.height = frameHeight;
+        frame.style.width = `${frameWidth}px`;
+        frame.style.height = `${frameHeight}px`;
         frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260911"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260911"></script></head><body>${editor.value}</body></html>`;
         preview.replaceChildren(frame);
         resizeFrame();
@@ -131,9 +143,11 @@ const renderPatternPage = ({ tag, description, examples }) => {
       preview.replaceChildren(template.content.cloneNode(true));
     };
     editor.addEventListener('input', render);
+    renders.push(render);
     render();
     if (tag === 'page-layout') new ResizeObserver(resizeFrame).observe(preview.closest('.demo-pattern-result'));
   });
+  viewport?.addEventListener('change', () => renders.forEach((render) => render()));
 };
 patternCatalog.forEach(renderPatternPage);
 

@@ -48,6 +48,11 @@ assert.match(compiledCss, /\.se-choice--switch/);
 assert.match(compiledCss, /textarea:read-only\{[^}]*resize:none/);
 assert.match(compiledCss, /se-code\[block\]\[wrap\]/);
 assert.match(compiledCss, /se-code-editor\[wrap\]/);
+assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\]\{[^}]*position:absolute/, 'mobile sidebars must overlay page content');
+assert.match(compiledCss, /se-sidebar\[overlay\]:not\(\[collapsed\]\):not\(\[closed\]\)\{[^}]*position:absolute/, 'expanded overlay sidebars must leave page content in place');
+assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\] \[data-sidebar-collapse\]\{display:none/, 'mobile sidebars must hide desktop collapse controls');
+assert.match(compiledCss, /se-topbar>\[data-mobile-search\]:not\(\[hidden\]\)\{[^}]*position:absolute/, 'mobile search must overlay page content');
+assert.match(compiledCss, /\[layout-mode=desktop-only\][^{]*\{display:none/, 'desktop-only content must be hidden on mobile');
 assert.doesNotMatch(compiledCss, /@import\s/);
 const selectSource = await readFile('src/components/select.js', 'utf8');
 assert.match(selectSource, /const trigger = multiple/);
@@ -89,6 +94,8 @@ const exampleScript = await readFile('examples/example.js', 'utf8');
 assert.doesNotMatch(exampleScript, /const demos\s*=/, 'demo markup belongs in HTML');
 assert.match(exampleScript, /tag === 'page-layout'[\s\S]*document\.createElement\('iframe'\)/, 'page layout patterns must render in isolated desktop iframes');
 assert.match(exampleScript, /new ResizeObserver\(resizeFrame\)/, 'desktop pattern frames must scale with their preview cards');
+assert.match(exampleScript, /1024x576[\s\S]*768x1024[\s\S]*390x844/, 'page layout patterns need shared desktop, tablet, and phone viewports');
+assert.doesNotMatch(exampleScript, /data-pattern-viewport[^>]*size=/, 'the viewport selector must use the standard select size');
 const exampleHtml = await readFile('examples/index.html', 'utf8');
 assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 2, 'dashboard and custom input pages should remain in static HTML');
 assert.match(exampleHtml, /data-demo="dashboard"/);
@@ -128,6 +135,15 @@ assert.equal(componentCatalog.length, documentedComponents.length, 'every standa
 assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(documentedComponents), 'catalog tags must match standalone component files');
 assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['page-layout', 'chats'], 'page layout and chats must be documented as patterns');
 assert.ok(patternCatalog.every(({ examples }) => examples?.length), 'each pattern needs named examples');
+assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.every(({ markup }) => markup.includes('layout-mode="responsive"')), 'every page layout pattern needs responsive navigation');
+assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.slice(0, 3).every(({ markup }) => markup.includes('<se-topbar layout-mode="mobile-only">')), 'sidebar-only layouts need a mobile top bar');
+assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.slice(1, 3).every(({ markup }) => markup.includes('<footer layout-mode="desktop-only">')), 'mobile top-bar profiles must not be duplicated in sidebar footers');
+assert.match(patternCatalog.find(({ tag }) => tag === 'page-layout').examples[2].markup, /<header layout-mode="desktop-only">/, 'the mobile top-bar brand must not be duplicated in the sidebar header');
+for (const tag of ['sidebar', 'sidebar-toggle', 'topbar']) {
+  const mode = componentCatalog.find((component) => component.tag === tag).attributes.find((attribute) => attribute.name === 'layout-mode');
+  assert.equal(mode.defaultValue, 'always', `${tag} layout mode must default to always`);
+  assert.equal(mode.options[0], 'always', `${tag} layout mode must list always first`);
+}
 assert.equal(new Set(componentCatalog.map(({ tag }) => tag)).size, componentCatalog.length, 'catalog pages must be unique');
 componentCatalog.forEach(({ tag, icon, attributes, custom }) => {
   assert.ok(iconNames[icon], `${tag} needs a supported sidebar icon`);
@@ -170,6 +186,10 @@ const chatMessageSource = await readFile('src/components/chat-message.js', 'utf8
 assert.match(chatMessageSource, /const avatar = initials \?/);
 assert.match(await readFile('src/components/chat-context.js', 'utf8'), /se-chat-context--\$\{variant\}/);
 assert.match(await readFile('src/components/thought-train.js', 'utf8'), /se-thought-train--\$\{variant\}/);
+const topbarSource = await readFile('src/components/topbar.js', 'utf8');
+assert.match(topbarSource, /data-mobile-search/, 'top bar must manage its mobile search row');
+assert.match(topbarSource, /closedchange/, 'top bar overlays must close each other');
+assert.match(await readFile('src/components/sidebar.js', 'utf8'), /data-transitioning/, 'sidebar animation must suppress temporary scrollbars');
 assert.match(highlightCode('const ready = true;', 'javascript'), /se-token--keyword/);
 const highlightedHtml = highlightCode('<se-button variant="brand" text="Save" disabled></se-button>', 'html');
 assert.match(highlightedHtml, /se-token--tag[^>]*>&lt;se-button/);

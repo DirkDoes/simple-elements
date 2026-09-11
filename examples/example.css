@@ -29,9 +29,6 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-button-card { gap: 3rem; }
 .demo-profile-card { max-width: 28rem; gap: 2rem; }
 .demo-profile-static { display: grid; gap: 1rem; padding: 1rem; background: color-mix(in srgb, var(--se-surface-soft) 50%, transparent); border: 1px solid var(--se-border); border-radius: .5rem; }
-.demo-mobile { display: none; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--se-border); }
-.demo-mobile__brand { display: flex; align-items: center; gap: .5rem; font-size: 1.125rem; font-weight: 700; }
-.demo-mobile__logo { display: grid; width: 2rem; height: 2rem; place-items: center; color: var(--se-primary-contrast); background: var(--se-primary); border-radius: .5rem; }
 .demo-mobile__theme { display: block; }
 .demo-wide { grid-column: 1 / -1; }
 .demo-divider { height: 1px; margin: .5rem 0; background: var(--se-border); }
@@ -62,7 +59,9 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-context-heading { display: flex; align-items: center; gap: .35rem; }
 .demo-context-heading se-tooltip { display: inline-flex; color: var(--se-muted); }
 .demo-context-heading se-icon { width: .875rem; height: .875rem; }
-.demo-pattern-page > se-text { display: block; margin-top: .25rem; }
+.demo-pattern-page > se-text, .demo-pattern-heading se-text { display: block; margin-top: .25rem; }
+.demo-pattern-heading { display: flex; align-items: end; justify-content: space-between; gap: 2rem; }
+.demo-pattern-heading se-select { width: 15rem; flex: 0 0 auto; }
 .demo-pattern-example { display: grid; gap: 1.5rem; margin-top: 3rem; }
 .demo-pattern-example-card { display: grid; gap: 2rem; }
 .demo-pattern-example > header se-text { display: block; margin-top: .25rem; }
@@ -72,10 +71,10 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-pattern-preview-card { padding: 0; overflow: visible; }
 .demo-pattern-result se-sidebar { display: flex; }
 .demo-pattern-page[data-demo="page-layout"] .demo-pattern-result { min-width: 0; }
-.demo-pattern-page[data-demo="page-layout"] .demo-pattern-result > se-title { text-align: center; }
+.demo-pattern-page[data-demo="page-layout"] .demo-pattern-result > se-title { width: var(--demo-pattern-preview-width, 100%); max-width: 100%; margin-inline: auto; text-align: left; }
 .demo-pattern-page[data-demo="page-layout"] .demo-pattern-preview-card { width: fit-content; max-width: 100%; margin-inline: auto; overflow: hidden; }
 .demo-pattern-page[data-demo="page-layout"] [data-pattern-preview] { overflow: hidden; }
-.demo-pattern-frame { display: block; width: 64rem; height: 36rem; background: var(--se-bg); border: 0; transform-origin: top left; }
+.demo-pattern-frame { display: block; background: var(--se-bg); border: 0; transform-origin: top left; }
 .demo-pattern-page[data-demo="chats"] .demo-pattern-result { width: min(100%, 40rem); margin-inline: auto; }
 .demo-pattern-page[data-demo="chats"] .demo-pattern-preview-card { padding: 2rem 1.5rem; }
 .demo-dashboard-hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(20rem, .75fr); gap: 1.5rem; margin-bottom: 1.5rem; }
@@ -131,10 +130,12 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
   .demo-template-attributes .se-list__header > :nth-child(3), .demo-template-attributes .se-list__row > :nth-child(3), .demo-component-attributes .se-list__header > :nth-child(3), .demo-component-attributes .se-list__row > :nth-child(3) { display: none; }
 }
 @media (max-width: 767px) {
-  .demo-main > se-topbar { display: none; }
+  .demo-body { position: relative; flex-direction: column; }
+  .demo-body > se-sidebar { height: auto; }
   .demo-content { width: min(100% - 4rem, 72rem); padding-top: 2rem; }
+  .demo-pattern-heading { align-items: stretch; flex-direction: column; }
+  .demo-pattern-heading se-select { width: 100%; }
   .demo-grid, .demo-fields, .demo-controls, .demo-code-grid, .demo-dashboard-hero, .demo-dashboard-layout, .demo-dashboard-form__options, .demo-dashboard-theme-control { grid-template-columns: 1fr; }
   .demo-wide { grid-column: auto; }
   .demo-controls se-range { grid-column: auto; }
-  .demo-mobile { display: flex; }
 }
