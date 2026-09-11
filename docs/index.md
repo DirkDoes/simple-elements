@@ -8,7 +8,9 @@ npm install github:DirkDoes/simple-elements
 
 Then import `simple-elements` and its precompiled `simple-elements/styles.css`, and use the elements in ordinary HTML. The CSS is built with Tailwind, but consuming applications need no Tailwind configuration. Set `data-theme="light"` or `data-theme="dark"` on `<html>`.
 
-See [Brand theme](theme.md) to configure the primary color at runtime.
+## Theming
+
+- [Brand theme](theme.md)
 
 ## Foundations
 
@@ -31,6 +33,7 @@ See [Brand theme](theme.md) to configure the primary color at runtime.
 - [File upload](file-upload.md)
 - [Code editor](code-editor.md)
 - [WYSIWYG](wysiwyg.md)
+- [Color picker](color-picker.md)
 - [Date picker](date-picker.md)
 - [Date and time picker](datetime-picker.md)
 - [Time picker](time-picker.md)
@@ -54,6 +57,7 @@ See [Brand theme](theme.md) to configure the primary color at runtime.
 ## Navigation
 
 - [Sidebar](sidebar.md)
+- [Sidebar toggle](sidebar-toggle.md)
 - [Layout brand](layout-brand.md)
 - [Sidebar chapter](sidebar-chapter.md)
 - [Sidebar button](sidebar-button.md)

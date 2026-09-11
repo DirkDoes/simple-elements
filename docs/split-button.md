@@ -8,3 +8,5 @@
 ```
 
 Assign `options` as JSON or JavaScript. Choosing an item emits `change`; clicking the primary action emits `action` with the selected option.
+
+Supports `label` for the fallback primary-action text and `options` for the available actions.

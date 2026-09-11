@@ -11,6 +11,7 @@ import { icons as lucideIcons } from 'lucide';
 const components = (await readdir('src/components')).filter((file) => file.endsWith('.js'));
 const examplePages = (await readdir('examples')).filter((file) => file.endsWith('.html'));
 const entry = await readFile('src/index.js', 'utf8');
+const docsIndex = await readFile('docs/index.md', 'utf8');
 
 for (const file of components) {
   assert.match(entry, new RegExp(`components/${file.replace('.', '\\.')}`), `${file} is not exported`);
@@ -18,6 +19,9 @@ for (const file of components) {
   const check = spawnSync(process.execPath, ['--check', `src/components/${file}`], { encoding: 'utf8' });
   assert.equal(check.status, 0, check.stderr);
 }
+
+for (const file of components) assert.match(docsIndex, new RegExp(`\\(${file.replace('.js', '')}\\.md\\)`), `${file} is missing from the docs index`);
+assert.match(docsIndex, /\(theme\.md\)/, 'theme docs are missing from the docs index');
 
 assert.equal(spawnSync(process.execPath, ['--check', 'src/index.js']).status, 0);
 assert.equal(spawnSync(process.execPath, ['--check', 'dist/simple-elements.js']).status, 0);
@@ -130,9 +134,11 @@ componentCatalog.forEach(({ tag, icon, attributes, custom }) => {
 for (const { tag, attributes, custom } of componentCatalog) {
   if (custom) continue;
   const source = await readFile(`src/components/${tag}.js`, 'utf8');
+  const documentation = await readFile(`docs/${tag}.md`, 'utf8');
   const used = [...source.matchAll(/(?:get|has)Attribute\('([^']+)'\)/g)].map((match) => match[1]).filter((name) => name !== 'id' && !name.startsWith('data-'));
   const listed = new Set(attributes.map(({ name }) => name));
   used.forEach((name) => assert.ok(listed.has(name), `${tag} catalog is missing ${name}`));
+  attributes.filter(({ name }) => !['content', 'child-content'].includes(name)).forEach(({ name }) => assert.ok(documentation.includes(`\`${name}`) || documentation.includes(` ${name}=`) || documentation.includes(` ${name} `), `${tag} docs are missing ${name}`));
 }
 assert.match(exampleScript, /querySelectorAll\('\.demo-component-attributes \[data-component-attribute\], \.demo-component-attributes \[data-component-context\]'\)/, 'attribute and context controls may rebuild a preview');
 assert.match(exampleScript, /const sourceTemplate = document\.createElement\('template'\)/, 'overrides must rebuild one-shot components');

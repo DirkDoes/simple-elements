@@ -8,3 +8,5 @@
 Opens the Simple Elements time selector and submits a hidden `HH:MM` value normally in HTML and Ruby on Rails forms. `step` controls the minute interval and is measured in seconds.
 
 The hour and minute fields accept typing and respond to the mouse wheel and Up/Down keys. Hours wrap between `23` and `00`; minutes wrap between `59` and `00` using the configured step.
+
+Supports `label`, `name`, `value`, `step`, `placeholder`, `required`, and `disabled`. The placeholder defaults to `Choose a time`.
