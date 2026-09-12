@@ -2,6 +2,16 @@ import { define, emit, escapeHtml } from '../helpers.js';
 
 const tones = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'important']);
 const icons = { gray: 'bell', brand: 'info', success: 'check', warning: 'alert', error: 'alert', info: 'info', important: 'zap' };
+let order = 0;
+const stackToasts = () => {
+  let offset = 0;
+  const toasts = [...document.querySelectorAll('se-toast[open]')].sort((left, right) => right._order - left._order);
+  toasts.forEach((toast, index) => {
+    toast.style.setProperty('--se-toast-offset', `${offset}px`);
+    toast.style.setProperty('--se-toast-shadow', index === toasts.length - 1 ? 'var(--se-shadow-lg)' : 'none');
+    offset += toast.offsetHeight + 8;
+  });
+};
 
 class SeToast extends HTMLElement {
   connectedCallback() {
@@ -10,7 +20,7 @@ class SeToast extends HTMLElement {
     this.render();
     if (this.hasAttribute('open')) this.open();
   }
-  disconnectedCallback() { clearTimeout(this._timer); }
+  disconnectedCallback() { clearTimeout(this._timer); requestAnimationFrame(stackToasts); }
   render() {
     const tone = tones.has(this.getAttribute('tone')) ? this.getAttribute('tone') : 'gray';
     const message = this.getAttribute('message') || this.textContent.trim() || 'Notification';
@@ -25,7 +35,9 @@ class SeToast extends HTMLElement {
     this.querySelector('[data-action]')?.addEventListener('click', () => emit(this, 'action', {}));
   }
   open() {
+    this._order = ++order;
     this.setAttribute('open', '');
+    requestAnimationFrame(stackToasts);
     clearTimeout(this._timer);
     const duration = Number(this.getAttribute('duration') ?? 5000);
     if (Number.isFinite(duration) && duration > 0) this._timer = setTimeout(() => this.close(), duration);
@@ -34,6 +46,7 @@ class SeToast extends HTMLElement {
     clearTimeout(this._timer);
     if (!this.hasAttribute('open')) return;
     this.removeAttribute('open');
+    requestAnimationFrame(stackToasts);
     emit(this, 'close', {});
   }
 }

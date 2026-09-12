@@ -16,8 +16,11 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 
 - [Icon](icon.md)
 - [Text](text.md)
+- [Theme switch](theme-switch.md)
 - [Title](title.md)
 - [Card](card.md)
+- [Project card](project-card.md)
+- [Folder card](folder-card.md)
 - [Code](code.md)
 - [Blockquote](blockquote.md)
 - [Markdown](markdown.md)
@@ -28,6 +31,7 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Checkbox](checkbox.md)
 - [Radio](radio.md)
 - [Range](range.md)
+- [Segmented control](segmented-control.md)
 - [Select](select.md)
 - [Phone input](phone-input.md)
 - [File upload](file-upload.md)
@@ -42,7 +46,7 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 
 - [Button](button.md)
 - [Split button](split-button.md)
-- [File row](file-row.md)
+- [File card](file-card.md)
 - [Tooltip](tooltip.md)
 - [Menu](menu.md)
 - [Profile](profile.md)
@@ -69,12 +73,14 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 
 - [Page layout](page-layout.md)
 - [Chats](chats.md)
+- [File system](file-system.md)
+- [Forms](forms.md)
 
 ## Data display
 
-- [List](list.md)
+- [Collection](collection.md)
 - [List header](list-header.md)
 - [List row](list-row.md)
-- [Table](table.md)
+- [Tree item](tree-item.md)
 
 Browse the page-like component sections in [`examples/index.html`](../examples/index.html).

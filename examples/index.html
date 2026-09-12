@@ -4,15 +4,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Simple Elements</title>
-    <link rel="stylesheet" href="../dist/styles.css?v=20260911">
-    <link rel="stylesheet" href="./example.css?v=20260911">
-    <script defer src="../dist/simple-elements.js?v=20260911"></script>
-    <script type="module" src="./example.js?v=20260911"></script>
+    <link rel="stylesheet" href="../dist/styles.css?v=20260912r">
+    <link rel="stylesheet" href="./example.css?v=20260912r">
+    <script defer src="../dist/simple-elements.js?v=20260912r"></script>
+    <script type="module" src="./example.js?v=20260912r"></script>
   </head>
   <body>
     <div class="demo-shell">
       <main class="demo-main">
-        <se-topbar><section data-start><se-sidebar-toggle for="example-sidebar" layout-mode="mobile-only"></se-sidebar-toggle><se-layout-brand label="Simple Elements" icon="package" href="#dashboard"></se-layout-brand></section><section data-end><se-checkbox class="demo-theme" variant="light-dark-button" label="Toggle dark mode"></se-checkbox></section></se-topbar>
+        <se-topbar><section data-start><se-sidebar-toggle for="example-sidebar" layout-mode="mobile-only"></se-sidebar-toggle><se-layout-brand label="Simple Elements" icon="package" href="#dashboard"></se-layout-brand></section><section data-end><se-theme-switch class="demo-theme" variant="button" label="Theme"></se-theme-switch></section></se-topbar>
         <div class="demo-body">
           <se-sidebar id="example-sidebar" layout-mode="responsive" collapsible>
             <section>
@@ -20,7 +20,7 @@
               <se-sidebar-chapter title="Components" data-component-section collapsible></se-sidebar-chapter>
               <se-sidebar-chapter title="Patterns" data-pattern-section collapsible></se-sidebar-chapter>
             </section>
-            <footer layout-mode="desktop-only"><small class="demo-version">v0.1.0</small></footer>
+            <footer layout-mode="desktop-only"><small class="demo-version">v0.2.0</small></footer>
           </se-sidebar>
           <div class="demo-scroll">
             <div class="demo-content">
@@ -34,7 +34,7 @@
               </div>
               <se-card class="demo-dashboard-overview">
                 <div class="demo-dashboard-overview__heading"><span class="demo-dashboard-overview__icon"><se-icon name="dashboard"></se-icon></span><div><se-title level="card">Your workspace</se-title><se-text muted small>Everything is ready to explore.</se-text></div><se-button variant="secondary" icon="message-square" text="Ask Nova" data-open="dashboard-chat"></se-button></div>
-                <se-list><se-list-row><span><strong>40</strong><small>components</small></span><se-badge tone="success" icon="check" text="Ready"></se-badge></se-list-row><se-list-row><span><strong>0</strong><small>frameworks required</small></span><se-badge tone="brand" icon="code" text="Native"></se-badge></se-list-row><se-list-row><span><strong>100%</strong><small>HTML friendly</small></span><se-badge tone="important" icon="package" text="Portable"></se-badge></se-list-row></se-list>
+                <se-collection type="list"><se-list-row><span><strong>40</strong><small>components</small></span><se-badge tone="success" icon="check" text="Ready"></se-badge></se-list-row><se-list-row><span><strong>0</strong><small>frameworks required</small></span><se-badge tone="brand" icon="code" text="Native"></se-badge></se-list-row><se-list-row><span><strong>100%</strong><small>HTML friendly</small></span><se-badge tone="important" icon="package" text="Portable"></se-badge></se-list-row></se-collection>
               </se-card>
             </div>
 
@@ -53,7 +53,7 @@
 
               <div class="demo-stack">
                 <se-card class="demo-dashboard-tip"><span class="demo-dashboard-tip__icon"><se-icon name="info"></se-icon></span><div><se-title level="card">Designed to compose</se-title><se-text muted small>Combine small elements into useful product surfaces without a framework or build step.</se-text></div></se-card>
-                <se-card><se-title level="section">Recent activity</se-title><se-list><se-list-row><se-icon name="edit"></se-icon><span><strong>Editor updated</strong><small>WYSIWYG and Markdown modes</small></span><se-badge tone="success" text="New"></se-badge></se-list-row><se-list-row><se-icon name="calendar-clock"></se-icon><span><strong>Scheduling added</strong><small>Date and time in one field</small></span><se-badge tone="info" text="Live"></se-badge></se-list-row><se-list-row><se-icon name="users"></se-icon><span><strong>Team invited</strong><small>Workspace members are ready</small></span><se-badge tone="gray" text="3 min"></se-badge></se-list-row></se-list></se-card>
+                <se-card><se-title level="section">Recent activity</se-title><se-collection type="list"><se-list-row><se-icon name="edit"></se-icon><span><strong>Editor updated</strong><small>WYSIWYG and Markdown modes</small></span><se-badge tone="success" text="New"></se-badge></se-list-row><se-list-row><se-icon name="calendar-clock"></se-icon><span><strong>Scheduling added</strong><small>Date and time in one field</small></span><se-badge tone="info" text="Live"></se-badge></se-list-row><se-list-row><se-icon name="users"></se-icon><span><strong>Team invited</strong><small>Workspace members are ready</small></span><se-badge tone="gray" text="3 min"></se-badge></se-list-row></se-collection></se-card>
               </div>
             </div>
             <se-drawer id="dashboard-chat" mode="overlay-clear" width="30rem" title="Ask Nova">
@@ -93,7 +93,7 @@
               </se-card>
               <se-card class="demo-stack demo-template-attributes">
                 <se-title level="sidebar">Attributes</se-title>
-                <se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)">
+                <se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)">
                   <se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>
                   <se-list-row><strong data-description="Sets the native input type, or renders a textarea.">type</strong><span>Sets the native input type, or renders a textarea.</span><se-badge text="text"></se-badge><se-select data-template-attribute="type" placeholder="Default (text)" clearable options='[{"id":"text","label":"Text"},{"id":"email","label":"Email"},{"id":"password","label":"Password"},{"id":"number","label":"Number"},{"id":"tel","label":"Telephone"},{"id":"url","label":"URL"},{"id":"search","label":"Search"},{"id":"textarea","label":"Textarea"}]'></se-select></se-list-row>
                   <se-list-row><strong data-description="Names the native field for HTML and Rails form submission.">name</strong><span>Names the native field for HTML and Rails form submission.</span><span></span><se-input data-template-attribute="name" placeholder="user[email]"></se-input></se-list-row>
@@ -107,7 +107,7 @@
                   <se-list-row><strong data-description="Marks the field as required for form validation.">required</strong><span>Marks the field as required for form validation.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="required" label="Required"></se-checkbox></se-list-row>
                   <se-list-row><strong data-description="Disables resizing when the type is textarea.">fixed</strong><span>Disables resizing when the type is textarea.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="fixed" label="Fixed height"></se-checkbox></se-list-row>
                   <se-list-row><strong data-description="Grows a textarea with its content without a resize handle.">autosize</strong><span>Grows a textarea with its content without a resize handle.</span><se-badge text="false"></se-badge><se-checkbox variant="switch" data-template-attribute="autosize" label="Autosize"></se-checkbox></se-list-row>
-                </se-table>
+                </se-collection>
               </se-card>
             </div>
           </section>

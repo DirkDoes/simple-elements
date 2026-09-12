@@ -1,5 +1,5 @@
 import { setBrandTheme } from '../src/theme.js';
-import { componentCatalog, patternCatalog } from './catalog.js?v=20260909';
+import { componentCatalog, patternCatalog } from './catalog.js?v=20260912r';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
@@ -14,8 +14,8 @@ const groups = [
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'toast', 'tooltip']],
   ['Chat', 'message-square', ['chat-context', 'chat-message', 'thought-train']],
-  ['Composing', 'list', ['card', 'empty-state', 'file-row', 'list', 'list-header', 'list-row', 'split-button', 'table']],
-  ['Styling', 'badge', ['badge', 'blockquote', 'button', 'code', 'icon', 'markdown', 'text', 'title']],
+  ['Composing', 'list', ['card', 'collection', 'empty-state', 'file-card', 'folder-card', 'list-header', 'list-row', 'project-card', 'tree-item']],
+  ['Styling', 'badge', ['badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
 ];
 const componentById = new Map(componentPages.map((page) => [page[0], page]));
 sidebar.querySelector('[data-component-section] .se-sidebar-chapter__content > div').innerHTML = groups.map(([label, icon, ids], index) => `<se-sidebar-group label="${label}" icon="${icon}"${index ? ' collapsed' : ''}>${sidebarItems(ids.map((id) => componentById.get(id)).filter(Boolean))}</se-sidebar-group>`).join('');
@@ -51,7 +51,7 @@ const defaultMarkup = (attribute) => {
   if (attribute.control === 'code' || String(attribute.defaultValue).length > 32) return `<se-code-editor class="demo-default-code" language="${attribute.name === 'options' ? 'json' : 'html'}" value="${escapeAttribute(attribute.defaultValue)}" readonly wrap></se-code-editor>`;
   return `<se-badge text="${escapeAttribute(attribute.defaultValue)}"></se-badge>`;
 };
-const contextTableMarkup = (contexts = []) => contexts.length ? `<div class="demo-context-heading"><se-title level="sidebar">Context</se-title><se-tooltip content="These are external layout states, not attributes of this component."><se-icon name="info"></se-icon></se-tooltip></div><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Context</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${contexts.map((context) => `<se-list-row><strong data-description="${escapeAttribute(context.description)}">${context.name}</strong><span>${context.description}</span>${defaultMarkup(context)}<se-checkbox variant="switch" data-component-context="${context.name}" label="Enabled"></se-checkbox></se-list-row>`).join('')}</se-table>` : '';
+const contextTableMarkup = (contexts = []) => contexts.length ? `<div class="demo-context-heading"><se-title level="sidebar">Context</se-title><se-tooltip content="These are external layout states, not attributes of this component."><se-icon name="info"></se-icon></se-tooltip></div><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Context</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${contexts.map((context) => `<se-list-row><strong data-description="${escapeAttribute(context.description)}">${context.name}</strong><span>${context.description}</span>${defaultMarkup(context)}<se-checkbox variant="switch" data-component-context="${context.name}" label="Enabled"></se-checkbox></se-list-row>`).join('')}</se-collection>` : '';
 const renderComponentPage = (component) => {
   const { tag, description, markup, attributes, contexts, previewSurface } = component;
   const contentAttribute = attributes.find(({ control }) => control === 'content');
@@ -60,7 +60,7 @@ const renderComponentPage = (component) => {
   const section = document.createElement('section');
   section.dataset.demo = tag;
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-checkbox variant="switch" label="Show code" data-component-code-toggle></se-checkbox></div><div data-component-preview${previewSurface ? ` data-preview-surface="${escapeAttribute(previewSurface)}"` : ''}></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${contextTableMarkup(contexts)}${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-table class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-table>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-checkbox variant="switch" label="Show code" data-component-code-toggle></se-checkbox></div><div data-component-preview${previewSurface ? ` data-preview-surface="${escapeAttribute(previewSurface)}"` : ''}></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${contextTableMarkup(contexts)}${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-collection>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
   document.querySelector('.demo-content').append(section);
   const preview = section.querySelector('[data-component-preview]');
   const code = section.querySelector('[data-component-code]');
@@ -68,7 +68,9 @@ const renderComponentPage = (component) => {
     const sourceTemplate = document.createElement('template');
     sourceTemplate.innerHTML = markup;
     const source = sourceTemplate.content.firstElementChild;
-    attributes.forEach(({ name }) => source.removeAttribute(name));
+    attributes.forEach(({ name }) => {
+      if (tag !== 'segmented-control' || name !== 'options') source.removeAttribute(name);
+    });
     const clone = source.cloneNode(true);
     const contextMarkers = { 'sidebar-collapsed': 'data-sidebar-collapsed' };
     section.querySelectorAll('[data-component-context]').forEach((control) => { const marker = contextMarkers[control.dataset.componentContext]; if (marker) preview.toggleAttribute(marker, control.checked); });
@@ -86,7 +88,15 @@ const renderComponentPage = (component) => {
     if (component.action === 'open') {
       const opener = document.createElement('se-button');
       opener.setAttribute('text', `Open ${titleFor(tag)}`);
-      opener.addEventListener('click', () => clone.open());
+      opener.addEventListener('click', () => {
+        if (tag !== 'toast') { clone.open(); return; }
+        const toastTemplate = document.createElement('template');
+        toastTemplate.innerHTML = usageMarkup;
+        const toast = toastTemplate.content.firstElementChild;
+        toast.addEventListener('close', () => toast.remove(), { once: true });
+        preview.append(toast);
+        toast.open();
+      });
       preview.prepend(opener);
     }
     code.value = formatHtml(usageMarkup);
@@ -133,7 +143,7 @@ const renderPatternPage = ({ tag, description, examples }) => {
         frame.dataset.height = frameHeight;
         frame.style.width = `${frameWidth}px`;
         frame.style.height = `${frameHeight}px`;
-        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260911"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260911"></script></head><body>${editor.value}</body></html>`;
+        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260912r"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260912r"></script></head><body>${editor.value}</body></html>`;
         preview.replaceChildren(frame);
         resizeFrame();
         return;
@@ -166,7 +176,7 @@ sidebar.addEventListener('click', (event) => {
 });
 addEventListener('hashchange', () => showPage(location.hash.slice(1)));
 document.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.open).open()));
-document.querySelector('.demo-theme').addEventListener('change', (event) => { document.documentElement.dataset.theme = event.currentTarget.checked ? 'dark' : 'light'; });
+document.querySelector('.demo-theme').addEventListener('change', (event) => { document.documentElement.dataset.theme = event.currentTarget.value; });
 document.querySelector('.demo-dashboard-brand-color')?.addEventListener('change', (event) => { setBrandTheme({ primary: event.detail.value }); });
 
 const template = document.querySelector('[data-demo="input"]');

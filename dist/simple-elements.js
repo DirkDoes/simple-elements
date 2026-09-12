@@ -270,7 +270,7 @@ const defineNativeInput = (tag, type, fallbackLabel) => define(tag, class extend
 });
 
 
-const choiceVariants = new Set(['checkbox', 'radio', 'switch', 'light-dark-switch', 'light-dark-button']);
+const choiceVariants = new Set(['checkbox', 'radio', 'switch']);
 
 const connectChoice = (element, type, defaultVariant) => {
   if (element.dataset.ready) return;
@@ -279,7 +279,7 @@ const connectChoice = (element, type, defaultVariant) => {
   const variant = choiceVariants.has(requested) ? requested : defaultVariant;
   const label = element.getAttribute('label') || element.textContent;
   const value = ` value="${escapeHtml(element.getAttribute('value') || 'on')}"`;
-  const control = variant === 'checkbox' ? '<se-icon name="check"></se-icon>' : variant.startsWith('light-dark') ? '<se-icon name="sun"></se-icon><se-icon name="moon"></se-icon>' : '';
+  const control = variant === 'checkbox' ? '<se-icon name="check"></se-icon>' : '';
   element.innerHTML = `<label class="se-choice se-choice--${variant}"><input type="${type}" name="${escapeHtml(element.getAttribute('name') || '')}"${value}${element.hasAttribute('checked') ? ' checked' : ''}${element.hasAttribute('disabled') ? ' disabled' : ''} aria-label="${escapeHtml(label || variant)}"><span class="se-choice__control">${control}</span>${label ? `<span class="se-choice__label">${escapeHtml(label)}</span>` : ''}</label>`;
 };
 
@@ -348,10 +348,51 @@ define('se-title', SeTitle);
 
 
 class SeCard extends HTMLElement {
-  connectedCallback() { this.classList.add('se-card'); }
+  connectedCallback() {
+    this.classList.add('se-card');
+    const color = this.getAttribute('color');
+    if (color && CSS.supports('color', color)) this.style.setProperty('--se-card-color', color);
+  }
 }
 
 define('se-card', SeCard);
+
+
+class SeProjectCard extends HTMLElement {
+  connectedCallback() {
+    if (this.dataset.ready) return;
+    this.dataset.ready = 'true';
+    const disabled = this.hasAttribute('disabled');
+    const href = this.getAttribute('href');
+    const tag = href && !disabled ? 'a' : 'button';
+    const image = this.getAttribute('banner-image');
+    const banner = image ? `<img src="${escapeHtml(image)}" alt="">` : `<se-icon name="${escapeHtml(this.getAttribute('icon') || 'package')}"></se-icon>`;
+    const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
+    this.innerHTML = `<${tag} class="se-project-card"${attributes}><span class="se-project-card__banner">${banner}</span><span class="se-project-card__body"><strong>${escapeHtml(this.getAttribute('title') || 'Project')}</strong>${this.getAttribute('description') ? `<span>${escapeHtml(this.getAttribute('description'))}</span>` : ''}${this.getAttribute('metadata') ? `<small>${escapeHtml(this.getAttribute('metadata'))}</small>` : ''}</span></${tag}>`;
+    const color = this.getAttribute('banner-color');
+    if (!image && color && CSS.supports('color', color)) this.querySelector('.se-project-card__banner').style.background = color;
+  }
+}
+
+define('se-project-card', SeProjectCard);
+
+
+class SeFolderCard extends HTMLElement {
+  connectedCallback() {
+    if (this.dataset.ready) return;
+    this.dataset.ready = 'true';
+    const disabled = this.hasAttribute('disabled');
+    const href = this.getAttribute('href');
+    const tag = href && !disabled ? 'a' : 'button';
+    const count = Math.max(0, Number.parseInt(this.getAttribute('items') || '0', 10) || 0);
+    const requestedTone = this.getAttribute('tone') || 'brand';
+    const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'brand';
+    const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
+    this.innerHTML = `<${tag} class="se-folder-card se-folder-card--${tone}"${attributes}><span class="se-folder-card__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'folder')}"></se-icon></span><span><strong>${escapeHtml(this.getAttribute('title') || 'Folder')}</strong><small>${count} ${count === 1 ? 'item' : 'items'}</small></span></${tag}>`;
+  }
+}
+
+define('se-folder-card', SeFolderCard);
 
 
 class SeButton extends HTMLElement {
@@ -629,6 +670,79 @@ class SeSelect extends HTMLElement {
 define('se-select', SeSelect);
 
 
+class SeSegmentedControl extends HTMLElement {
+  set options(value) { this._options = value; if (this.isConnected) this.render(); }
+  get options() { return this._options; }
+  get value() { return this.querySelector('input:checked')?.value || this.getAttribute('value') || ''; }
+  set value(value) { this.setAttribute('value', value); if (this.isConnected) this.render(); }
+  connectedCallback() { if (!this.dataset.ready) { this.dataset.ready = 'true'; this.render(); } }
+
+  render() {
+    const options = parseOptions(this);
+    const requested = this.getAttribute('value');
+    const selectedIndex = Math.max(0, options.findIndex((option) => String(option.id) === requested));
+    const selected = options[selectedIndex];
+    const suppliedName = this.getAttribute('name') || '';
+    const name = escapeHtml(suppliedName || (this._groupName ||= `se-segmented-${crypto.randomUUID()}`));
+    const detachedForm = suppliedName ? '' : ` form="${name}"`;
+    const label = this.getAttribute('label') || '';
+    const groupLabel = this.getAttribute('aria-label') || label || 'Choose an option';
+    const disabled = this.hasAttribute('disabled');
+    this.innerHTML = `<fieldset class="se-segmented" aria-label="${escapeHtml(groupLabel)}" style="--se-segment-count:${Math.max(1, options.length)};--se-segment-index:${selectedIndex}">${label ? `<legend class="se-segmented__label">${escapeHtml(label)}</legend>` : ''}<div class="se-segmented__options">${options.map((option, index) => { const optionLabel = option.label || option.ariaLabel || String(option.id); return `<label class="se-segmented__option"><input type="radio" name="${name}"${detachedForm} value="${escapeHtml(option.id)}"${index === selectedIndex ? ' checked' : ''}${disabled || option.disabled ? ' disabled' : ''} aria-label="${escapeHtml(optionLabel)}"><span>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${option.label ? `<strong>${escapeHtml(option.label)}</strong>` : ''}</span></label>`; }).join('')}</div></fieldset>`;
+    if (!selected) this.querySelector('.se-segmented__options')?.setAttribute('hidden', '');
+    this.querySelectorAll('input').forEach((input, index) => input.addEventListener('change', (event) => {
+      event.stopPropagation();
+      this.setAttribute('value', input.value);
+      this.querySelector('.se-segmented').style.setProperty('--se-segment-index', index);
+      emit(this, 'change', { value: input.value, option: options[index] });
+    }));
+  }
+}
+
+define('se-segmented-control', SeSegmentedControl);
+
+
+const themes = {
+  light: { label: 'Light', icon: 'sun' },
+  system: { label: 'System', icon: 'settings' },
+  dark: { label: 'Dark', icon: 'moon' },
+};
+
+class SeThemeSwitch extends HTMLElement {
+  connectedCallback() { if (!this.dataset.ready) { this.dataset.ready = 'true'; this.render(); } }
+  get value() { return this.querySelector('input:checked, input[type="hidden"]')?.value || this.getAttribute('value') || 'light'; }
+  set value(value) { this.setAttribute('value', value); if (this.isConnected) this.render(); }
+
+  render() {
+    const mode = this.getAttribute('mode') === 'ternary' ? 'ternary' : 'binary';
+    const options = mode === 'ternary' ? ['light', 'system', 'dark'] : ['light', 'dark'];
+    const requested = this.getAttribute('value') || 'light';
+    const value = options.includes(requested) ? requested : 'light';
+    const requestedVariant = this.getAttribute('variant') || 'switch';
+    const variant = ['switch', 'segmented', 'button'].includes(requestedVariant) ? requestedVariant : 'switch';
+    const suppliedName = this.getAttribute('name') || '';
+    const label = this.getAttribute('label') || '';
+    const accessibleLabel = escapeHtml(this.getAttribute('aria-label') || label || 'Theme');
+    const disabled = this.hasAttribute('disabled');
+
+    if (variant === 'button' || variant === 'switch') {
+      const theme = themes[value];
+      const switchContent = options.map((option) => `<span class="se-theme__option"${option === value ? ' data-selected' : ''}><se-icon name="${themes[option].icon}"></se-icon><strong>${themes[option].label}</strong></span>`).join('');
+      this.innerHTML = `<div class="se-theme se-theme--${variant} se-theme--${value}" style="--se-theme-count:${options.length};--se-theme-index:${options.indexOf(value)}"><input type="hidden" name="${escapeHtml(suppliedName)}" value="${value}"${disabled ? ' disabled' : ''}>${variant === 'switch' && label ? `<span class="se-theme__label">${escapeHtml(label)}</span>` : ''}<button class="${variant === 'switch' ? 'se-theme__options' : ''}" type="button" aria-label="${accessibleLabel}: ${theme.label}"${disabled ? ' disabled' : ''}>${variant === 'switch' ? switchContent : `<se-icon name="${theme.icon}"></se-icon>`}</button></div>`;
+      this.querySelector('button').addEventListener('click', () => { this.value = options[(options.indexOf(value) + 1) % options.length]; emit(this, 'change', { value: this.value }); });
+      return;
+    }
+
+    this.innerHTML = `<div class="se-theme se-theme--segmented"><se-segmented-control${label ? ` label="${escapeHtml(label)}"` : ''} aria-label="${accessibleLabel}"${suppliedName ? ` name="${escapeHtml(suppliedName)}"` : ''} value="${value}"${disabled ? ' disabled' : ''}></se-segmented-control></div>`;
+    const control = this.querySelector('se-segmented-control');
+    control.options = options.map((option) => ({ id: option, ...themes[option] }));
+    control.addEventListener('change', (event) => { event.stopPropagation(); this.setAttribute('value', event.detail.value); emit(this, 'change', event.detail); });
+  }
+}
+
+define('se-theme-switch', SeThemeSwitch);
+
+
 const countries = `AF|Afghanistan|93;AX|Åland Islands|358;AL|Albania|355;DZ|Algeria|213;AS|American Samoa|1;AD|Andorra|376;AO|Angola|244;AI|Anguilla|1;AG|Antigua & Barbuda|1;AR|Argentina|54;AM|Armenia|374;AW|Aruba|297;AC|Ascension Island|247;AU|Australia|61;AT|Austria|43;AZ|Azerbaijan|994;BS|Bahamas|1;BH|Bahrain|973;BD|Bangladesh|880;BB|Barbados|1;BY|Belarus|375;BE|Belgium|32;BZ|Belize|501;BJ|Benin|229;BM|Bermuda|1;BT|Bhutan|975;BO|Bolivia|591;BA|Bosnia & Herzegovina|387;BW|Botswana|267;BR|Brazil|55;IO|British Indian Ocean Territory|246;VG|British Virgin Islands|1;BN|Brunei|673;BG|Bulgaria|359;BF|Burkina Faso|226;BI|Burundi|257;KH|Cambodia|855;CM|Cameroon|237;CA|Canada|1;CV|Cape Verde|238;BQ|Caribbean Netherlands|599;KY|Cayman Islands|1;CF|Central African Republic|236;TD|Chad|235;CL|Chile|56;CN|China|86;CX|Christmas Island|61;CC|Cocos (Keeling) Islands|61;CO|Colombia|57;KM|Comoros|269;CG|Congo - Brazzaville|242;CD|Congo - Kinshasa|243;CK|Cook Islands|682;CR|Costa Rica|506;CI|Côte d’Ivoire|225;HR|Croatia|385;CU|Cuba|53;CW|Curaçao|599;CY|Cyprus|357;CZ|Czechia|420;DK|Denmark|45;DJ|Djibouti|253;DM|Dominica|1;DO|Dominican Republic|1;EC|Ecuador|593;EG|Egypt|20;SV|El Salvador|503;GQ|Equatorial Guinea|240;ER|Eritrea|291;EE|Estonia|372;SZ|Eswatini|268;ET|Ethiopia|251;FK|Falkland Islands|500;FO|Faroe Islands|298;FJ|Fiji|679;FI|Finland|358;FR|France|33;GF|French Guiana|594;PF|French Polynesia|689;GA|Gabon|241;GM|Gambia|220;GE|Georgia|995;DE|Germany|49;GH|Ghana|233;GI|Gibraltar|350;GR|Greece|30;GL|Greenland|299;GD|Grenada|1;GP|Guadeloupe|590;GU|Guam|1;GT|Guatemala|502;GG|Guernsey|44;GN|Guinea|224;GW|Guinea-Bissau|245;GY|Guyana|592;HT|Haiti|509;HN|Honduras|504;HK|Hong Kong SAR China|852;HU|Hungary|36;IS|Iceland|354;IN|India|91;ID|Indonesia|62;IR|Iran|98;IQ|Iraq|964;IE|Ireland|353;IM|Isle of Man|44;IL|Israel|972;IT|Italy|39;JM|Jamaica|1;JP|Japan|81;JE|Jersey|44;JO|Jordan|962;KZ|Kazakhstan|7;KE|Kenya|254;KI|Kiribati|686;XK|Kosovo|383;KW|Kuwait|965;KG|Kyrgyzstan|996;LA|Laos|856;LV|Latvia|371;LB|Lebanon|961;LS|Lesotho|266;LR|Liberia|231;LY|Libya|218;LI|Liechtenstein|423;LT|Lithuania|370;LU|Luxembourg|352;MO|Macao SAR China|853;MG|Madagascar|261;MW|Malawi|265;MY|Malaysia|60;MV|Maldives|960;ML|Mali|223;MT|Malta|356;MH|Marshall Islands|692;MQ|Martinique|596;MR|Mauritania|222;MU|Mauritius|230;YT|Mayotte|262;MX|Mexico|52;FM|Micronesia|691;MD|Moldova|373;MC|Monaco|377;MN|Mongolia|976;ME|Montenegro|382;MS|Montserrat|1;MA|Morocco|212;MZ|Mozambique|258;MM|Myanmar (Burma)|95;NA|Namibia|264;NR|Nauru|674;NP|Nepal|977;NL|Netherlands|31;NC|New Caledonia|687;NZ|New Zealand|64;NI|Nicaragua|505;NE|Niger|227;NG|Nigeria|234;NU|Niue|683;NF|Norfolk Island|672;KP|North Korea|850;MK|North Macedonia|389;MP|Northern Mariana Islands|1;NO|Norway|47;OM|Oman|968;PK|Pakistan|92;PW|Palau|680;PS|Palestinian Territories|970;PA|Panama|507;PG|Papua New Guinea|675;PY|Paraguay|595;PE|Peru|51;PH|Philippines|63;PL|Poland|48;PT|Portugal|351;PR|Puerto Rico|1;QA|Qatar|974;RE|Réunion|262;RO|Romania|40;RU|Russia|7;RW|Rwanda|250;WS|Samoa|685;SM|San Marino|378;ST|São Tomé & Príncipe|239;SA|Saudi Arabia|966;SN|Senegal|221;RS|Serbia|381;SC|Seychelles|248;SL|Sierra Leone|232;SG|Singapore|65;SX|Sint Maarten|1;SK|Slovakia|421;SI|Slovenia|386;SB|Solomon Islands|677;SO|Somalia|252;ZA|South Africa|27;KR|South Korea|82;SS|South Sudan|211;ES|Spain|34;LK|Sri Lanka|94;BL|St. Barthélemy|590;SH|St. Helena|290;KN|St. Kitts & Nevis|1;LC|St. Lucia|1;MF|St. Martin|590;PM|St. Pierre & Miquelon|508;VC|St. Vincent & Grenadines|1;SD|Sudan|249;SR|Suriname|597;SJ|Svalbard & Jan Mayen|47;SE|Sweden|46;CH|Switzerland|41;SY|Syria|963;TW|Taiwan|886;TJ|Tajikistan|992;TZ|Tanzania|255;TH|Thailand|66;TL|Timor-Leste|670;TG|Togo|228;TK|Tokelau|690;TO|Tonga|676;TT|Trinidad & Tobago|1;TA|Tristan da Cunha|290;TN|Tunisia|216;TR|Türkiye|90;TM|Turkmenistan|993;TC|Turks & Caicos Islands|1;TV|Tuvalu|688;VI|U.S. Virgin Islands|1;UG|Uganda|256;UA|Ukraine|380;AE|United Arab Emirates|971;GB|United Kingdom|44;US|United States|1;UY|Uruguay|598;UZ|Uzbekistan|998;VU|Vanuatu|678;VA|Vatican City|39;VE|Venezuela|58;VN|Vietnam|84;WF|Wallis & Futuna|681;EH|Western Sahara|212;YE|Yemen|967;ZM|Zambia|260;ZW|Zimbabwe|263`
   .split(';').map((country) => country.split('|'));
 const flag = (iso) => String.fromCodePoint(...[...iso].map((letter) => 127397 + letter.charCodeAt()));
@@ -678,12 +792,22 @@ class SeSplitButton extends HTMLElement {
   connectedCallback() { if (!this.dataset.ready) { this.dataset.ready = 'true'; this._selected = 0; this.render(); } }
   render() {
     const options = parseOptions(this);
-    const selected = options[this._selected] || { label: this.getAttribute('label') || 'Action', icon: 'send' };
-    this.innerHTML = `<div class="se-split"><button class="se-button se-button--brand" type="button">${selected.icon ? `<se-icon name="${escapeHtml(selected.icon)}"></se-icon>` : ''}${escapeHtml(selected.label)}</button><button class="se-button se-button--brand se-split__toggle" type="button" aria-label="Choose action" aria-expanded="false"><se-icon name="chevron"></se-icon></button><div class="se-split__menu">${options.map((option, index) => `<button class="se-menu-item" type="button" data-index="${index}">${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
+    const fallback = { label: this.getAttribute('text') || this.getAttribute('label') || 'Action', icon: this.getAttribute('icon') || '' };
+    const selected = this.hasAttribute('direct') ? fallback : options[this._selected] || fallback;
+    const variant = this.getAttribute('variant') || 'brand';
+    const disabled = this.hasAttribute('disabled');
+    const label = this.getAttribute('aria-label') || selected.label || selected.icon;
+    this.innerHTML = `<div class="se-split se-split--${escapeHtml(variant)}"><button class="se-button se-button--${escapeHtml(variant)}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${disabled ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${selected.icon ? `<se-icon name="${escapeHtml(selected.icon)}"></se-icon>` : ''}${escapeHtml(selected.label)}</button><button class="se-button se-button--${escapeHtml(variant)} se-split__toggle" type="button" aria-label="Choose action" aria-expanded="false"${disabled ? ' disabled' : ''}><se-icon name="chevron"></se-icon></button><div class="se-split__menu">${options.map((option, index) => `<button class="se-menu-item" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-split');
-    this.querySelector('.se-split__toggle').addEventListener('click', () => root.classList.toggle('se-split--open'));
+    this.querySelector('.se-split__toggle').addEventListener('click', (event) => { const open = root.classList.toggle('se-split--open'); event.currentTarget.setAttribute('aria-expanded', String(open)); });
     this.querySelector('.se-split > .se-button').addEventListener('click', () => emit(this, 'action', selected));
-    this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { this._selected = Number(button.dataset.index); this.render(); emit(this, 'change', options[this._selected]); }));
+    this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => {
+      const option = options[Number(button.dataset.index)];
+      if (this.hasAttribute('direct')) { root.classList.remove('se-split--open'); emit(this, 'action', option); return; }
+      this._selected = Number(button.dataset.index);
+      this.render();
+      emit(this, 'change', option);
+    }));
   }
 }
 
@@ -711,7 +835,7 @@ class SeFileUpload extends HTMLElement {
 define('se-file-upload', SeFileUpload);
 
 
-class SeFileRow extends HTMLElement {
+class SeFileCard extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
@@ -725,7 +849,7 @@ class SeFileRow extends HTMLElement {
   }
 }
 
-define('se-file-row', SeFileRow);
+define('se-file-card', SeFileCard);
 
 
 class SeTooltip extends HTMLElement {
@@ -857,6 +981,16 @@ define('se-drawer', SeDrawer);
 
 const tones = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'important']);
 const icons = { gray: 'bell', brand: 'info', success: 'check', warning: 'alert', error: 'alert', info: 'info', important: 'zap' };
+let order = 0;
+const stackToasts = () => {
+  let offset = 0;
+  const toasts = [...document.querySelectorAll('se-toast[open]')].sort((left, right) => right._order - left._order);
+  toasts.forEach((toast, index) => {
+    toast.style.setProperty('--se-toast-offset', `${offset}px`);
+    toast.style.setProperty('--se-toast-shadow', index === toasts.length - 1 ? 'var(--se-shadow-lg)' : 'none');
+    offset += toast.offsetHeight + 8;
+  });
+};
 
 class SeToast extends HTMLElement {
   connectedCallback() {
@@ -865,7 +999,7 @@ class SeToast extends HTMLElement {
     this.render();
     if (this.hasAttribute('open')) this.open();
   }
-  disconnectedCallback() { clearTimeout(this._timer); }
+  disconnectedCallback() { clearTimeout(this._timer); requestAnimationFrame(stackToasts); }
   render() {
     const tone = tones.has(this.getAttribute('tone')) ? this.getAttribute('tone') : 'gray';
     const message = this.getAttribute('message') || this.textContent.trim() || 'Notification';
@@ -880,7 +1014,9 @@ class SeToast extends HTMLElement {
     this.querySelector('[data-action]')?.addEventListener('click', () => emit(this, 'action', {}));
   }
   open() {
+    this._order = ++order;
     this.setAttribute('open', '');
+    requestAnimationFrame(stackToasts);
     clearTimeout(this._timer);
     const duration = Number(this.getAttribute('duration') ?? 5000);
     if (Number.isFinite(duration) && duration > 0) this._timer = setTimeout(() => this.close(), duration);
@@ -889,6 +1025,7 @@ class SeToast extends HTMLElement {
     clearTimeout(this._timer);
     if (!this.hasAttribute('open')) return;
     this.removeAttribute('open');
+    requestAnimationFrame(stackToasts);
     emit(this, 'close', {});
   }
 }
@@ -933,30 +1070,22 @@ class SeSidebar extends HTMLElement {
       }
     });
     this.addEventListener('change', (event) => {
-      const control = event.target.closest('se-checkbox[variant^="light-dark"]');
+      const control = event.target.closest('se-theme-switch');
       if (!control) return;
-      document.documentElement.dataset.theme = control.checked ? 'dark' : 'light';
-      emit(this, 'themechange', { theme: document.documentElement.dataset.theme });
+      const theme = control.value === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : control.value;
+      document.documentElement.dataset.theme = theme;
+      emit(this, 'themechange', { theme: control.value });
     });
     this.collapsed = this.collapsed;
   }
   disconnectedCallback() {
     clearTimeout(this._transitionTimer);
-    clearTimeout(this._overlayTimer);
     this._media?.removeEventListener('change', this._responsive);
   }
   get collapsed() { return this.hasAttribute('collapsed'); }
   set collapsed(value) {
-    const wasCollapsed = this.collapsed;
     this.toggleAttribute('collapsed', Boolean(value));
     this.toggleAttribute('data-sidebar-collapsed', Boolean(value));
-    if (this.hasAttribute('overlay')) {
-      clearTimeout(this._overlayTimer);
-      if (value && !wasCollapsed) {
-        this.setAttribute('data-overlay-transitioning', '');
-        this._overlayTimer = setTimeout(() => this.removeAttribute('data-overlay-transitioning'), 200);
-      } else if (!value) this.removeAttribute('data-overlay-transitioning');
-    }
     if (value) this.querySelectorAll('se-sidebar-group').forEach((group) => { group.collapsed = true; });
     this.querySelectorAll('[data-sidebar-collapse]').forEach((button) => {
       button.setAttribute('aria-label', value ? 'Expand sidebar' : 'Collapse sidebar');
@@ -965,7 +1094,7 @@ class SeSidebar extends HTMLElement {
   }
   get closed() { return this.hasAttribute('closed'); }
   set closed(value) {
-    if (Boolean(value) !== this.closed && this._media?.matches) {
+    if (Boolean(value) !== this.closed && (this._media?.matches || this.hasAttribute('overlay'))) {
       this.setAttribute('data-transitioning', '');
       clearTimeout(this._transitionTimer);
       this._transitionTimer = setTimeout(() => this.removeAttribute('data-transitioning'), 210);
@@ -1388,13 +1517,6 @@ class SeBadge extends HTMLElement {
 define('se-badge', SeBadge);
 
 
-class SeList extends HTMLElement {
-  connectedCallback() { this.classList.add('se-list'); this.setAttribute('role', 'list'); }
-}
-
-define('se-list', SeList);
-
-
 class SeListHeader extends HTMLElement {
   connectedCallback() { this.classList.add('se-list__header'); }
 }
@@ -1403,23 +1525,72 @@ define('se-list-header', SeListHeader);
 
 
 class SeListRow extends HTMLElement {
-  connectedCallback() { this.classList.add('se-list__row'); this.setAttribute('role', 'listitem'); }
+  connectedCallback() {
+    this.classList.add('se-list__row');
+    this.setAttribute('role', 'listitem');
+    const level = Math.max(0, Number.parseInt(this.getAttribute('level') || '0', 10) || 0);
+    this.style.setProperty('--se-list-row-indent', `${level * 1.25}rem`);
+  }
 }
 
 define('se-list-row', SeListRow);
 
 
-class SeTable extends HTMLElement {
+class SeCollection extends HTMLElement {
   connectedCallback() {
-    this.classList.add('se-list', 'se-table');
-    this.setAttribute('role', 'table');
+    const requestedType = this.getAttribute('type') || 'list';
+    const type = ['list', 'table', 'tree'].includes(requestedType) ? requestedType : 'list';
+    this.classList.toggle('se-list', type !== 'tree');
+    this.classList.toggle('se-table', type === 'table');
+
+    if (type === 'tree') return;
+    this.setAttribute('role', type);
+    if (type === 'list') return;
+
     this.style.setProperty('--se-columns', this.getAttribute('columns') || 'repeat(auto-fit, minmax(8rem, 1fr))');
     this.querySelectorAll('se-list-header').forEach((header) => { header.setAttribute('role', 'row'); [...header.children].forEach((cell) => cell.setAttribute('role', 'columnheader')); });
     this.querySelectorAll('se-list-row').forEach((row) => { row.setAttribute('role', 'row'); [...row.children].forEach((cell) => cell.setAttribute('role', 'cell')); });
   }
 }
 
-define('se-table', SeTable);
+define('se-collection', SeCollection);
+
+
+class SeTreeItem extends HTMLElement {
+  connectedCallback() {
+    if (this.dataset.ready || this._scheduled) return;
+    this._scheduled = true;
+    queueMicrotask(() => this.render());
+  }
+  render() {
+    if (!this.isConnected || this.dataset.ready) return;
+    this.dataset.ready = 'true';
+    const children = [...this.childNodes];
+    const folder = this.getAttribute('type') === 'folder';
+    const disabled = this.hasAttribute('disabled');
+    const selected = this.hasAttribute('selected');
+    const label = escapeHtml(this.getAttribute('label') || (folder ? 'Folder' : 'File'));
+    const icon = escapeHtml(this.getAttribute('icon') || (folder ? 'folder' : 'file'));
+    const meta = this.getAttribute('meta') ? `<small>${escapeHtml(this.getAttribute('meta'))}</small>` : '';
+    const content = `<se-icon class="se-tree-item__icon" name="${icon}"></se-icon><span>${label}</span>${meta}`;
+    if (folder) {
+      this.innerHTML = `<details${this.hasAttribute('open') ? ' open' : ''}><summary class="se-tree-item__row${selected ? ' se-tree-item__row--selected' : ''}"${selected ? ' aria-current="page"' : ''}${disabled ? ' aria-disabled="true"' : ''}><se-icon class="se-tree-item__chevron" name="chevron"></se-icon>${content}</summary><div class="se-tree-item__children"></div></details>`;
+      this.querySelector('.se-tree-item__children').append(...children);
+      const details = this.querySelector('details');
+      details.addEventListener('toggle', () => this.toggleAttribute('open', details.open));
+      if (disabled) this.querySelector('summary').addEventListener('click', (event) => event.preventDefault());
+      return;
+    }
+    const href = this.getAttribute('href');
+    const tag = href && !disabled ? 'a' : 'button';
+    const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
+    this.innerHTML = `<${tag} class="se-tree-item__row${selected ? ' se-tree-item__row--selected' : ''}"${attributes}${selected ? ' aria-current="page"' : ''}>${content}</${tag}>`;
+  }
+  get open() { return this.querySelector('details')?.open ?? this.hasAttribute('open'); }
+  set open(value) { this.toggleAttribute('open', Boolean(value)); if (this.querySelector('details')) this.querySelector('details').open = Boolean(value); }
+}
+
+define('se-tree-item', SeTreeItem);
 
 
 const colorPalette = ['#0f172a', '#64748b', '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'];

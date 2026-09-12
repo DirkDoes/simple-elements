@@ -46,7 +46,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-component-preview [data-preview-surface="gray"] { background: var(--se-bg); }
 .demo-component-preview [data-component-code] { width: 100%; min-width: 0; }
 [data-template-code]:not([hidden]), [data-component-code]:not([hidden]) { margin-top: 1rem; }
-.demo-component-preview [data-component-preview] > :is(se-code-editor, se-date-picker, se-datetime-picker, se-file-row, se-file-upload, se-input, se-phone-input, se-range, se-select, se-time-picker, se-wysiwyg) { width: min(100%, 32rem); }
+.demo-component-preview [data-component-preview] > :is(se-code-editor, se-date-picker, se-datetime-picker, se-file-card, se-file-upload, se-folder-card, se-input, se-phone-input, se-project-card, se-range, se-select, se-time-picker, se-tree-item, se-wysiwyg) { width: min(100%, 32rem); }
 .demo-component-preview[data-component="chat-context"] [data-component-preview] > se-chat-context { width: min(100%, 42rem); }
 .demo-component-preview .se-editor, .demo-component-preview .se-editor textarea { height: 4.25rem; min-height: 4.25rem; }
 .demo-component-preview[data-component="sidebar"] [data-component-preview] { display: flex; height: 28rem; align-items: stretch; justify-content: flex-start; padding: 1rem; overflow: hidden; }
@@ -78,6 +78,20 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-pattern-frame { display: block; background: var(--se-bg); border: 0; transform-origin: top left; }
 .demo-pattern-page[data-demo="chats"] .demo-pattern-result { width: min(100%, 40rem); margin-inline: auto; }
 .demo-pattern-page[data-demo="chats"] .demo-pattern-preview-card { padding: 2rem 1.5rem; }
+.demo-pattern-page[data-demo="file-system"] .demo-pattern-result { width: min(100%, 48rem); margin-inline: auto; }
+.demo-pattern-page[data-demo="file-system"] .demo-pattern-preview-card { padding: 1.5rem; }
+.demo-pattern-page[data-demo="forms"] .demo-pattern-result { width: min(100%, 48rem); margin-inline: auto; }
+.demo-pattern-page[data-demo="forms"] .demo-pattern-preview-card { padding: 2rem; }
+.demo-form { display: grid; gap: 2rem; }
+.demo-form > header { display: grid; gap: .375rem; }
+.demo-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 1.25rem 1.5rem; }
+.demo-form-wide { grid-column: 1 / -1; }
+.demo-form-choice-group { display: grid; gap: .75rem; margin: 0; padding: 0; border: 0; }
+.demo-form-choice-group legend { margin-bottom: .75rem; color: var(--se-text); font-size: .875rem; font-weight: 600; }
+.demo-form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .75rem; padding-top: 1.25rem; border-top: 1px solid var(--se-border); }
+.demo-file-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.demo-file-grid se-file-card, .demo-file-section-title { grid-column: 1 / -1; }
+.demo-file-section-title--divided { margin-top: .5rem; padding-top: 1.5rem; border-top: 1px solid var(--se-border); }
 .demo-dashboard-hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(20rem, .75fr); gap: 1.5rem; margin-bottom: 1.5rem; }
 .demo-dashboard-hero-copy { display: grid; align-content: center; gap: 1rem; padding: 2.5rem; color: white; background: linear-gradient(135deg, var(--se-primary), var(--se-primary-deep)); border-radius: 1rem; box-shadow: var(--se-shadow-lg); }
 .demo-dashboard-hero-copy .se-title--page { color: white; }
@@ -136,7 +150,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
   .demo-content { width: min(100% - 4rem, 72rem); padding-top: 2rem; }
   .demo-pattern-heading { align-items: stretch; flex-direction: column; }
   .demo-pattern-heading se-select { width: 100%; }
-  .demo-grid, .demo-fields, .demo-controls, .demo-code-grid, .demo-dashboard-hero, .demo-dashboard-layout, .demo-dashboard-form__options, .demo-dashboard-theme-control { grid-template-columns: 1fr; }
-  .demo-wide { grid-column: auto; }
+  .demo-grid, .demo-fields, .demo-controls, .demo-code-grid, .demo-dashboard-hero, .demo-dashboard-layout, .demo-dashboard-form__options, .demo-dashboard-theme-control, .demo-file-grid, .demo-form-grid { grid-template-columns: 1fr; }
+  .demo-wide, .demo-form-wide { grid-column: auto; }
   .demo-controls se-range { grid-column: auto; }
 }

@@ -37,30 +37,22 @@ class SeSidebar extends HTMLElement {
       }
     });
     this.addEventListener('change', (event) => {
-      const control = event.target.closest('se-checkbox[variant^="light-dark"]');
+      const control = event.target.closest('se-theme-switch');
       if (!control) return;
-      document.documentElement.dataset.theme = control.checked ? 'dark' : 'light';
-      emit(this, 'themechange', { theme: document.documentElement.dataset.theme });
+      const theme = control.value === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : control.value;
+      document.documentElement.dataset.theme = theme;
+      emit(this, 'themechange', { theme: control.value });
     });
     this.collapsed = this.collapsed;
   }
   disconnectedCallback() {
     clearTimeout(this._transitionTimer);
-    clearTimeout(this._overlayTimer);
     this._media?.removeEventListener('change', this._responsive);
   }
   get collapsed() { return this.hasAttribute('collapsed'); }
   set collapsed(value) {
-    const wasCollapsed = this.collapsed;
     this.toggleAttribute('collapsed', Boolean(value));
     this.toggleAttribute('data-sidebar-collapsed', Boolean(value));
-    if (this.hasAttribute('overlay')) {
-      clearTimeout(this._overlayTimer);
-      if (value && !wasCollapsed) {
-        this.setAttribute('data-overlay-transitioning', '');
-        this._overlayTimer = setTimeout(() => this.removeAttribute('data-overlay-transitioning'), 200);
-      } else if (!value) this.removeAttribute('data-overlay-transitioning');
-    }
     if (value) this.querySelectorAll('se-sidebar-group').forEach((group) => { group.collapsed = true; });
     this.querySelectorAll('[data-sidebar-collapse]').forEach((button) => {
       button.setAttribute('aria-label', value ? 'Expand sidebar' : 'Collapse sidebar');
@@ -69,7 +61,7 @@ class SeSidebar extends HTMLElement {
   }
   get closed() { return this.hasAttribute('closed'); }
   set closed(value) {
-    if (Boolean(value) !== this.closed && this._media?.matches) {
+    if (Boolean(value) !== this.closed && (this._media?.matches || this.hasAttribute('overlay'))) {
       this.setAttribute('data-transitioning', '');
       clearTimeout(this._transitionTimer);
       this._transitionTimer = setTimeout(() => this.removeAttribute('data-transitioning'), 210);

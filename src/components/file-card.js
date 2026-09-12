@@ -1,6 +1,6 @@
 import { define, emit, escapeHtml } from '../helpers.js';
 
-class SeFileRow extends HTMLElement {
+class SeFileCard extends HTMLElement {
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
@@ -14,4 +14,4 @@ class SeFileRow extends HTMLElement {
   }
 }
 
-define('se-file-row', SeFileRow);
+define('se-file-card', SeFileCard);
