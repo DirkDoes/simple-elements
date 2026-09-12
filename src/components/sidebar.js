@@ -46,12 +46,21 @@ class SeSidebar extends HTMLElement {
   }
   disconnectedCallback() {
     clearTimeout(this._transitionTimer);
+    clearTimeout(this._overlayTimer);
     this._media?.removeEventListener('change', this._responsive);
   }
   get collapsed() { return this.hasAttribute('collapsed'); }
   set collapsed(value) {
+    const wasCollapsed = this.collapsed;
     this.toggleAttribute('collapsed', Boolean(value));
     this.toggleAttribute('data-sidebar-collapsed', Boolean(value));
+    if (this.hasAttribute('overlay')) {
+      clearTimeout(this._overlayTimer);
+      if (value && !wasCollapsed) {
+        this.setAttribute('data-overlay-transitioning', '');
+        this._overlayTimer = setTimeout(() => this.removeAttribute('data-overlay-transitioning'), 200);
+      } else if (!value) this.removeAttribute('data-overlay-transitioning');
+    }
     if (value) this.querySelectorAll('se-sidebar-group').forEach((group) => { group.collapsed = true; });
     this.querySelectorAll('[data-sidebar-collapse]').forEach((button) => {
       button.setAttribute('aria-label', value ? 'Expand sidebar' : 'Collapse sidebar');

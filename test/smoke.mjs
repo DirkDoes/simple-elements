@@ -60,7 +60,7 @@ assert.match(compiledCss, /se-code-editor\[wrap\]/);
 assert.match(compiledCss, /\[data-theme=dark\]\{[^}]*--se-bg:#090909[^}]*--se-surface:#141414/, 'dark surfaces must use neutral black and gray');
 assert.match(compiledCss, /\[data-theme=dark\]\{[^}]*--se-shadow:none[^}]*--se-shadow-lg:none/, 'dark elevation must not use shadows');
 assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\]\{[^}]*position:absolute/, 'mobile sidebars must overlay page content');
-assert.match(compiledCss, /se-sidebar\[overlay\]:not\(\[collapsed\]\):not\(\[closed\]\)\{[^}]*position:absolute/, 'expanded overlay sidebars must leave page content in place');
+assert.match(compiledCss, /se-sidebar\[overlay\]:not\(\[collapsed\]\):not\(\[closed\]\)[^{]*\{[^}]*position:absolute/, 'expanded overlay sidebars must leave page content in place');
 assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\] \[data-sidebar-collapse\]\{display:none/, 'mobile sidebars must hide desktop collapse controls');
 assert.match(compiledCss, /se-topbar>\[data-mobile-search\]:not\(\[hidden\]\)\{[^}]*position:absolute/, 'mobile search must overlay page content');
 assert.match(compiledCss, /\[layout-mode=desktop-only\][^{]*\{display:none/, 'desktop-only content must be hidden on mobile');
@@ -150,6 +150,7 @@ assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.every
 assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.slice(0, 3).every(({ markup }) => markup.includes('<se-topbar layout-mode="mobile-only">')), 'sidebar-only layouts need a mobile top bar');
 assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.slice(1, 3).every(({ markup }) => markup.includes('<footer layout-mode="desktop-only">')), 'mobile top-bar profiles must not be duplicated in sidebar footers');
 assert.match(patternCatalog.find(({ tag }) => tag === 'page-layout').examples[2].markup, /<header layout-mode="desktop-only">/, 'the mobile top-bar brand must not be duplicated in the sidebar header');
+assert.match(patternCatalog.find(({ tag }) => tag === 'page-layout').examples[3].markup, /<se-sidebar id="windowed-sidebar" layout-mode="responsive" overlay closed>/, 'the hamburger sidebar pattern must demonstrate overlay mode');
 for (const tag of ['sidebar', 'sidebar-toggle', 'topbar']) {
   const mode = componentCatalog.find((component) => component.tag === tag).attributes.find((attribute) => attribute.name === 'layout-mode');
   assert.equal(mode.defaultValue, 'always', `${tag} layout mode must default to always`);
@@ -204,6 +205,8 @@ const topbarSource = await readFile('src/components/topbar.js', 'utf8');
 assert.match(topbarSource, /data-mobile-search/, 'top bar must manage its mobile search row');
 assert.match(topbarSource, /closedchange/, 'top bar overlays must close each other');
 assert.match(await readFile('src/components/sidebar.js', 'utf8'), /data-transitioning/, 'sidebar animation must suppress temporary scrollbars');
+assert.match(await readFile('src/components/sidebar.js', 'utf8'), /data-overlay-transitioning/, 'overlay sidebars must remain over content during collapse');
+assert.match(await readFile('src/styles.css', 'utf8'), /se-sidebar\[overlay\]\[data-overlay-transitioning\]/, 'overlay collapse state must remain positioned over content');
 assert.match(highlightCode('const ready = true;', 'javascript'), /se-token--keyword/);
 const highlightedHtml = highlightCode('<se-button variant="brand" text="Save" disabled></se-button>', 'html');
 assert.match(highlightedHtml, /se-token--tag[^>]*>&lt;se-button/);
