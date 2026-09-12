@@ -7,4 +7,4 @@
 ]'></se-menu>
 ```
 
-Options accept `label`, `icon`, `disabled`, `danger`, and `separator`. The menu opens on hover, focus, or click. Selection emits `select` with the chosen option in `event.detail`.
+Options accept `label`, `icon`, `disabled`, `danger`, and `separator`; assign the array as JSON in `options` or through the `options` property. The menu opens on hover, focus, or click. Selection emits `select` with the chosen option in `event.detail`.
