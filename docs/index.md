@@ -48,6 +48,7 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 - [Profile](profile.md)
 - [Modal](modal.md)
 - [Drawer](drawer.md)
+- [Toast](toast.md)
 - [Chat message](chat-message.md)
 - [Chat context](chat-context.md)
 - [Thought train](thought-train.md)

@@ -30,6 +30,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-profile-card { max-width: 28rem; gap: 2rem; }
 .demo-profile-static { display: grid; gap: 1rem; padding: 1rem; background: color-mix(in srgb, var(--se-surface-soft) 50%, transparent); border: 1px solid var(--se-border); border-radius: .5rem; }
 .demo-theme { display: block; }
+.demo-version { display: block; color: var(--se-faint); font-size: .6875rem; font-weight: 700; letter-spacing: .08em; text-align: center; text-transform: uppercase; }
 .demo-wide { grid-column: 1 / -1; }
 .demo-divider { height: 1px; margin: .5rem 0; background: var(--se-border); }
 .demo-tooltip-text { color: var(--se-primary); font-size: .875rem; font-weight: 600; text-decoration: underline dashed; text-underline-offset: .25rem; cursor: help; }

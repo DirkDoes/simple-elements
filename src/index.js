@@ -22,6 +22,7 @@ import './components/menu.js';
 import './components/profile.js';
 import './components/modal.js';
 import './components/drawer.js';
+import './components/toast.js';
 import './components/sidebar.js';
 import './components/sidebar-toggle.js';
 import './components/layout-brand.js';

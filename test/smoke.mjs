@@ -178,6 +178,9 @@ assert.match(drawerSource, /mode === 'overlay' && event\.target === event\.curre
 assert.match(drawerSource, /aria-modal="\$\{mode === 'overlay'\}"/);
 assert.match(drawerSource, /const content = \[\.\.\.this\.childNodes\]/);
 assert.match(drawerSource, /querySelector\('\.se-drawer__body'\)\.append\(\.\.\.content\)/);
+const toastSource = await readFile('src/components/toast.js', 'utf8');
+assert.match(toastSource, /setTimeout\(\(\) => this\.close\(\), duration\)/);
+assert.match(toastSource, /data-action/);
 assert.match(await readFile('src/components/wysiwyg.js', 'utf8'), /<textarea hidden name=/, 'WYSIWYG must submit through a native textarea');
 const wysiwygSource = await readFile('src/components/wysiwyg.js', 'utf8');
 assert.match(wysiwygSource, /<se-select data-format size="small" value="markdown"/);

@@ -536,6 +536,22 @@ body:has(.se-drawer--push.se-overlay--open) { --se-drawer-push-width: min(100%, 
 .se-close { display: grid; padding: .5rem; color: var(--se-muted); background: none; border: 0; border-radius: .5rem; cursor: pointer; }
 .se-close:hover { color: var(--se-text); background: var(--se-surface-soft); }
 
+se-toast { position: fixed; top: 1rem; left: 50%; z-index: 110; display: block; width: min(calc(100% - 2rem), 32rem); transform: translate(-50%, -1rem); visibility: hidden; opacity: 0; pointer-events: none; transition: transform .2s, visibility .2s, opacity .2s; font-family: var(--se-font); }
+se-toast[open] { transform: translate(-50%, 0); visibility: visible; opacity: 1; pointer-events: auto; }
+.se-toast { display: flex; align-items: center; gap: .75rem; padding: .875rem 1rem; color: var(--se-text); background: var(--se-surface); border: 1px solid var(--se-border); border-radius: .75rem; box-shadow: var(--se-shadow-lg); }
+.se-toast--brand { color: var(--se-primary-text); background: var(--se-primary-soft); border-color: var(--se-primary-border); }
+.se-toast--success { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
+.se-toast--warning { color: #b45309; background: #fffbeb; border-color: #fde68a; }
+.se-toast--error { color: var(--se-danger); background: var(--se-danger-soft); border-color: #fca5a5; }
+.se-toast--info { color: #0369a1; background: #f0f9ff; border-color: #bae6fd; }
+.se-toast--important { color: #7e22ce; background: #faf5ff; border-color: #e9d5ff; }
+.se-toast > se-icon { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; }
+.se-toast__message { min-width: 0; flex: 1; font-size: .875rem; line-height: 1.35; }
+.se-toast__action { flex: 0 0 auto; padding: .25rem 0; color: inherit; background: transparent; border: 0; font: 700 .8125rem/1.25 var(--se-font); text-decoration: underline; text-underline-offset: .15em; cursor: pointer; }
+.se-toast__dismiss { display: grid; flex: 0 0 auto; place-items: center; padding: .25rem; color: currentColor; background: transparent; border: 0; border-radius: .375rem; cursor: pointer; opacity: .7; }
+.se-toast__dismiss:hover { opacity: 1; background: color-mix(in srgb, currentColor 12%, transparent); }
+.se-toast__dismiss se-icon { width: 1rem; height: 1rem; }
+
 .se-sidebar, se-sidebar { position: relative; display: flex; width: 16rem; height: 100%; flex: 0 0 auto; flex-direction: column; color: var(--se-text); background: var(--se-surface); border-right: 1px solid var(--se-border); font-family: var(--se-font); transition: width .2s; }
 se-sidebar[collapsed] { width: 5rem; }
 se-sidebar[closed] { width: 0; border-right-width: 0; visibility: hidden; pointer-events: none; }
@@ -645,6 +661,11 @@ se-topbar > [data-mobile-search] { display: none; }
 [data-theme="dark"] .se-modal__icon--warning { color: var(--se-warning); background: var(--se-warning-soft); }
 [data-theme="dark"] .se-modal__icon--info { color: var(--se-info); background: var(--se-info-soft); }
 [data-theme="dark"] .se-modal__icon--important { color: var(--se-important); background: var(--se-important-soft); }
+[data-theme="dark"] .se-toast--success { color: var(--se-success); background: var(--se-success-soft); border-color: var(--se-success-border); }
+[data-theme="dark"] .se-toast--warning { color: var(--se-warning); background: var(--se-warning-soft); border-color: var(--se-warning-border); }
+[data-theme="dark"] .se-toast--error { color: var(--se-danger); background: var(--se-danger-soft); border-color: color-mix(in srgb, var(--se-danger) 35%, transparent); }
+[data-theme="dark"] .se-toast--info { color: var(--se-info); background: var(--se-info-soft); border-color: var(--se-info-border); }
+[data-theme="dark"] .se-toast--important { color: var(--se-important); background: var(--se-important-soft); border-color: var(--se-important-border); }
 [data-theme="dark"] .se-file--success .se-file__icon { color: var(--se-success); background: var(--se-success-soft); }
 [data-theme="dark"] .se-file--warning .se-file__icon { color: var(--se-warning); background: var(--se-warning-soft); }
 [data-theme="dark"] .se-file--info .se-file__icon { color: var(--se-info); background: var(--se-info-soft); }
