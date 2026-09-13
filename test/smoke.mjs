@@ -36,7 +36,7 @@ assert.equal(generatedTheme.light.base, '#2563eb');
 assert.notEqual(generatedTheme.light.hover, generatedTheme.light.base);
 assert.notEqual(generatedTheme.dark.base, generatedTheme.light.base);
 assert.equal(generatedTheme.dark.contrast, '#ffffff');
-assert.equal(generatedTheme.dark.soft, '#314f8e');
+assert.equal(generatedTheme.dark.soft, '#2e4880');
 assert.equal(generatedTheme.dark.text, '#a4c3ff');
 assert.equal(primaryTheme('#f97316').dark.contrast, '#0a0a0a');
 assert.deepEqual(primaryTheme().light, {
