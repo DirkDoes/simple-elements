@@ -133,6 +133,8 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-template-attributes .se-table, .demo-component-attributes .se-table { overflow: visible; }
 .demo-template-table se-list-row { align-items: center; }
 .demo-template-table se-input, .demo-template-table se-select { width: 100%; }
+.demo-template-table .se-list__row > se-select { overflow: visible; }
+.demo-template-table .se-list__header { border-radius: .75rem .75rem 0 0; }
 .demo-template-table .se-label:empty { display: none; }
 .demo-template-attributes, .demo-component-attributes { container-type: inline-size; }
 @container (max-width: 60rem) {

@@ -36,6 +36,8 @@ assert.equal(generatedTheme.light.base, '#2563eb');
 assert.notEqual(generatedTheme.light.hover, generatedTheme.light.base);
 assert.notEqual(generatedTheme.dark.base, generatedTheme.light.base);
 assert.equal(generatedTheme.dark.contrast, '#ffffff');
+assert.equal(generatedTheme.dark.soft, '#314f8e');
+assert.equal(generatedTheme.dark.text, '#a4c3ff');
 assert.equal(primaryTheme('#f97316').dark.contrast, '#0a0a0a');
 assert.deepEqual(primaryTheme().light, {
   base: '#2563eb',
@@ -91,6 +93,10 @@ assert.match(buttonSource, /getAttribute\('text'\)/);
 assert.doesNotMatch(buttonSource, /hasAttribute\('icon-only'\)/);
 const componentStyles = await readFile('src/styles.css', 'utf8');
 assert.match(componentStyles, /\.se-button--link \{[^}]*color: var\(--se-primary\)/, 'link buttons must use the brand color');
+assert.match(componentStyles, /se-sidebar-button:not\(\[active\]\) \.se-sidebar-button:hover/, 'active sidebar buttons must ignore hover styling');
+assert.match(componentStyles, /\[data-theme="dark"\] \.se-select__option\[aria-selected="true"\][^{]*\{ color: color-mix\(in srgb, white 90%, var\(--se-primary\)\)/, 'dark selected options need brand-tinted near-white text');
+assert.match(componentStyles, /\[data-theme="dark"\] \.se-select__option:not\(\[aria-selected="true"\]\):not\(:disabled\):hover \{ color: var\(--se-text\); background: var\(--se-surface-soft\)/, 'dark option hover must match sidebar hover');
+assert.match(componentStyles, /\[data-theme="dark"\] se-sidebar-button\[active\] \.se-sidebar-button \{ color: color-mix\(in srgb, white 90%, var\(--se-primary\)\)/, 'dark active sidebar buttons need brand-tinted near-white text');
 assert.match(componentStyles, /\.se-button--link:hover \{[^}]*text-decoration: underline/, 'link buttons must underline on hover');
 assert.match(componentStyles, /\.se-button \{[^}]*width: 100%/, 'buttons must fill stretched hosts');
 assert.match(componentStyles, /\.se-profile strong, \.se-profile small \{[^}]*text-overflow: ellipsis/, 'profile text must truncate in narrow containers');
@@ -134,10 +140,15 @@ assert.match(exampleScript, /new ResizeObserver\(resizeFrame\)/, 'desktop patter
 assert.match(exampleScript, /1024x576[\s\S]*768x1024[\s\S]*390x844/, 'page layout patterns need shared desktop, tablet, and phone viewports');
 assert.doesNotMatch(exampleScript, /data-pattern-viewport[^>]*size=/, 'the viewport selector must use the standard select size');
 const exampleHtml = await readFile('examples/index.html', 'utf8');
+const exampleStyles = await readFile('examples/example.css', 'utf8');
+assert.match(exampleStyles, /\.demo-template-table \.se-list__row > se-select \{ overflow: visible; \}/, 'attribute-table selects must override cell menu clipping');
+assert.match(exampleStyles, /\.demo-template-table \.se-list__header \{ border-radius: \.75rem \.75rem 0 0; \}/, 'visible table overflow must preserve rounded headers');
 assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 2, 'dashboard and custom input pages should remain in static HTML');
 assert.match(exampleHtml, /data-demo="dashboard"/);
+assert.match(exampleHtml, /<se-badge tone="brand" icon="zap" text="Framework-free UI building blocks">/, 'dashboard hero badge must use the brand tone');
 assert.match(exampleHtml, /<se-drawer id="dashboard-chat" mode="overlay-clear" width="30rem"/);
 assert.match(exampleHtml, /data-open="dashboard-chat"/);
+assert.match(exampleHtml, /label="Owners" name="workspace\[owners\]" value="you" multiple searchable[^>]*"locked":true/, 'dashboard workspace form needs locked multi-owner selection');
 assert.ok((exampleHtml.match(/<se-chat-message/g) || []).length >= 10, 'dashboard drawer should demonstrate scrolling chat history');
 assert.match(exampleHtml, /data-demo="template"/);
 assert.equal((exampleHtml.match(/data-template-attribute=/g) || []).length, 11, 'expected every relevant input attribute in the template');
@@ -180,6 +191,7 @@ assert.match(patternCatalog.find(({ tag }) => tag === 'page-layout').examples[3]
 assert.equal(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.filter(({ markup }) => /<se-sidebar[^>]* overlay(?: |>|$)/.test(markup)).length, 1, 'only the responsive top-bar pattern should use an overlay sidebar');
 const formExamples = patternCatalog.find(({ tag }) => tag === 'forms').examples;
 assert.equal(formExamples.length, 4, 'forms pattern must show four workflows');
+assert.match(formExamples.find(({ title }) => title === 'New project').markup, /label="Owners" name="owners" value="you" multiple searchable[^>]*"locked":true/, 'project form needs locked multi-owner selection');
 assert.equal(formExamples.filter(({ markup }) => markup.includes('<se-split-button')).length, 2, 'two form patterns must use split buttons');
 for (const tag of ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'theme-switch', 'time-picker', 'wysiwyg']) assert.ok(formExamples.some(({ markup }) => markup.includes(`<se-${tag}`)), `forms pattern must demonstrate se-${tag}`);
 for (const tag of ['sidebar', 'sidebar-toggle', 'topbar']) {
@@ -216,7 +228,7 @@ assert.match(toastSource, /data-action/);
 assert.match(toastSource, /querySelectorAll\('se-toast\[open\]'\)/, 'open toasts must be stacked');
 assert.match(toastSource, /index === toasts\.length - 1/, 'only the bottom toast may cast a stack shadow');
 assert.match(await readFile('src/styles.css', 'utf8'), /se-toast \{[^}]*z-index: 1000/, 'toasts must remain above application shells');
-assert.match(componentStyles, /\[data-theme="dark"\] \.se-toast--error \{[^}]*background: #fef2f2/, 'dark-mode toasts must use opaque status backgrounds');
+assert.doesNotMatch(componentStyles, /\[data-theme="dark"\] \.se-toast--error/, 'dark-mode toasts must use shared dark status tokens');
 assert.match(exampleScript, /if \(tag !== 'toast'\)/, 'the toast demo must create a new toast per click');
 const splitButtonSource = await readFile('src/components/split-button.js', 'utf8');
 assert.match(splitButtonSource, /hasAttribute\('direct'\)/, 'split buttons must support immediate menu actions');

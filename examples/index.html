@@ -27,7 +27,7 @@
           <section data-demo="dashboard" hidden>
             <div class="demo-dashboard-hero">
               <div class="demo-dashboard-hero-copy">
-                <se-badge tone="info" icon="zap" text="Framework-free UI building blocks"></se-badge>
+                <se-badge tone="brand" icon="zap" text="Framework-free UI building blocks"></se-badge>
                 <se-title level="page">Build a simpler interface.</se-title>
                 <se-text>Simple Elements gives your product a calm, consistent foundation with native web components that work anywhere.</se-text>
                 <div class="demo-row"><se-button variant="secondary" text="Browse components" icon="send"></se-button><se-button variant="ghost" text="Read the docs" icon="file"></se-button></div>
@@ -44,6 +44,7 @@
                 <form class="demo-dashboard-form">
                   <div class="demo-fields"><se-input label="Workspace name" name="workspace[name]" placeholder="e.g. Northstar"></se-input><se-input type="email" label="Your email" name="workspace[email]" placeholder="you@example.com"></se-input></div>
                   <se-select label="Workspace type" name="workspace[type]" value="design" searchable clearable options='[{"id":"design","label":"Design system","description":"Tokens, components, and patterns","icon":"package"},{"id":"analytics","label":"Analytics dashboard","description":"Metrics and reporting views","icon":"activity"},{"id":"operations","label":"Operations hub","description":"People, tasks, and workflows","icon":"settings"}]'></se-select>
+                  <se-select label="Owners" name="workspace[owners]" value="you" multiple searchable options='[{"id":"you","label":"You","description":"Workspace creator","icon":"user","locked":true},{"id":"maya","label":"Maya Chen","icon":"user"},{"id":"alex","label":"Alex Morgan","icon":"user"},{"id":"jordan","label":"Jordan Lee","icon":"user"}]'></se-select>
                   <se-datetime-picker label="First review" name="workspace[review_at]" value="2026-09-10T09:30" variant="joined"></se-datetime-picker>
                   <div class="demo-dashboard-form__options"><se-checkbox variant="switch" label="Send me the weekly digest" checked></se-checkbox><se-range label="Priority" value="68" suffix="%"></se-range></div>
                   <div class="demo-dashboard-theme-control"><div><se-title level="card">Brand theme</se-title><se-text muted small>Change the primary color used across the library.</se-text></div><se-color-picker class="demo-dashboard-brand-color" label="Primary color" name="theme[primary]" value="#2563eb"></se-color-picker></div>
