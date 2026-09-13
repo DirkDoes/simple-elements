@@ -71,12 +71,11 @@ class SeColorPicker extends HTMLElement {
     const id = this.getAttribute('id') || `se-color-${crypto.randomUUID()}`;
     const label = this.getAttribute('label');
     const disabled = this.hasAttribute('disabled');
-    const required = this.hasAttribute('required');
     const picker = this._variant === 'palette' ? this.paletteMarkup(disabled) : this.gradientMarkup(disabled);
     const trigger = `<button class="se-control se-color-picker__trigger" type="button" ${label ? `aria-labelledby="${escapeHtml(id)}-label"` : 'aria-label="Choose color"'} aria-haspopup="dialog" aria-expanded="false"${disabled ? ' disabled' : ''}><span class="se-color-picker__swatch" data-swatch></span><span class="se-color-picker__trigger-value" data-trigger-value></span><se-icon name="chevron"></se-icon></button>`;
     const body = `<div class="se-color-picker__body">${picker}</div>`;
     const content = this._mode === 'popover' ? `${trigger}<input type="hidden" data-value-input name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this._value)}"${disabled ? ' disabled' : ''}><div class="se-color-picker__popover" role="dialog" aria-label="Choose color" hidden>${body}</div>` : `${body}<input type="hidden" data-value-input name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this._value)}"${disabled ? ' disabled' : ''}>`;
-    const labelMarkup = label ? `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(label)}${required ? '<span class="se-required">*</span>' : ''}</label>` : '';
+    const labelMarkup = label ? `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(label)}</label>` : '';
     this.innerHTML = `${labelMarkup}<div class="se-color-picker se-color-picker--${this._variant} se-color-picker--${this._mode}">${content}</div>`;
     this.renderValue();
   }

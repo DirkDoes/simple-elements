@@ -12,6 +12,7 @@ class SeCollection extends HTMLElement {
     if (type === 'list') return;
 
     this.style.setProperty('--se-columns', this.getAttribute('columns') || 'repeat(auto-fit, minmax(8rem, 1fr))');
+    if (this.hasAttribute('mobile-columns')) this.style.setProperty('--se-mobile-columns', this.getAttribute('mobile-columns'));
     this.querySelectorAll('se-list-header').forEach((header) => { header.setAttribute('role', 'row'); [...header.children].forEach((cell) => cell.setAttribute('role', 'columnheader')); });
     this.querySelectorAll('se-list-row').forEach((row) => { row.setAttribute('role', 'row'); [...row.children].forEach((cell) => cell.setAttribute('role', 'cell')); });
   }

@@ -20,4 +20,4 @@ Use one wrapper for lists, tables, and disclosure trees:
 </se-collection>
 ```
 
-`type` accepts `list`, `table`, or `tree` and defaults to `list`. In table mode, `columns` accepts a CSS `grid-template-columns` value shared by the header and rows. Tree mode stays visually neutral and lets `se-tree-item` provide native disclosure behavior.
+`type` accepts `list`, `table`, or `tree` and defaults to `list`. In table mode, `columns` accepts a CSS `grid-template-columns` value shared by the header and rows. Add `mobile-columns` when related cells are combined or hidden with `layout-mode` on narrow screens. Their shared subgrid keeps header backgrounds and columns full-width, and constrained cell text truncates with an ellipsis. Tree mode stays visually neutral and lets `se-tree-item` provide native disclosure behavior.

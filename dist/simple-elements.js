@@ -24,6 +24,14 @@ const emit = (element, name, detail) => element.dispatchEvent(
   new CustomEvent(name, { bubbles: true, detail }),
 );
 
+const placePopover = (trigger, popover) => {
+  const triggerRect = trigger.getBoundingClientRect();
+  const popoverRect = popover.getBoundingClientRect();
+  const gap = 8;
+  popover.dataset.popoverY = innerHeight - triggerRect.bottom >= popoverRect.height + gap || triggerRect.top < popoverRect.height + gap ? 'down' : 'up';
+  popover.dataset.popoverX = innerWidth - triggerRect.left >= popoverRect.width || triggerRect.right < popoverRect.width ? 'right' : 'left';
+};
+
 const DEFAULT_PRIMARY = '#2563eb';
 
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
@@ -262,7 +270,7 @@ const defineNativeInput = (tag, type, fallbackLabel) => define(tag, class extend
     const id = this.getAttribute('id') || `${tag}-${crypto.randomUUID()}`;
     const label = this.getAttribute('label') || fallbackLabel;
     const attributes = ['name', 'value', 'min', 'max', 'step'].map((name) => this.hasAttribute(name) ? `${name}="${escapeHtml(this.getAttribute(name))}"` : '').filter(Boolean).join(' ');
-    this.innerHTML = `<label class="se-label" for="${escapeHtml(id)}">${escapeHtml(label)}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label><input class="se-control" id="${escapeHtml(id)}" type="${type}" ${attributes}${this.hasAttribute('required') ? ' required' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}>`;
+    this.innerHTML = `<label class="se-label" for="${escapeHtml(id)}">${escapeHtml(label)}</label><input class="se-control" id="${escapeHtml(id)}" type="${type}" ${attributes}${this.hasAttribute('disabled') ? ' disabled' : ''}>`;
   }
 
   get value() { return this.querySelector('input')?.value || ''; }
@@ -409,7 +417,11 @@ class SeButton extends HTMLElement {
     const text = this.hasAttribute('text') ? this.getAttribute('text') : icon ? '' : 'Button';
     const iconOnly = icon && !text ? ' se-button--icon' : '';
     const label = this.getAttribute('aria-label') || text || icon;
-    this.innerHTML = `<button class="se-button se-button--${escapeHtml(variant)}${iconOnly}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${this.hasAttribute('disabled') ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}</button>`;
+    const content = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
+    const common = `class="se-button se-button--${escapeHtml(variant)}${iconOnly}"${label ? ` aria-label="${escapeHtml(label)}"` : ''}`;
+    this.innerHTML = this.hasAttribute('href') && !this.hasAttribute('disabled')
+      ? `<a ${common} href="${escapeHtml(this.getAttribute('href'))}">${content}</a>`
+      : `<button ${common} type="${escapeHtml(this.getAttribute('type') || 'button')}"${this.hasAttribute('disabled') ? ' disabled' : ''}>${content}</button>`;
   }
 }
 
@@ -445,16 +457,15 @@ class SeInput extends HTMLElement {
       `name="${escapeHtml(this.getAttribute('name') || '')}"`,
       `placeholder="${escapeHtml(placeholder)}"`,
       this.hasAttribute('disabled') ? 'disabled' : '',
-      this.hasAttribute('required') ? 'required' : '',
       this.hasAttribute('value') ? `value="${escapeHtml(this.getAttribute('value'))}"` : '',
     ].filter(Boolean).join(' ');
     const label = this.getAttribute('label');
     this.classList.toggle('se-field--error', Boolean(error));
-    this.innerHTML = `${label ? `<label class="se-label" for="${id}">${escapeHtml(label)}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label>` : ''}
+    this.innerHTML = `${label ? `<label class="se-label" for="${id}">${escapeHtml(label)}</label>` : ''}
       <div class="se-input-wrap${icon ? ' se-input-wrap--icon' : ''}">
         ${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}
         ${textarea ? `<textarea class="se-control" ${attrs}${this.hasAttribute('autosize') ? ' data-autosize' : this.hasAttribute('fixed') ? ' data-fixed' : ''}>${escapeHtml(this.getAttribute('value') || '')}</textarea>` : `<input class="se-control" type="${escapeHtml(type)}" ${attrs}>`}
-        ${error ? '<se-icon name="alert"></se-icon>' : ''}
+        ${error && type !== 'password' ? '<se-icon name="alert"></se-icon>' : ''}
         ${type === 'password' ? '<button class="se-password-toggle" type="button" aria-label="Show password"><se-icon name="eye"></se-icon></button>' : ''}
       </div>
       ${error || this.getAttribute('hint') ? `<small class="se-hint${error ? ' se-hint--error' : ''}">${escapeHtml(error || this.getAttribute('hint'))}</small>` : ''}`;
@@ -799,7 +810,11 @@ class SeSplitButton extends HTMLElement {
     const label = this.getAttribute('aria-label') || selected.label || selected.icon;
     this.innerHTML = `<div class="se-split se-split--${escapeHtml(variant)}"><button class="se-button se-button--${escapeHtml(variant)}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${disabled ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${selected.icon ? `<se-icon name="${escapeHtml(selected.icon)}"></se-icon>` : ''}${escapeHtml(selected.label)}</button><button class="se-button se-button--${escapeHtml(variant)} se-split__toggle" type="button" aria-label="Choose action" aria-expanded="false"${disabled ? ' disabled' : ''}><se-icon name="chevron"></se-icon></button><div class="se-split__menu">${options.map((option, index) => `<button class="se-menu-item" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-split');
-    this.querySelector('.se-split__toggle').addEventListener('click', (event) => { const open = root.classList.toggle('se-split--open'); event.currentTarget.setAttribute('aria-expanded', String(open)); });
+    const trigger = this.querySelector('.se-split__toggle');
+    const position = () => placePopover(trigger, this.querySelector('.se-split__menu'));
+    trigger.addEventListener('click', (event) => { const open = root.classList.toggle('se-split--open'); event.currentTarget.setAttribute('aria-expanded', String(open)); if (open) position(); });
+    root.addEventListener('pointerenter', position);
+    root.addEventListener('focusin', position);
     this.querySelector('.se-split > .se-button').addEventListener('click', () => emit(this, 'action', selected));
     this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => {
       const option = options[Number(button.dataset.index)];
@@ -878,7 +893,10 @@ class SeMenu extends HTMLElement {
     this.innerHTML = `<div class="se-menu"><button class="se-button se-button--secondary" type="button" aria-expanded="false">${escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-menu');
     const trigger = this.querySelector('.se-button');
-    trigger.addEventListener('click', () => { root.classList.toggle('se-menu--open'); trigger.setAttribute('aria-expanded', root.classList.contains('se-menu--open')); });
+    const position = () => placePopover(trigger, this.querySelector('.se-menu__items'));
+    trigger.addEventListener('click', () => { const open = root.classList.toggle('se-menu--open'); trigger.setAttribute('aria-expanded', open); if (open) position(); });
+    root.addEventListener('pointerenter', position);
+    root.addEventListener('focusin', position);
     this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { root.classList.remove('se-menu--open'); emit(this, 'select', options[Number(button.dataset.index)]); }));
   }
 }
@@ -899,7 +917,7 @@ class SeProfile extends HTMLElement {
     this.innerHTML = `<div class="se-profile-menu"><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
     const menu = this.querySelector('.se-profile-menu');
     const trigger = this.querySelector('.se-profile');
-    trigger.addEventListener('click', () => { menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(menu.classList.contains('se-profile-menu--open'))); });
+    trigger.addEventListener('click', () => { const open = menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(open)); if (open) placePopover(trigger, this.querySelector('.se-profile-menu__items')); });
     this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { menu.classList.remove('se-profile-menu--open'); trigger.setAttribute('aria-expanded', 'false'); emit(this, 'select', options[Number(button.dataset.index)]); }));
   }
 }
@@ -1548,6 +1566,7 @@ class SeCollection extends HTMLElement {
     if (type === 'list') return;
 
     this.style.setProperty('--se-columns', this.getAttribute('columns') || 'repeat(auto-fit, minmax(8rem, 1fr))');
+    if (this.hasAttribute('mobile-columns')) this.style.setProperty('--se-mobile-columns', this.getAttribute('mobile-columns'));
     this.querySelectorAll('se-list-header').forEach((header) => { header.setAttribute('role', 'row'); [...header.children].forEach((cell) => cell.setAttribute('role', 'columnheader')); });
     this.querySelectorAll('se-list-row').forEach((row) => { row.setAttribute('role', 'row'); [...row.children].forEach((cell) => cell.setAttribute('role', 'cell')); });
   }
@@ -1664,12 +1683,11 @@ class SeColorPicker extends HTMLElement {
     const id = this.getAttribute('id') || `se-color-${crypto.randomUUID()}`;
     const label = this.getAttribute('label');
     const disabled = this.hasAttribute('disabled');
-    const required = this.hasAttribute('required');
     const picker = this._variant === 'palette' ? this.paletteMarkup(disabled) : this.gradientMarkup(disabled);
     const trigger = `<button class="se-control se-color-picker__trigger" type="button" ${label ? `aria-labelledby="${escapeHtml(id)}-label"` : 'aria-label="Choose color"'} aria-haspopup="dialog" aria-expanded="false"${disabled ? ' disabled' : ''}><span class="se-color-picker__swatch" data-swatch></span><span class="se-color-picker__trigger-value" data-trigger-value></span><se-icon name="chevron"></se-icon></button>`;
     const body = `<div class="se-color-picker__body">${picker}</div>`;
     const content = this._mode === 'popover' ? `${trigger}<input type="hidden" data-value-input name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this._value)}"${disabled ? ' disabled' : ''}><div class="se-color-picker__popover" role="dialog" aria-label="Choose color" hidden>${body}</div>` : `${body}<input type="hidden" data-value-input name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this._value)}"${disabled ? ' disabled' : ''}>`;
-    const labelMarkup = label ? `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(label)}${required ? '<span class="se-required">*</span>' : ''}</label>` : '';
+    const labelMarkup = label ? `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(label)}</label>` : '';
     this.innerHTML = `${labelMarkup}<div class="se-color-picker se-color-picker--${this._variant} se-color-picker--${this._mode}">${content}</div>`;
     this.renderValue();
   }
@@ -1756,7 +1774,7 @@ class SeDatePicker extends HTMLElement {
     const id = this.getAttribute('id') || `se-date-${crypto.randomUUID()}`;
     const disabled = this.hasAttribute('disabled');
     const months = Array.from({ length: 12 }, (_, month) => ({ id: month, label: new Intl.DateTimeFormat(this.getAttribute('locale') || undefined, { month: 'long' }).format(new Date(2020, month, 1)) }));
-    this.innerHTML = `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(this.getAttribute('label') || 'Date')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label><div class="se-date"><button class="se-control se-date__trigger" type="button" aria-labelledby="${escapeHtml(id)}-label" aria-haspopup="dialog" aria-expanded="false"${disabled ? ' disabled' : ''}><span></span><se-icon name="calendar"></se-icon></button><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"><div class="se-date__popover" role="dialog" aria-label="Choose date" hidden><div class="se-date__nav"><button type="button" data-month="-1" aria-label="Previous month"><se-icon name="chevron"></se-icon></button><button class="se-date__heading" type="button" data-jump-toggle aria-expanded="false"><strong></strong></button><button type="button" data-month="1" aria-label="Next month"><se-icon name="chevron"></se-icon></button></div><div class="se-date__jump" hidden><se-select data-month-select value="${this._view.getMonth()}" options="${escapeHtml(JSON.stringify(months))}"></se-select><input data-year-input type="text" inputmode="numeric" aria-label="Year"></div><div class="se-date__week" aria-hidden="true"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div><div class="se-date__grid"></div><div class="se-date__footer"><button type="button" data-today>Today</button><button type="button" data-clear>Clear</button></div></div></div>`;
+    this.innerHTML = `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(this.getAttribute('label') || 'Date')}</label><div class="se-date"><button class="se-control se-date__trigger" type="button" aria-labelledby="${escapeHtml(id)}-label" aria-haspopup="dialog" aria-expanded="false"${disabled ? ' disabled' : ''}><span></span><se-icon name="calendar"></se-icon></button><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"><div class="se-date__popover" role="dialog" aria-label="Choose date" hidden><div class="se-date__nav"><button type="button" data-month="-1" aria-label="Previous month"><se-icon name="chevron"></se-icon></button><button class="se-date__heading" type="button" data-jump-toggle aria-expanded="false"><strong></strong></button><button type="button" data-month="1" aria-label="Next month"><se-icon name="chevron"></se-icon></button></div><div class="se-date__jump" hidden><se-select data-month-select value="${this._view.getMonth()}" options="${escapeHtml(JSON.stringify(months))}"></se-select><input data-year-input type="text" inputmode="numeric" aria-label="Year"></div><div class="se-date__week" aria-hidden="true"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div><div class="se-date__grid"></div><div class="se-date__footer"><button type="button" data-today>Today</button><button type="button" data-clear>Clear</button></div></div></div>`;
     this._outside = (event) => { if (!this.contains(event.target)) this.close(); };
     document.addEventListener('pointerdown', this._outside);
     this.querySelector('.se-date__trigger').addEventListener('click', () => this.querySelector('.se-date__popover').hidden ? this.open() : this.close());
@@ -1813,7 +1831,7 @@ class SeTimePicker extends HTMLElement {
     this._draft = this._selected || { hour: now.getHours(), minute: now.getMinutes() };
     const id = this.getAttribute('id') || `se-time-${crypto.randomUUID()}`;
     const disabled = this.hasAttribute('disabled');
-    this.innerHTML = `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(this.getAttribute('label') || 'Time')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label><div class="se-time"><button class="se-control se-time__trigger" type="button" aria-labelledby="${escapeHtml(id)}-label" aria-haspopup="dialog" aria-expanded="false"${disabled ? ' disabled' : ''}><span></span><se-icon name="clock"></se-icon></button><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"><div class="se-time__popover" role="dialog" aria-label="Choose time" hidden><strong class="se-time__title">Choose time</strong><div class="se-time__spinner"><label><small>Hour</small><input data-hour-input inputmode="numeric" aria-label="Hour"></label><span>:</span><label><small>Minute</small><input data-minute-input inputmode="numeric" aria-label="Minute"></label></div><div class="se-time__footer"><button type="button" data-now>Now</button><button type="button" data-clear>Clear</button></div></div></div>`;
+    this.innerHTML = `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(this.getAttribute('label') || 'Time')}</label><div class="se-time"><button class="se-control se-time__trigger" type="button" aria-labelledby="${escapeHtml(id)}-label" aria-haspopup="dialog" aria-expanded="false"${disabled ? ' disabled' : ''}><span></span><se-icon name="clock"></se-icon></button><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"><div class="se-time__popover" role="dialog" aria-label="Choose time" hidden><strong class="se-time__title">Choose time</strong><div class="se-time__spinner"><label><small>Hour</small><input data-hour-input inputmode="numeric" aria-label="Hour"></label><span>:</span><label><small>Minute</small><input data-minute-input inputmode="numeric" aria-label="Minute"></label></div><div class="se-time__footer"><button type="button" data-now>Now</button><button type="button" data-clear>Clear</button></div></div></div>`;
     this._outside = (event) => { if (!this.contains(event.target)) this.close(); };
     document.addEventListener('pointerdown', this._outside);
     this.querySelector('.se-time__trigger').addEventListener('click', () => this.querySelector('.se-time__popover').hidden ? this.open() : this.close());
@@ -1856,7 +1874,7 @@ class SeDatetimePicker extends HTMLElement {
     if (variant === 'combined') return this.connectSingle();
     const [date = '', time = ''] = (this.getAttribute('value') || '').split('T');
     const joined = variant === 'joined';
-    this.innerHTML = `<fieldset class="se-datetime${joined ? ' se-datetime--joined' : ' se-datetime--part-labels'}"${this.hasAttribute('disabled') ? ' disabled' : ''}><legend class="se-label">${escapeHtml(this.getAttribute('label') || 'Date and time')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</legend><div class="se-datetime__fields"><se-date-picker label="Date" value="${escapeHtml(date)}"${this.hasAttribute('min') ? ` min="${escapeHtml(this.getAttribute('min').split('T')[0])}"` : ''}${this.hasAttribute('max') ? ` max="${escapeHtml(this.getAttribute('max').split('T')[0])}"` : ''}></se-date-picker><se-time-picker label="Time" value="${escapeHtml(time)}" step="${escapeHtml(this.getAttribute('step') || '300')}"></se-time-picker></div><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"></fieldset>`;
+    this.innerHTML = `<fieldset class="se-datetime${joined ? ' se-datetime--joined' : ' se-datetime--part-labels'}"${this.hasAttribute('disabled') ? ' disabled' : ''}><legend class="se-label">${escapeHtml(this.getAttribute('label') || 'Date and time')}</legend><div class="se-datetime__fields"><se-date-picker label="Date" value="${escapeHtml(date)}"${this.hasAttribute('min') ? ` min="${escapeHtml(this.getAttribute('min').split('T')[0])}"` : ''}${this.hasAttribute('max') ? ` max="${escapeHtml(this.getAttribute('max').split('T')[0])}"` : ''}></se-date-picker><se-time-picker label="Time" value="${escapeHtml(time)}" step="${escapeHtml(this.getAttribute('step') || '300')}"></se-time-picker></div><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"></fieldset>`;
     const datePicker = this.querySelector('se-date-picker');
     const timePicker = this.querySelector('se-time-picker');
     datePicker.addEventListener('change', (event) => { if (event.target !== datePicker) return; this.syncParts(); if (joined && datePicker.value) timePicker.open(); });
@@ -1873,7 +1891,7 @@ class SeDatetimePicker extends HTMLElement {
     this._mode = 'date';
     const id = this.getAttribute('id') || `se-datetime-${crypto.randomUUID()}`;
     const months = Array.from({ length: 12 }, (_, month) => ({ id: month, label: new Intl.DateTimeFormat(this.getAttribute('locale') || undefined, { month: 'long' }).format(new Date(2020, month, 1)) }));
-    this.innerHTML = `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(this.getAttribute('label') || 'Date and time')}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label><div class="se-datetime-single"><button class="se-control se-datetime-single__trigger" type="button" aria-labelledby="${escapeHtml(id)}-label" aria-haspopup="dialog" aria-expanded="false"${this.hasAttribute('disabled') ? ' disabled' : ''}><span></span><se-icon name="calendar"></se-icon></button><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"><div class="se-datetime-single__popover" role="dialog" aria-label="Choose date and time" hidden><strong class="se-datetime-single__title"></strong><div data-date-panel><div class="se-date__nav"><button type="button" data-month="-1" aria-label="Previous month"><se-icon name="chevron"></se-icon></button><button class="se-date__heading" type="button" data-jump-toggle aria-expanded="false"><strong></strong></button><button type="button" data-month="1" aria-label="Next month"><se-icon name="chevron"></se-icon></button></div><div class="se-date__jump" hidden><se-select data-month-select value="${this._view.getMonth()}" options="${escapeHtml(JSON.stringify(months))}"></se-select><input data-year-input type="text" inputmode="numeric" aria-label="Year"></div><div class="se-date__week" aria-hidden="true"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div><div class="se-date__grid"></div><div class="se-datetime-single__footer"><button type="button" data-today>Today</button><button type="button" data-mode="time" aria-label="Choose time"><se-icon name="clock"></se-icon></button><span></span></div></div><div data-time-panel hidden><div class="se-time__spinner"><label><small>Hour</small><input data-hour-input inputmode="numeric" aria-label="Hour"></label><span>:</span><label><small>Minute</small><input data-minute-input inputmode="numeric" aria-label="Minute"></label></div><div class="se-datetime-single__footer"><button type="button" data-now>Now</button><button type="button" data-mode="date" aria-label="Choose date"><se-icon name="calendar"></se-icon></button><button type="button" data-done>Done</button></div></div></div></div>`;
+    this.innerHTML = `<label class="se-label" id="${escapeHtml(id)}-label">${escapeHtml(this.getAttribute('label') || 'Date and time')}</label><div class="se-datetime-single"><button class="se-control se-datetime-single__trigger" type="button" aria-labelledby="${escapeHtml(id)}-label" aria-haspopup="dialog" aria-expanded="false"${this.hasAttribute('disabled') ? ' disabled' : ''}><span></span><se-icon name="calendar"></se-icon></button><input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}" value="${escapeHtml(this.getAttribute('value') || '')}"><div class="se-datetime-single__popover" role="dialog" aria-label="Choose date and time" hidden><strong class="se-datetime-single__title"></strong><div data-date-panel><div class="se-date__nav"><button type="button" data-month="-1" aria-label="Previous month"><se-icon name="chevron"></se-icon></button><button class="se-date__heading" type="button" data-jump-toggle aria-expanded="false"><strong></strong></button><button type="button" data-month="1" aria-label="Next month"><se-icon name="chevron"></se-icon></button></div><div class="se-date__jump" hidden><se-select data-month-select value="${this._view.getMonth()}" options="${escapeHtml(JSON.stringify(months))}"></se-select><input data-year-input type="text" inputmode="numeric" aria-label="Year"></div><div class="se-date__week" aria-hidden="true"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div><div class="se-date__grid"></div><div class="se-datetime-single__footer"><button type="button" data-today>Today</button><button type="button" data-mode="time" aria-label="Choose time"><se-icon name="clock"></se-icon></button><span></span></div></div><div data-time-panel hidden><div class="se-time__spinner"><label><small>Hour</small><input data-hour-input inputmode="numeric" aria-label="Hour"></label><span>:</span><label><small>Minute</small><input data-minute-input inputmode="numeric" aria-label="Minute"></label></div><div class="se-datetime-single__footer"><button type="button" data-now>Now</button><button type="button" data-mode="date" aria-label="Choose date"><se-icon name="calendar"></se-icon></button><button type="button" data-done>Done</button></div></div></div></div>`;
     this._outside = (event) => { if (!this.contains(event.target)) this.close(); };
     document.addEventListener('pointerdown', this._outside);
     this.querySelector('.se-datetime-single__trigger').addEventListener('click', () => this.querySelector('.se-datetime-single__popover').hidden ? this.open() : this.close());

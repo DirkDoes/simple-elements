@@ -14,7 +14,11 @@ class SeButton extends HTMLElement {
     const text = this.hasAttribute('text') ? this.getAttribute('text') : icon ? '' : 'Button';
     const iconOnly = icon && !text ? ' se-button--icon' : '';
     const label = this.getAttribute('aria-label') || text || icon;
-    this.innerHTML = `<button class="se-button se-button--${escapeHtml(variant)}${iconOnly}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${this.hasAttribute('disabled') ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}</button>`;
+    const content = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
+    const common = `class="se-button se-button--${escapeHtml(variant)}${iconOnly}"${label ? ` aria-label="${escapeHtml(label)}"` : ''}`;
+    this.innerHTML = this.hasAttribute('href') && !this.hasAttribute('disabled')
+      ? `<a ${common} href="${escapeHtml(this.getAttribute('href'))}">${content}</a>`
+      : `<button ${common} type="${escapeHtml(this.getAttribute('type') || 'button')}"${this.hasAttribute('disabled') ? ' disabled' : ''}>${content}</button>`;
   }
 }
 

@@ -29,16 +29,15 @@ class SeInput extends HTMLElement {
       `name="${escapeHtml(this.getAttribute('name') || '')}"`,
       `placeholder="${escapeHtml(placeholder)}"`,
       this.hasAttribute('disabled') ? 'disabled' : '',
-      this.hasAttribute('required') ? 'required' : '',
       this.hasAttribute('value') ? `value="${escapeHtml(this.getAttribute('value'))}"` : '',
     ].filter(Boolean).join(' ');
     const label = this.getAttribute('label');
     this.classList.toggle('se-field--error', Boolean(error));
-    this.innerHTML = `${label ? `<label class="se-label" for="${id}">${escapeHtml(label)}${this.hasAttribute('required') ? '<span class="se-required">*</span>' : ''}</label>` : ''}
+    this.innerHTML = `${label ? `<label class="se-label" for="${id}">${escapeHtml(label)}</label>` : ''}
       <div class="se-input-wrap${icon ? ' se-input-wrap--icon' : ''}">
         ${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}
         ${textarea ? `<textarea class="se-control" ${attrs}${this.hasAttribute('autosize') ? ' data-autosize' : this.hasAttribute('fixed') ? ' data-fixed' : ''}>${escapeHtml(this.getAttribute('value') || '')}</textarea>` : `<input class="se-control" type="${escapeHtml(type)}" ${attrs}>`}
-        ${error ? '<se-icon name="alert"></se-icon>' : ''}
+        ${error && type !== 'password' ? '<se-icon name="alert"></se-icon>' : ''}
         ${type === 'password' ? '<button class="se-password-toggle" type="button" aria-label="Show password"><se-icon name="eye"></se-icon></button>' : ''}
       </div>
       ${error || this.getAttribute('hint') ? `<small class="se-hint${error ? ' se-hint--error' : ''}">${escapeHtml(error || this.getAttribute('hint'))}</small>` : ''}`;

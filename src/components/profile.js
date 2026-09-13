@@ -1,4 +1,4 @@
-import { define, emit, escapeHtml, parseOptions } from '../helpers.js';
+import { define, emit, escapeHtml, parseOptions, placePopover } from '../helpers.js';
 
 class SeProfile extends HTMLElement {
   connectedCallback() {
@@ -13,7 +13,7 @@ class SeProfile extends HTMLElement {
     this.innerHTML = `<div class="se-profile-menu"><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
     const menu = this.querySelector('.se-profile-menu');
     const trigger = this.querySelector('.se-profile');
-    trigger.addEventListener('click', () => { menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(menu.classList.contains('se-profile-menu--open'))); });
+    trigger.addEventListener('click', () => { const open = menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(open)); if (open) placePopover(trigger, this.querySelector('.se-profile-menu__items')); });
     this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { menu.classList.remove('se-profile-menu--open'); trigger.setAttribute('aria-expanded', 'false'); emit(this, 'select', options[Number(button.dataset.index)]); }));
   }
 }
