@@ -8,6 +8,10 @@ const pages = [['dashboard', 'Dashboard', 'dashboard'], ...componentPages, ...pa
 const requestedPage = location.hash.slice(1) || 'dashboard';
 const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'dashboard';
 const sidebar = document.querySelector('se-sidebar');
+fetch('https://api.github.com/repos/DirkDoes/simple-elements/tags?per_page=1')
+  .then((response) => response.ok ? response.json() : [])
+  .then(([tag]) => { if (tag?.name) document.querySelector('.demo-version').textContent = tag.name; })
+  .catch(() => {});
 const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-sidebar-button label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-sidebar-button>`).join('');
 const groups = [
   ['Page layout', 'panel-left-open', ['profile', 'layout-brand', 'sidebar', 'sidebar-toggle', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],

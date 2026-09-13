@@ -138,6 +138,7 @@ assert.doesNotMatch(exampleScript, /const demos\s*=/, 'demo markup belongs in HT
 assert.match(exampleScript, /tag === 'page-layout'[\s\S]*document\.createElement\('iframe'\)/, 'page layout patterns must render in isolated desktop iframes');
 assert.match(exampleScript, /new ResizeObserver\(resizeFrame\)/, 'desktop pattern frames must scale with their preview cards');
 assert.match(exampleScript, /1024x576[\s\S]*768x1024[\s\S]*390x844/, 'page layout patterns need shared desktop, tablet, and phone viewports');
+assert.match(exampleScript, /api\.github\.com\/repos\/DirkDoes\/simple-elements\/tags\?per_page=1/, 'sidebar version must follow the latest GitHub tag');
 assert.doesNotMatch(exampleScript, /data-pattern-viewport[^>]*size=/, 'the viewport selector must use the standard select size');
 const exampleHtml = await readFile('examples/index.html', 'utf8');
 const exampleStyles = await readFile('examples/example.css', 'utf8');
@@ -145,6 +146,7 @@ assert.match(exampleStyles, /\.demo-template-table \.se-list__row > se-select \{
 assert.match(exampleStyles, /\.demo-template-table \.se-list__header \{ border-radius: \.75rem \.75rem 0 0; \}/, 'visible table overflow must preserve rounded headers');
 assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 2, 'dashboard and custom input pages should remain in static HTML');
 assert.match(exampleHtml, /data-demo="dashboard"/);
+assert.match(exampleHtml, /<small class="demo-version" aria-label="Latest released version"><\/small>/, 'sidebar version must not be hardcoded');
 assert.match(exampleHtml, /<se-badge tone="brand" icon="zap" text="Framework-free UI building blocks">/, 'dashboard hero badge must use the brand tone');
 assert.match(exampleHtml, /<se-drawer id="dashboard-chat" mode="overlay-clear" width="30rem"/);
 assert.match(exampleHtml, /data-open="dashboard-chat"/);
