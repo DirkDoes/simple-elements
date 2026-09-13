@@ -98,13 +98,14 @@ const makePalette = (primary) => {
   const lightSoft = tone(source.l + (0.97 - source.l) * .96, source.c * .1);
   const lightText = lightHover;
   const lightBorder = tone(source.l + (0.97 - source.l) * .75, source.c * .2);
-  const darkBase = tone(Math.min(.72, source.l + .08), source.c * .85);
-  const darkHover = tone(Math.min(.8, source.l + .15), source.c * .7);
-  const darkDeep = tone(Math.max(.18, source.l - .14), source.c * .7);
-  const darkSoft = mix(darkBase, '#141414', .48);
-  const darkText = tone(Math.min(.9, source.l + .27), source.c * .65);
-  const darkBorder = mix(darkBase, '#626262', .45);
-  const darkContrast = contrastFor(darkBase) === '#0f172a' ? '#0a0a0a' : '#ffffff';
+  // Keep the brand hue, with readable accents and restrained surface tints at night.
+  const darkBase = tone(clamp(source.l, .72, .8), Math.min(source.c * .7, .14));
+  const darkHover = tone(clamp(source.l + .06, .78, .86), Math.min(source.c * .6, .12));
+  const darkDeep = tone(.32, source.c * .6);
+  const darkSoft = mix(darkBase, '#191b1f', .16);
+  const darkText = tone(.86, Math.min(source.c * .5, .09));
+  const darkBorder = mix(darkBase, '#363b44', .35);
+  const darkContrast = '#111214';
 
   return {
     light: { base: lightBase, hover: lightHover, soft: lightSoft, text: lightText, border: lightBorder, deep: lightDeep, contrast: contrastFor(lightBase) },

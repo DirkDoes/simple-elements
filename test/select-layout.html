@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Select layout regression</title>
+<link rel="stylesheet" href="../dist/styles.css">
+<link rel="stylesheet" href="../examples/example.css">
+<script defer src="../dist/simple-elements.js"></script>
+<body>
+<pre id="result">Running selection layout checks...</pre>
+<div id="fixture"></div>
+<script>
+(async () => {
+  await customElements.whenDefined('se-select');
+  const fixture = document.querySelector('#fixture');
+  let checks = 0;
+  try {
+    for (const theme of ['light', 'dark']) for (const size of ['', 'small']) for (const width of [160, 220, 320]) for (const icon of ['', 'user']) {
+      document.documentElement.dataset.theme = theme;
+      fixture.style.width = `${width}px`;
+      const select = document.createElement('se-select');
+      select.setAttribute('size', size);
+      select.options = [
+        { id: 'one', label: 'Workspace settings', description: 'Manage your workspace and team preferences', icon },
+        { id: 'two', label: 'Notifications', description: 'Choose which updates you receive', icon },
+      ];
+      fixture.replaceChildren(select);
+      select.open();
+      const heights = () => [...select.querySelectorAll('.se-select__option')].map((row) => row.getBoundingClientRect().height);
+      const before = JSON.stringify(heights());
+      for (const id of ['one', 'two']) {
+        select.querySelector(`[data-id="${id}"]`).click();
+        select.open();
+        if (JSON.stringify(heights()) !== before) throw Error(`Row height changed: ${theme}, ${size || 'normal'}, ${width}px, icon=${!!icon}, selected=${id}: ${before} -> ${JSON.stringify(heights())}`);
+        checks++;
+      }
+    }
+    for (const theme of ['light', 'dark']) for (const width of [600, 1100]) {
+      document.documentElement.dataset.theme = theme;
+      fixture.style.width = `${width}px`;
+      fixture.innerHTML = `<div class="demo-component-attributes"><se-collection type="table" class="demo-template-table" columns="1fr 1fr 1fr 1fr"><se-list-row><strong data-description="Attribute description">Variant</strong><span>Description</span><span>Default</span><se-select clearable placeholder="No override"></se-select></se-list-row></se-collection></div>`;
+      const select = fixture.querySelector('se-select');
+      select.options = [{ id: 'brand', label: 'Brand' }];
+      const height = () => select.querySelector('.se-select__trigger').getBoundingClientRect().height;
+      const before = height();
+      select.open();
+      select.querySelector('[data-id="brand"]').click();
+      if (height() !== before) throw Error(`Attribute-table trigger height changed: ${theme}, ${width}px: ${before} -> ${height()}`);
+      select.querySelector('.se-select__clear').click();
+      if (height() !== before) throw Error('Clearing a table dropdown changed its height');
+      checks++;
+    }
+    document.documentElement.dataset.test = 'passed';
+    document.querySelector('#result').textContent = `PASS: ${checks} selection changes preserve row heights.`;
+  } catch (error) {
+    document.documentElement.dataset.test = 'failed';
+    document.querySelector('#result').textContent = error.message;
+    throw error;
+  }
+})();
+</script>
+</body>
+</html>

@@ -64,7 +64,7 @@ const renderComponentPage = (component) => {
   const section = document.createElement('section');
   section.dataset.demo = tag;
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-checkbox variant="switch" label="Show code" data-component-code-toggle></se-checkbox></div><div data-component-preview${previewSurface ? ` data-preview-surface="${escapeAttribute(previewSurface)}"` : ''}></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${contextTableMarkup(contexts)}${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-collection>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-segmented-control aria-label="Preview view" value="component" options='[{"id":"component","label":"Component"},{"id":"code","label":"Code"}]' data-component-view></se-segmented-control></div><div data-component-preview${previewSurface ? ` data-preview-surface="${escapeAttribute(previewSurface)}"` : ''}></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${contextTableMarkup(contexts)}${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-collection>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
   document.querySelector('.demo-content').append(section);
   const preview = section.querySelector('[data-component-preview]');
   const code = section.querySelector('[data-component-code]');
@@ -106,7 +106,7 @@ const renderComponentPage = (component) => {
     code.value = formatHtml(usageMarkup);
   };
   section.querySelectorAll('.demo-component-attributes [data-component-attribute], .demo-component-attributes [data-component-context]').forEach((control) => control.addEventListener(control.matches('se-input, se-code-editor') ? 'input' : 'change', render));
-  section.querySelector('[data-component-code-toggle]').addEventListener('change', (event) => { preview.hidden = event.currentTarget.checked; code.hidden = !event.currentTarget.checked; });
+  section.querySelector('[data-component-view]').addEventListener('change', (event) => { preview.hidden = event.currentTarget.value === 'code'; code.hidden = event.currentTarget.value !== 'code'; });
   render();
 };
 componentCatalog.filter(({ custom }) => !custom).forEach(renderComponentPage);
@@ -208,8 +208,8 @@ template.addEventListener('input', (event) => {
 template.addEventListener('change', (event) => {
   const control = event.target.closest('[data-template-attribute]');
   if (control && !control.matches('se-input')) renderTemplateInput();
-  if (event.target.closest('[data-template-code-toggle]')) {
-    const showCode = template.querySelector('[data-template-code-toggle]').checked;
+  if (event.target.closest('[data-template-view]')) {
+    const showCode = template.querySelector('[data-template-view]').value === 'code';
     template.querySelector('[data-template-preview]').hidden = showCode;
     template.querySelector('[data-template-code]').hidden = !showCode;
   }

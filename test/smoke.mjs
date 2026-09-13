@@ -35,10 +35,28 @@ const generatedTheme = primaryTheme('#2563eb');
 assert.equal(generatedTheme.light.base, '#2563eb');
 assert.notEqual(generatedTheme.light.hover, generatedTheme.light.base);
 assert.notEqual(generatedTheme.dark.base, generatedTheme.light.base);
-assert.equal(generatedTheme.dark.contrast, '#ffffff');
-assert.equal(generatedTheme.dark.soft, '#2e4880');
-assert.equal(generatedTheme.dark.text, '#a4c3ff');
-assert.equal(primaryTheme('#f97316').dark.contrast, '#0a0a0a');
+const luminance = (hex) => hex.slice(1).match(/../g).map((channel) => parseInt(channel, 16) / 255)
+  .map((channel) => channel <= .04045 ? channel / 12.92 : ((channel + .055) / 1.055) ** 2.4)
+  .reduce((sum, channel, index) => sum + channel * [.2126, .7152, .0722][index], 0);
+const contrast = (a, b) => (Math.max(luminance(a), luminance(b)) + .05) / (Math.min(luminance(a), luminance(b)) + .05);
+const themeCss = await readFile('src/styles.css', 'utf8');
+const darkTokens = Object.fromEntries([...themeCss.match(/\[data-theme="dark"\] \{([^}]+)\}/)[1].matchAll(/--se-([\w-]+): (#[\da-f]{6});/g)].map(([, role, hex]) => [role, hex]));
+const darkSurfaces = ['bg', 'surface', 'surface-soft', 'surface-raised'].map((role) => darkTokens[role]);
+for (const surface of darkSurfaces) {
+  for (const role of ['text', 'muted', 'faint']) assert.ok(contrast(darkTokens[role], surface) >= 4.5, `${role} must remain readable on ${surface}`);
+  assert.ok(contrast(darkTokens['border-strong'], surface) >= 3, 'control outlines need 3:1 contrast');
+}
+assert.ok(darkSurfaces.every((surface, index) => index === 0 || luminance(surface) > luminance(darkSurfaces[index - 1])), 'raised dark surfaces must become lighter');
+for (const tone of ['danger', 'success', 'warning', 'info', 'important']) assert.ok(contrast(darkTokens[tone], darkTokens[`${tone}-soft`]) >= 4.5, `${tone} status text must be readable`);
+for (const r of ['00', '33', '66', '99', 'cc', 'ff']) for (const g of ['00', '33', '66', '99', 'cc', 'ff']) for (const b of ['00', '33', '66', '99', 'cc', 'ff']) {
+  const primary = `#${r}${g}${b}`;
+  const { dark, light } = primaryTheme(primary);
+  assert.equal(light.base, primary, 'light brand colors must stay unchanged');
+  for (const fill of [dark.base, dark.hover]) assert.ok(contrast(dark.contrast, fill) >= 4.5, `brand button text: ${primary}`);
+  for (const surface of [...darkSurfaces, dark.soft]) assert.ok(contrast(dark.base, surface) >= 4.5, `brand links: ${primary} on ${surface}`);
+  assert.ok(contrast(dark.text, dark.soft) >= 4.5, `brand badge text: ${primary}`);
+}
+for (const [role, value] of Object.entries(generatedTheme.dark)) assert.ok(themeCss.includes(`--se-primary-dark${role === 'base' ? '' : `-${role}`}: ${value};`), `CSS and runtime dark ${role} must agree`);
 assert.deepEqual(primaryTheme().light, {
   base: '#2563eb',
   hover: '#1e58d7',
@@ -53,7 +71,7 @@ const themeStyles = {};
 globalThis.document = { documentElement: { style: { setProperty: (name, value) => { themeStyles[name] = value; } } } };
 setBrandTheme({ primary: '#7c3aed' });
 assert.equal(themeStyles['--se-primary-light'], '#7c3aed');
-assert.equal(themeStyles['--se-primary-dark'], '#8f64f6');
+assert.equal(themeStyles['--se-primary-dark'], primaryTheme('#7c3aed').dark.base);
 delete globalThis.document;
 const compiledCss = await readFile('dist/styles.css', 'utf8');
 assert.match(compiledCss, /\.se-button/);
@@ -66,8 +84,7 @@ assert.match(compiledCss, /#60a5fa/, 'theme controls must retain the moon color'
 assert.match(compiledCss, /textarea:read-only\{[^}]*resize:none/);
 assert.match(compiledCss, /se-code\[block\]\[wrap\]/);
 assert.match(compiledCss, /se-code-editor\[wrap\]/);
-assert.match(compiledCss, /\[data-theme=dark\]\{[^}]*--se-bg:#090909[^}]*--se-surface:#141414/, 'dark surfaces must use neutral black and gray');
-assert.match(compiledCss, /\[data-theme=dark\]\{[^}]*--se-shadow:none[^}]*--se-shadow-lg:none/, 'dark elevation must not use shadows');
+assert.match(compiledCss, /--se-surface-raised:#292d33/, 'dark overlay surface must be compiled');
 assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\]\{[^}]*position:absolute/, 'mobile sidebars must overlay page content');
 assert.match(compiledCss, /se-sidebar\[overlay\][^{]*\{[^}]*position:absolute/, 'overlay sidebars must leave page content in place while open, closing, or collapsed');
 assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\] \[data-sidebar-collapse\]\{display:none/, 'mobile sidebars must hide desktop collapse controls');

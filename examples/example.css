@@ -37,7 +37,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-notice { display: flex; gap: .75rem; margin-top: 1rem; padding: 1rem; background: var(--se-surface-soft); border: 1px solid var(--se-border); border-radius: .75rem; }
 .demo-notice se-icon { width: 1.25rem; height: 1.25rem; color: var(--se-primary); }
 .demo-modal-copy { margin: .5rem 0 0; }
-.demo-template-preview { display: grid; min-height: 10rem; align-content: start; gap: 1.5rem; }
+.demo-template-preview, .demo-component-preview { display: grid; min-height: 10rem; align-content: start; gap: 1.5rem; }
 .demo-template-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .demo-template-preview [data-template-preview] { width: min(100%, 32rem); margin: auto; }
 .demo-template-preview [data-template-code] { width: 100%; min-width: 0; }
@@ -45,7 +45,6 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-component-preview [data-component-preview] { display: grid; min-height: 8rem; place-items: center; padding: 1rem; }
 .demo-component-preview [data-preview-surface="gray"] { background: var(--se-bg); }
 .demo-component-preview [data-component-code] { width: 100%; min-width: 0; }
-[data-template-code]:not([hidden]), [data-component-code]:not([hidden]) { margin-top: 1rem; }
 .demo-component-preview [data-component-preview] > :is(se-code-editor, se-date-picker, se-datetime-picker, se-file-card, se-file-upload, se-folder-card, se-input, se-phone-input, se-project-card, se-range, se-select, se-time-picker, se-tree-item, se-wysiwyg) { width: min(100%, 32rem); }
 .demo-component-preview[data-component="chat-context"] [data-component-preview] > se-chat-context { width: min(100%, 42rem); }
 .demo-component-preview .se-editor, .demo-component-preview .se-editor textarea { height: 4.25rem; min-height: 4.25rem; }
@@ -140,7 +139,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 @container (max-width: 60rem) {
   .demo-template-attributes .se-list__header, .demo-template-attributes .se-list__row, .demo-component-attributes .se-list__header, .demo-component-attributes .se-list__row { min-width: 0; grid-template-columns: 12rem 10rem minmax(12rem, 1fr); }
   .demo-template-attributes .se-list__header > :nth-child(2), .demo-template-attributes .se-list__row > :nth-child(2), .demo-component-attributes .se-list__header > :nth-child(2), .demo-component-attributes .se-list__row > :nth-child(2) { display: none; }
-  .demo-template-attributes .se-list__row strong::after, .demo-component-attributes .se-list__row strong::after { display: block; margin-top: .25rem; color: var(--se-muted); content: attr(data-description); font-size: .75rem; font-weight: 400; line-height: 1.35; }
+  .demo-template-attributes .se-list__row > strong[data-description]::after, .demo-component-attributes .se-list__row > strong[data-description]::after { display: block; margin-top: .25rem; color: var(--se-muted); content: attr(data-description); font-size: .75rem; font-weight: 400; line-height: 1.35; }
 }
 @container (max-width: 40rem) {
   .demo-template-attributes .se-list__header, .demo-template-attributes .se-list__row, .demo-component-attributes .se-list__header, .demo-component-attributes .se-list__row { grid-template-columns: minmax(9rem, .8fr) minmax(12rem, 1fr); }
@@ -156,3 +155,8 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
   .demo-wide, .demo-form-wide { grid-column: auto; }
   .demo-controls se-range { grid-column: auto; }
 }
+
+[data-theme="dark"] .demo-dashboard-hero-copy { color: var(--se-text); background: linear-gradient(135deg, var(--se-primary-soft), var(--se-surface)); box-shadow: inset 0 0 0 1px var(--se-primary-border); }
+[data-theme="dark"] .demo-dashboard-hero-copy .se-title--page { color: var(--se-text); }
+[data-theme="dark"] .demo-dashboard-hero-copy .se-text, [data-theme="dark"] .demo-dashboard-hero-copy .se-button--ghost { color: var(--se-muted); }
+[data-theme="dark"] :is(.demo-dashboard-overview__icon, .demo-dashboard-tip__icon) { color: var(--se-muted); background: var(--se-surface-soft); }
