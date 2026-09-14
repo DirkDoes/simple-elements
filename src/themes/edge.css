@@ -1,0 +1,55 @@
+/* Edge: architectural edges, neutral whites, and charcoal. Optional, root-scoped. */
+:root[data-se-theme="edge"] {
+  --se-radius: 2px;
+  --se-bg: #f2f2f2;
+  --se-surface: #ffffff;
+  --se-surface-soft: #eaeaea;
+  --se-surface-raised: #ffffff;
+  --se-text: #252525;
+  --se-muted: #5d5d5d;
+  --se-faint: #6a6a6a;
+  --se-border: #cccccc;
+  --se-border-strong: #828282;
+  --se-shadow: none;
+  --se-shadow-lg: 5px 5px 0 color-mix(in srgb, var(--se-text) 16%, transparent);
+}
+:root[data-se-theme="edge"][data-theme="dark"] {
+  --se-bg: #101010;
+  --se-surface: #1c1c1c;
+  --se-surface-soft: #292929;
+  --se-surface-raised: #323232;
+  --se-text: #eeeeee;
+  --se-muted: #bdbdbd;
+  --se-faint: #a5a5a5;
+  --se-border: #444444;
+  --se-border-strong: #858585;
+  --se-shadow-lg: 5px 5px 0 rgb(0 0 0 / .35);
+}
+
+/* Angular surfaces share the same component geometry and behavior. */
+:root[data-se-theme="edge"] :is(se-card, .se-project-card, .se-folder-card, .se-file, .se-list, .se-code-block, .se-code-inline, .se-blockquote, .se-control, .se-phone__control, .se-editor, .se-wysiwyg, .se-button, .se-select__trigger, .se-select__menu, .se-select__option, .se-select__tag, .se-badge, .se-sidebar-button, .se-sidebar-toggle, .se-tree-item__row, .se-menu__items, .se-profile-menu__items, .se-split__menu, .se-modal__panel, .se-drawer__panel, .se-toast, .se-tooltip__bubble, .se-date__popover, .se-time__popover, .se-datetime-single__popover, .se-color-picker__body, .se-color-picker__popover, .se-color-picker__gradient, .se-color-picker__swatch, .se-chat-message__bubble, .se-profile__avatar, .se-chat-message__avatar, .se-folder-card__icon, .se-empty-state__icon, .se-modal__icon, .se-close, .se-toast__dismiss, .se-segmented__options, .se-segmented__options::before, .se-theme__options, .se-theme__options::before) { border-radius: 2px; }
+:root[data-se-theme="edge"] :is(.se-sidebar-group__head > a, .se-sidebar-group__head > button, .se-date__nav button, .se-date__grid button, .se-date__footer button, .se-date__jump input, .se-time__spinner input, .se-theme--button button, .se-color-picker__palette button, .se-color-picker__palette button span) { border-radius: 2px; }
+:root[data-se-theme="edge"] :is(se-card, .se-project-card, .se-folder-card, .se-file, .se-list, .se-modal__panel, .se-drawer__panel) { border-radius: 0; }
+:root[data-se-theme="edge"] .se-title--page { font-weight: 800; letter-spacing: -.04em; }
+:root[data-se-theme="edge"] .se-title--sidebar { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; }
+:root[data-se-theme="edge"] :is(se-sidebar, .se-sidebar) { background: var(--se-surface-soft); }
+:root[data-se-theme="edge"] se-sidebar-button[active] .se-sidebar-button { color: var(--se-primary-contrast); background: var(--se-primary); font-weight: 700; }
+:root[data-se-theme="edge"] :is(.se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { transform: none; box-shadow: 3px 3px 0 var(--se-border); border-color: var(--se-border-strong); }
+:root[data-se-theme="edge"] .se-project-card__banner { background: var(--se-surface-soft); color: var(--se-primary-text); }
+:root[data-se-theme="edge"] .se-select__option[aria-selected="true"] { box-shadow: none; background: var(--se-primary-soft); color: var(--se-primary-text); }
+:root[data-se-theme="edge"] :is(button, a, input, textarea, [tabindex], [contenteditable="true"]):focus-visible { outline: 2px solid var(--se-primary); outline-offset: 2px; }
+
+:root[data-se-theme="edge"] :is(.se-upload__zone, .se-choice--checkbox .se-choice__control) { border-radius: 0; }
+/* Rotate decorative holders independently so icons and hover scaling stay upright. */
+:root[data-se-theme="edge"] :is(.se-upload__icon, .se-modal__icon, .se-empty-state__icon) { border-radius: 0; rotate: 45deg; }
+:root[data-se-theme="edge"] :is(.se-upload__icon, .se-modal__icon, .se-empty-state__icon) > se-icon { rotate: -45deg; }
+
+/* Angular selection controls; preserve their existing movement and hit areas. */
+:root[data-se-theme="edge"] :is(.se-choice__control, .se-segmented__options, .se-segmented__option span, .se-theme__options, .se-range__ticks span),
+:root[data-se-theme="edge"] .se-choice__control::after,
+:root[data-se-theme="edge"] .se-segmented__options::before,
+:root[data-se-theme="edge"] .se-theme__options::before { border-radius: 0; }
+:root[data-se-theme="edge"] .se-range input::-webkit-slider-runnable-track { border-radius: 0; }
+:root[data-se-theme="edge"] .se-range input::-moz-range-track { border-radius: 0; }
+:root[data-se-theme="edge"] .se-range input::-webkit-slider-thumb { border-radius: 0; background: var(--se-primary); rotate: 45deg; }
+:root[data-se-theme="edge"] .se-range input::-moz-range-thumb { border-radius: 0; background: var(--se-primary); rotate: 45deg; }

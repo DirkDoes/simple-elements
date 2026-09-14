@@ -1,6 +1,6 @@
 # Simple Elements
 
-Framework-free UI components built with standard custom elements, Tailwind CSS, and vanilla JavaScript. Every component supports Flat and Clean visual themes, each with light and dark modes.
+Framework-free UI components built with standard custom elements, Tailwind CSS, and vanilla JavaScript. Every component supports Flat, Clean, Studio, and Edge visual themes, each with light and dark modes.
 
 ## Install
 
@@ -49,6 +49,10 @@ For a page opened directly from disk, use the browser-ready bundle (CSS files al
 <link rel="stylesheet" href="simple-elements/dist/styles.css">
 <script defer src="simple-elements/dist/simple-elements.js"></script>
 ```
+
+Studio is an optional third visual theme with cool neutrals, fine outlines, and subtle depth. Load `simple-elements/themes/studio.css` after `styles.css` and set `data-se-theme="studio"` on `<html>`. See the [Studio setup](./docs/theme.md#studio-optional).
+
+Edge is another optional theme with neutral surfaces, square controls, and diamond icon holders. Load `simple-elements/themes/edge.css` after your base CSS and select `data-se-theme="edge"`. Studio and Edge are excluded from the default bundle; see [all theme setups](./docs/theme.md#choose-a-stylesheet).
 
 ## Development
 

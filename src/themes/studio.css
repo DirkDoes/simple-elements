@@ -1,0 +1,55 @@
+/* Studio: precision surfaces, quiet chrome, and deliberate brand accents.
+   Load after styles.css (or themes/clean.css); inactive unless selected. */
+:root[data-se-theme="studio"] {
+  --se-bg: #edf0f2;
+  --se-surface: #ffffff;
+  --se-surface-soft: #f3f5f6;
+  --se-surface-raised: #ffffff;
+  --se-text: #202a33;
+  --se-muted: #556370;
+  --se-faint: #63727f;
+  --se-border: #d9e0e5;
+  --se-border-strong: #7c8995;
+  --se-radius: .375rem;
+  --se-shadow: 0 1px 2px rgb(24 39 52 / .04), 0 4px 12px rgb(24 39 52 / .025);
+  --se-shadow-lg: 0 12px 36px rgb(24 39 52 / .14), 0 2px 6px rgb(24 39 52 / .06);
+}
+:root[data-se-theme="studio"][data-theme="dark"] {
+  --se-bg: #10171d;
+  --se-surface: #182229;
+  --se-surface-soft: #202e37;
+  --se-surface-raised: #25343e;
+  --se-text: #e9eff2;
+  --se-muted: #b0bec8;
+  --se-faint: #99abb8;
+  --se-border: #334550;
+  --se-border-strong: #738997;
+  --se-shadow: 0 1px 2px rgb(0 0 0 / .18), 0 4px 12px rgb(0 0 0 / .08);
+  --se-shadow-lg: 0 16px 40px rgb(0 0 0 / .36), 0 2px 6px rgb(0 0 0 / .2);
+}
+
+/* Fine boundaries and small corners make dense workspaces feel orderly. */
+:root[data-se-theme="studio"] :is(se-card, .se-project-card, .se-folder-card, .se-file, .se-list, .se-code-block) { border-color: var(--se-border); border-radius: .5rem; }
+:root[data-se-theme="studio"] :is(se-card:not([variant="transparent"]), .se-project-card, .se-folder-card) { box-shadow: var(--se-shadow); }
+:root[data-se-theme="studio"] :is(.se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { border-color: var(--se-border-strong); background: var(--se-surface-soft); box-shadow: var(--se-shadow); transform: none; }
+:root[data-se-theme="studio"] .se-project-card__banner { color: var(--se-primary-text); background: color-mix(in srgb, var(--se-primary) 7%, var(--se-surface-soft)); }
+:root[data-se-theme="studio"] .se-title--page { font-weight: 650; letter-spacing: -.035em; }
+:root[data-se-theme="studio"] .se-title--section { font-weight: 650; letter-spacing: -.02em; }
+
+/* Navigation stays quiet; a solid active surface supplies orientation. */
+:root[data-se-theme="studio"] :is(se-sidebar, .se-sidebar) { background: var(--se-surface-soft); border-color: var(--se-border); }
+:root[data-se-theme="studio"] :is(se-topbar, se-sidebar > header, se-sidebar > footer) { border-color: var(--se-border); }
+:root[data-se-theme="studio"] .se-sidebar-button { border-radius: .375rem; }
+:root[data-se-theme="studio"] se-sidebar-button[active] .se-sidebar-button { color: var(--se-primary-text); background: var(--se-surface); box-shadow: 0 0 0 1px var(--se-border), var(--se-shadow); font-weight: 650; }
+
+/* White fields, precise outlines, and a clear focus ring. */
+:root[data-se-theme="studio"] :is(.se-control, .se-select__trigger, .se-phone__control, .se-editor, .se-wysiwyg, .se-color-picker__trigger, .se-time__spinner input, .se-date__jump input) { background: var(--se-surface); border-color: var(--se-border-strong); border-radius: var(--se-radius); box-shadow: inset 0 1px 2px rgb(0 0 0 / .025); }
+:root[data-se-theme="studio"] :is(.se-control:focus, .se-select__trigger:focus, .se-phone__control:focus-within, .se-editor:focus-within, .se-wysiwyg:focus-within, .se-time__spinner input:focus, .se-date__jump input:focus) { border-color: var(--se-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--se-primary) 16%, transparent); }
+:root[data-se-theme="studio"] .se-field--error .se-control { color: var(--se-danger); background: var(--se-danger-soft); border-color: var(--se-danger); }
+:root[data-se-theme="studio"] :is(.se-control:disabled, .se-select--disabled .se-select__trigger) { background: var(--se-surface-soft); border-color: var(--se-border); box-shadow: none; }
+:root[data-se-theme="studio"] .se-button--secondary { background: var(--se-surface); border-color: var(--se-border-strong); box-shadow: var(--se-shadow); }
+:root[data-se-theme="studio"] .se-button--secondary:hover:not(:disabled) { background: var(--se-surface-soft); }
+:root[data-se-theme="studio"] :is(.se-segmented__options, .se-theme--button button) { border-color: var(--se-border); }
+:root[data-se-theme="studio"] .se-select__option[aria-selected="true"] { background: color-mix(in srgb, var(--se-primary) 14%, var(--se-surface)); box-shadow: none; }
+:root[data-se-theme="studio"] :is(.se-select__menu, .se-phone__menu, .se-split__menu, .se-menu__items, .se-profile-menu__items, .se-modal__panel, .se-drawer__panel, .se-date__popover, .se-time__popover, .se-color-picker__popover, .se-datetime-single__popover, .se-tooltip__bubble, .se-toast) { border-color: var(--se-border); box-shadow: var(--se-shadow-lg); }
+:root[data-se-theme="studio"] :is(button, a, input, textarea, [tabindex], [contenteditable="true"]):focus-visible { outline: 2px solid var(--se-primary); outline-offset: 2px; }

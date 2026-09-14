@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="../dist/styles.css">
 <link rel="stylesheet" href="../examples/example.css">
 <link rel="stylesheet" href="../dist/themes/flat.css">
+<link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css">
 <script defer src="../dist/simple-elements.js"></script>
 <body>
 <pre id="result">Running selection layout checks...</pre>
@@ -15,7 +16,7 @@
   const fixture = document.querySelector('#fixture');
   let checks = 0;
   try {
-    for (const family of ['clean', 'flat']) for (const theme of ['light', 'dark']) for (const size of ['', 'small']) for (const width of [160, 220, 320]) for (const icon of ['', 'user']) {
+    for (const family of ['clean', 'flat', 'studio', 'edge']) for (const theme of ['light', 'dark']) for (const size of ['', 'small']) for (const width of [160, 220, 320]) for (const icon of ['', 'user']) {
       document.documentElement.dataset.theme = theme;
       document.documentElement.dataset.seTheme = family;
       fixture.style.width = `${width}px`;
@@ -36,7 +37,7 @@
         checks++;
       }
     }
-    for (const family of ['clean', 'flat']) for (const theme of ['light', 'dark']) for (const width of [600, 1100]) {
+    for (const family of ['clean', 'flat', 'studio', 'edge']) for (const theme of ['light', 'dark']) for (const width of [600, 1100]) {
       document.documentElement.dataset.theme = theme;
       document.documentElement.dataset.seTheme = family;
       fixture.style.width = `${width}px`;
@@ -51,6 +52,18 @@
       select.querySelector('.se-select__clear').click();
       if (height() !== before) throw Error('Clearing a table dropdown changed its height');
       checks++;
+    }
+    for (const family of ['flat', 'clean', 'studio', 'edge']) for (const mode of ['light', 'dark']) {
+      document.documentElement.dataset.seTheme = family;
+      document.documentElement.dataset.theme = mode;
+      const table = document.createElement('div');
+      table.className = 'demo-template-table';
+      table.innerHTML = '<div class="se-table"><div class="se-list__row"><se-input placeholder="Focus check"></se-input></div></div>';
+      document.body.append(table);
+      const host = table.querySelector('se-input');
+      host.querySelector('input').focus();
+      if (getComputedStyle(host).overflow !== 'visible') throw Error(`Table clips input focus: ${family}, ${mode}`);
+      table.remove();
     }
     document.documentElement.dataset.test = 'passed';
     document.querySelector('#result').textContent = `PASS: ${checks} selection changes preserve row heights.`;

@@ -159,7 +159,7 @@ assert.match(exampleScript, /api\.github\.com\/repos\/DirkDoes\/simple-elements\
 assert.doesNotMatch(exampleScript, /data-pattern-viewport[^>]*size=/, 'the viewport selector must use the standard select size');
 const exampleHtml = await readFile('examples/index.html', 'utf8');
 const exampleStyles = await readFile('examples/example.css', 'utf8');
-assert.match(exampleStyles, /\.demo-template-table \.se-list__row > se-select \{ overflow: visible; \}/, 'attribute-table selects must override cell menu clipping');
+assert.match(exampleStyles, /\.demo-template-table \.se-list__row > :is\(se-input, se-select, se-checkbox, se-code-editor\) \{ overflow: visible; \}/, 'attribute-table selects must override cell menu clipping');
 assert.match(exampleStyles, /\.demo-template-table \.se-list__header \{ border-radius: \.75rem \.75rem 0 0; \}/, 'visible table overflow must preserve rounded headers');
 assert.equal((exampleHtml.match(/<section data-demo=/g) || []).length, 2, 'dashboard and custom input pages should remain in static HTML');
 assert.match(exampleHtml, /data-demo="dashboard"/);
@@ -322,7 +322,7 @@ console.log(`Checked ${components.length} components, ${componentCatalog.length}
 
 const flatCss = await readFile('src/themes/flat.css', 'utf8');
 assert.equal(await readFile('dist/themes/flat.css', 'utf8'), flatCss, 'the optional Flat stylesheet must be built');
-assert.match(compiledCss, /:root:not\(\[data-se-theme="clean"\]\)/, 'Flat must apply when no theme is selected');
+assert.match(compiledCss, /:root:not\(\[data-se-theme="clean"\], \[data-se-theme="studio"\], \[data-se-theme="edge"\]\)/, 'Flat must apply when no theme is selected');
 assert.doesNotMatch(await readFile('dist/themes/clean.css', 'utf8'), /data-se-theme/, 'Clean-only apps must not bundle Flat');
 assert.doesNotMatch(await readFile('dist/simple-elements.js', 'utf8'), /se-flat|themes\/flat/, 'theme CSS must not be embedded in component JavaScript');
 assert.equal(JSON.parse(await readFile('package.json', 'utf8')).exports['./themes/flat.css'], './dist/themes/flat.css');
@@ -335,3 +335,12 @@ assert.ok(showcaseShell.length < exampleHtml.length / 2, 'the entry template sho
 for (const page of ['dashboard', 'input']) assert.ok(exampleHtml.includes((await readFile(`examples/pages/${page}.html`, 'utf8')).trim()), `${page} must be assembled into the deployed showcase`);
 assert.doesNotMatch(exampleHtml, /<!-- page:/, 'all page includes must be resolved at build time');
 assert.match(exampleHtml, /class="demo-theme-family"[^>]*"label":"Flat"[^>]*"label":"Clean"/);
+
+const studioCss = await readFile('src/themes/studio.css', 'utf8');
+assert.equal(await readFile('dist/themes/studio.css', 'utf8'), studioCss);
+assert.doesNotMatch(compiledCss, /:root\[data-se-theme="studio"\]/, 'Studio must remain an optional stylesheet');
+assert.equal(JSON.parse(await readFile('package.json', 'utf8')).exports['./themes/studio.css'], './dist/themes/studio.css');
+assert.match(exampleHtml, /"label":"Studio"/);
+
+assert.equal(await readFile('dist/themes/edge.css', 'utf8'), await readFile('src/themes/edge.css', 'utf8'));
+assert.doesNotMatch(compiledCss, /:root\[data-se-theme="edge"\]/, 'Edge must remain optional');

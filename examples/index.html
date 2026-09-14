@@ -7,13 +7,14 @@
     <title>Simple Elements</title>
     <link rel="stylesheet" href="../dist/styles.css?v=20260912r">
     <link rel="stylesheet" href="./example.css?v=20260912r">
+    <link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css">
     <script defer src="../dist/simple-elements.js?v=20260912r"></script>
     <script type="module" src="./example.js?v=20260912r"></script>
   </head>
   <body>
     <div class="demo-shell">
       <main class="demo-main">
-        <se-topbar><section data-start><se-sidebar-toggle for="example-sidebar" layout-mode="mobile-only"></se-sidebar-toggle><se-layout-brand label="Simple Elements" icon="package" href="#dashboard"></se-layout-brand></section><section data-end><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></se-topbar>
+        <se-topbar><section data-start><se-sidebar-toggle for="example-sidebar" layout-mode="mobile-only"></se-sidebar-toggle><se-layout-brand label="Simple Elements" icon="package" href="#dashboard"></se-layout-brand></section><section data-end><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"},{"id":"studio","label":"Studio"},{"id":"edge","label":"Edge"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></se-topbar>
         <div class="demo-body">
           <se-sidebar id="example-sidebar" layout-mode="responsive" collapsible>
             <section>

@@ -10,6 +10,8 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 
 Flat is the default visual theme. Use `data-se-theme="clean"` for Clean, or follow the theme guide for a Clean-only stylesheet and user preferences.
 
+Studio and Edge are optional visual themes, each with light and dark modes. Import only the optional theme stylesheets your app uses; see the guide below for single-theme and all-four setups.
+
 ## Theming
 
 - [Visual themes, color modes, and brand colors](theme.md)
