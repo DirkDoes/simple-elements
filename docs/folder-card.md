@@ -5,3 +5,5 @@
 ```
 
 Set `title`, `items`, and optionally `icon`. Add `href` for a native link, or omit it for a native button. `disabled` disables button behavior. Use `tone="brand"` (default), `gray`, `success`, `warning`, `error`, `info`, or `important` to color the icon treatment.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

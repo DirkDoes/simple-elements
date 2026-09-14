@@ -1,4 +1,4 @@
-import { define, emit, escapeHtml } from '../helpers.js';
+import { define, escapeIcon, emit, escapeHtml } from '../helpers.js';
 
 class SeModal extends HTMLElement {
   connectedCallback() {
@@ -16,7 +16,7 @@ class SeModal extends HTMLElement {
     const requestedTone = this.getAttribute('tone') || 'error';
     const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'error';
     const title = escapeHtml(this.getAttribute('title') || '');
-    const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${tone}"><se-icon name="${escapeHtml(this.getAttribute('icon'))}"></se-icon></span>` : '';
+    const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${tone}"><se-icon name="${escapeIcon(this.getAttribute('icon'))}"></se-icon></span>` : '';
     const actions = `<div class="se-modal__actions"><se-button variant="${expanded ? 'secondary' : 'ghost'}" text="${escapeHtml(this.getAttribute('cancel-label') || (expanded ? 'Close' : 'Cancel'))}" data-cancel></se-button><se-button variant="${escapeHtml(this.getAttribute('confirm-variant') || 'brand')}" text="${escapeHtml(this.getAttribute('confirm-label') || 'Confirm')}" data-confirm></se-button></div>`;
     const body = expanded
       ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`

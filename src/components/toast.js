@@ -1,4 +1,4 @@
-import { define, emit, escapeHtml } from '../helpers.js';
+import { define, escapeIcon, emit, escapeHtml } from '../helpers.js';
 
 const tones = new Set(['gray', 'brand', 'success', 'warning', 'error', 'info', 'important']);
 const icons = { gray: 'bell', brand: 'info', success: 'check', warning: 'alert', error: 'alert', info: 'info', important: 'zap' };
@@ -30,7 +30,7 @@ class SeToast extends HTMLElement {
     const actionMarkup = action
       ? href ? `<a class="se-toast__action" href="${escapeHtml(href)}">${escapeHtml(action)}</a>` : `<button class="se-toast__action" type="button" data-action>${escapeHtml(action)}</button>`
       : '';
-    this.innerHTML = `<div class="se-toast se-toast--${tone}" role="${['error', 'warning'].includes(tone) ? 'alert' : 'status'}" aria-live="${['error', 'warning'].includes(tone) ? 'assertive' : 'polite'}"><se-icon name="${escapeHtml(icon)}" aria-hidden="true"></se-icon><span class="se-toast__message">${escapeHtml(message)}</span>${actionMarkup}<button class="se-toast__dismiss" type="button" aria-label="Dismiss notification"><se-icon name="x" aria-hidden="true"></se-icon></button></div>`;
+    this.innerHTML = `<div class="se-toast se-toast--${tone}" role="${['error', 'warning'].includes(tone) ? 'alert' : 'status'}" aria-live="${['error', 'warning'].includes(tone) ? 'assertive' : 'polite'}"><se-icon name="${escapeIcon(icon)}" aria-hidden="true"></se-icon><span class="se-toast__message">${escapeHtml(message)}</span>${actionMarkup}<button class="se-toast__dismiss" type="button" aria-label="Dismiss notification"><se-icon name="x" aria-hidden="true"></se-icon></button></div>`;
     this.querySelector('.se-toast__dismiss').addEventListener('click', () => this.close());
     this.querySelector('[data-action]')?.addEventListener('click', () => emit(this, 'action', {}));
   }

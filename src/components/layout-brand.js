@@ -1,4 +1,4 @@
-import { define, escapeHtml } from '../helpers.js';
+import { define, escapeHtml, escapeIcon } from '../helpers.js';
 
 class SeLayoutBrand extends HTMLElement {
   connectedCallback() {
@@ -12,7 +12,7 @@ class SeLayoutBrand extends HTMLElement {
     this.toggleAttribute('data-has-dark-icon', Boolean(darkIcon));
     this.toggleAttribute('data-has-compact-dark-icon', Boolean(compactDarkIcon));
     const isAsset = (source) => /^(?:data:|https?:|[./\\])|\.svg(?:$|[?#])/i.test(source);
-    const renderIcon = (source) => isAsset(source) ? `<img src="${escapeHtml(source)}" alt="">` : `<se-icon name="${escapeHtml(source)}"></se-icon>`;
+    const renderIcon = (source) => isAsset(source) && !source.trim().startsWith('{') ? `<img src="${escapeHtml(source)}" alt="">` : `<se-icon name="${escapeIcon(source)}"></se-icon>`;
     this.toggleAttribute('data-wide-icon', isAsset(icon));
     const asset = (source, mode) => source ? `<span class="se-layout-brand__asset se-layout-brand__asset--${mode}">${renderIcon(source)}</span>` : '';
     const identity = href ? 'a' : 'span';

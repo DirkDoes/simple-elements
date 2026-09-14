@@ -7,3 +7,5 @@
 Shows a connected thought or reasoning step with an icon. Add `collapsible` to make it collapsed by default; add `open` to start it expanded. Add `clickable` when the heading should be a button without disclosure behavior.
 
 Use `variant` to change the marker color and `icon` to change its symbol.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

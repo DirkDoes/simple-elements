@@ -65,3 +65,5 @@ npm test
 Build the showcase after editing `examples/pages/*.html`, then open `examples/index.html` in a browser. The generated index is also the deployed entry point.
 
 The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates the components. Concise, AI-friendly API documentation lives in [`docs`](./docs/index.md) and is included when installing directly from GitHub.
+
+Component icon inputs support Lucide names, external SVGs, and foreground-aware light/dark artwork with optional color preservation. See [icons](./docs/icon.md).

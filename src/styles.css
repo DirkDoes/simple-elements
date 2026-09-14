@@ -952,3 +952,5 @@ se-color-picker { position: relative; display: block; font-family: var(--se-font
 [data-theme="dark"] .se-toast--gray { background: var(--se-surface-raised); }
 [data-theme="dark"] :is(button, a, input, textarea, [tabindex], [contenteditable="true"]):focus-visible { outline: 2px solid var(--se-primary); outline-offset: 2px; }
 [data-theme="dark"] .se-choice input:focus-visible + .se-choice__control { outline: 2px solid var(--se-primary); outline-offset: 3px; }
+se-icon > img, se-icon > .se-icon__mask { display: block; width: 100%; height: 100%; object-fit: contain; }
+se-icon > .se-icon__mask { background: currentColor; mask-size: contain; mask-position: center; mask-repeat: no-repeat; }

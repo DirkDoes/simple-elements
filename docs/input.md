@@ -16,3 +16,5 @@ Read the defaults for any type from the component itself:
 customElements.get('se-input').defaultsFor('email');
 // { placeholder: 'you@example.com', icon: 'mail' }
 ```
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

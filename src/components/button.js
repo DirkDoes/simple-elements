@@ -1,4 +1,4 @@
-import { define, escapeHtml } from '../helpers.js';
+import { define, escapeIcon, escapeHtml } from '../helpers.js';
 
 class SeButton extends HTMLElement {
   connectedCallback() {
@@ -14,7 +14,7 @@ class SeButton extends HTMLElement {
     const text = this.hasAttribute('text') ? this.getAttribute('text') : icon ? '' : 'Button';
     const iconOnly = icon && !text ? ' se-button--icon' : '';
     const label = this.getAttribute('aria-label') || text || icon;
-    const content = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
+    const content = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
     const common = `class="se-button se-button--${escapeHtml(variant)}${iconOnly}"${label ? ` aria-label="${escapeHtml(label)}"` : ''}`;
     this.innerHTML = this.hasAttribute('href') && !this.hasAttribute('disabled')
       ? `<a ${common} href="${escapeHtml(this.getAttribute('href'))}">${content}</a>`

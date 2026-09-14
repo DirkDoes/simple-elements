@@ -7,3 +7,5 @@
 Renders sent and received HTML messages. Set the message as child HTML or with the `content` attribute. `profile` adds the sender icon, `title` labels the message, and `timestamp` adds the time at the start or end with `timestamp-position="start"`.
 
 Set `icon` or `initials` to customize the profile picture. When both are present, `initials` wins.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

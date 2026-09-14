@@ -1,4 +1,4 @@
-import { define, escapeHtml } from '../helpers.js';
+import { define, escapeIcon, escapeHtml } from '../helpers.js';
 
 class SeSidebarGroup extends HTMLElement {
   connectedCallback() {
@@ -9,7 +9,7 @@ class SeSidebarGroup extends HTMLElement {
     const icon = this.getAttribute('icon');
     const page = this.getAttribute('variant') === 'page';
     const href = this.getAttribute('href') || '#';
-    const heading = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}<span><strong>${label}</strong></span>`;
+    const heading = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}<span><strong>${label}</strong></span>`;
     const subtext = this.getAttribute('subtext') ? `<small class="se-sidebar-group__label">${escapeHtml(this.getAttribute('subtext'))}</small>` : '';
     this.innerHTML = `<div class="se-sidebar-group__head">${page ? `<a href="${escapeHtml(href)}">${heading}</a><button type="button" aria-label="Toggle ${label}" aria-expanded="${!this.hasAttribute('collapsed')}"><se-icon name="chevron"></se-icon></button>` : `<button type="button" aria-expanded="${!this.hasAttribute('collapsed')}">${heading}<se-icon name="chevron"></se-icon></button>`}</div><div class="se-sidebar-group__content"><div>${subtext}${content}</div></div>`;
     const toggle = page ? this.querySelector('.se-sidebar-group__head > button') : this.querySelector('.se-sidebar-group__head button');

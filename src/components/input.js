@@ -1,4 +1,4 @@
-import { define, escapeHtml } from '../helpers.js';
+import { define, escapeIcon, escapeHtml } from '../helpers.js';
 
 const typeDefaults = {
   text: { placeholder: 'Enter some text...' },
@@ -35,7 +35,7 @@ class SeInput extends HTMLElement {
     this.classList.toggle('se-field--error', Boolean(error));
     this.innerHTML = `${label ? `<label class="se-label" for="${id}">${escapeHtml(label)}</label>` : ''}
       <div class="se-input-wrap${icon ? ' se-input-wrap--icon' : ''}">
-        ${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}
+        ${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}
         ${textarea ? `<textarea class="se-control" ${attrs}${this.hasAttribute('autosize') ? ' data-autosize' : this.hasAttribute('fixed') ? ' data-fixed' : ''}>${escapeHtml(this.getAttribute('value') || '')}</textarea>` : `<input class="se-control" type="${escapeHtml(type)}" ${attrs}>`}
         ${error && type !== 'password' ? '<se-icon name="alert"></se-icon>' : ''}
         ${type === 'password' ? '<button class="se-password-toggle" type="button" aria-label="Show password"><se-icon name="eye"></se-icon></button>' : ''}

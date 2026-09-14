@@ -28,3 +28,6 @@ export const placePopover = (trigger, popover) => {
   popover.dataset.popoverY = innerHeight - triggerRect.bottom >= popoverRect.height + gap || triggerRect.top < popoverRect.height + gap ? 'down' : 'up';
   popover.dataset.popoverX = innerWidth - triggerRect.left >= popoverRect.width || triggerRect.right < popoverRect.width ? 'right' : 'left';
 };
+
+// Icon objects cross HTML attribute boundaries as JSON, never as SVG markup.
+export const escapeIcon = (value) => escapeHtml(value && typeof value === 'object' ? JSON.stringify(value) : value);

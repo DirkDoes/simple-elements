@@ -32,6 +32,9 @@ const placePopover = (trigger, popover) => {
   popover.dataset.popoverX = innerWidth - triggerRect.left >= popoverRect.width || triggerRect.right < popoverRect.width ? 'right' : 'left';
 };
 
+// Icon objects cross HTML attribute boundaries as JSON, never as SVG markup.
+const escapeIcon = (value) => escapeHtml(value && typeof value === 'object' ? JSON.stringify(value) : value);
+
 const DEFAULT_PRIMARY = '#2563eb';
 
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
@@ -322,14 +325,90 @@ const iconMarkup = (nodes) => nodes.map(([tag, attributes]) =>
   `<${tag}${Object.entries(attributes).filter(([name]) => name !== 'key').map(([name, value]) => ` ${attributeName(name)}="${value}"`).join('')}/>`
 ).join('');
 
+// Only paired artwork needs foreground tracking. Batch updates across all icons.
+const adaptiveIcons = new Set();
+let iconFrame = 0;
+const refreshIcons = () => {
+  if (iconFrame || !adaptiveIcons.size) return;
+  iconFrame = requestAnimationFrame(() => {
+    iconFrame = 0;
+    for (const icon of adaptiveIcons) icon.updateArtwork();
+  });
+};
+let iconObserver;
+const watchIcons = () => {
+  if (iconObserver) return;
+  iconObserver = new MutationObserver((records) => {
+    if (records.some(({ target, type }) => !target.closest?.('se-icon') || (type === 'attributes' && target.localName === 'se-icon'))) refreshIcons();
+  });
+  iconObserver.observe(document.documentElement, { attributes: true, subtree: true, childList: true });
+  for (const event of ['pointerover', 'pointerout', 'pointerdown', 'pointerup', 'focusin', 'focusout', 'change', 'transitionend', 'animationend', 'load']) document.addEventListener(event, refreshIcons, true);
+  window.addEventListener('resize', refreshIcons);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', refreshIcons);
+};
+let iconColorContext;
+const lightForeground = (element) => {
+  // Canvas resolves CSS colors including OKLCH/color-mix into sRGB channels.
+  iconColorContext ||= document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+  iconColorContext.clearRect(0, 0, 1, 1);
+  iconColorContext.fillStyle = getComputedStyle(element).color;
+  iconColorContext.fillRect(0, 0, 1, 1);
+  const channels = [...iconColorContext.getImageData(0, 0, 1, 1).data].slice(0, 3).map((v) => {
+    v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4;
+  });
+  return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722 > .179;
+};
+const iconAsset = (source) => {
+  if (typeof source !== 'string' || !source || iconNames[source]) return false;
+  if (!/^(?:data:image\/|https?:|[./\\])|\.(?:svg|png|webp|gif|jpe?g)(?:$|[?#])/i.test(source)) return false;
+  try { return ['http:', 'https:', 'file:', 'data:'].includes(new URL(source, document.baseURI).protocol) && (!source.startsWith('data:') || source.startsWith('data:image/')); } catch { return false; }
+};
+
 class SeIcon extends HTMLElement {
   static names = Object.freeze(Object.keys(iconNames));
   static observedAttributes = ['name'];
+  get icon() { try { return JSON.parse(this.getAttribute('name')); } catch { return this.getAttribute('name'); } }
+  set icon(value) { this.setAttribute('name', typeof value === 'object' ? JSON.stringify(value) : value); }
   connectedCallback() { this.render(); }
+  disconnectedCallback() { adaptiveIcons.delete(this); }
   attributeChangedCallback() { if (this.isConnected) this.render(); }
   render() {
-    const nodes = lucideIcons[iconNames[this.getAttribute('name')] || 'AlertCircle'];
-    this.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconMarkup(nodes)}</svg>`;
+    adaptiveIcons.delete(this);
+    const raw = this.getAttribute('name') || '';
+    let config;
+    try { config = JSON.parse(raw); } catch { config = raw; }
+    config = config && typeof config === 'object' && !Array.isArray(config) ? config : { light: typeof config === 'string' ? config : raw };
+    this._config = { light: typeof config.light === 'string' ? config.light : '', dark: typeof config.dark === 'string' ? config.dark : '', preserveLightColors: typeof config.preserveLightColors === 'boolean' ? config.preserveLightColors : true, preserveDarkColors: typeof config.preserveDarkColors === 'boolean' ? config.preserveDarkColors : undefined };
+    this._artworkKey = null;
+    this.updateArtwork();
+    if (this._config.dark || this._config.preserveDarkColors !== undefined) {
+      adaptiveIcons.add(this); watchIcons(); refreshIcons();
+    }
+  }
+  updateArtwork() {
+    const config = this._config;
+    const light = !(config.dark || config.preserveDarkColors !== undefined) || lightForeground(this);
+    const source = (!light && config.dark) || config.light || 'alert-circle';
+    const preserve = !light ? (config.preserveDarkColors ?? config.preserveLightColors ?? true) : (config.preserveLightColors ?? true);
+    const key = JSON.stringify([source, preserve]);
+    if (key === this._artworkKey) return;
+    this._artworkKey = key;
+    if (iconAsset(source)) {
+      if (preserve !== false) {
+        const image = document.createElement('img');
+        image.src = source; image.alt = ''; image.draggable = false;
+        this.replaceChildren(image);
+      } else {
+        const mask = document.createElement('span');
+        mask.className = 'se-icon__mask';
+        mask.style.maskImage = `url(${JSON.stringify(source)})`;
+        mask.style.webkitMaskImage = `url(${JSON.stringify(source)})`;
+        this.replaceChildren(mask);
+      }
+    } else {
+      const nodes = lucideIcons[Object.hasOwn(iconNames, source) ? iconNames[source] : 'AlertCircle'];
+      this.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconMarkup(nodes)}</svg>`;
+    }
   }
 }
 
@@ -375,7 +454,7 @@ class SeProjectCard extends HTMLElement {
     const href = this.getAttribute('href');
     const tag = href && !disabled ? 'a' : 'button';
     const image = this.getAttribute('banner-image');
-    const banner = image ? `<img src="${escapeHtml(image)}" alt="">` : `<se-icon name="${escapeHtml(this.getAttribute('icon') || 'package')}"></se-icon>`;
+    const banner = image ? `<img src="${escapeHtml(image)}" alt="">` : `<se-icon name="${escapeIcon(this.getAttribute('icon') || 'package')}"></se-icon>`;
     const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
     this.innerHTML = `<${tag} class="se-project-card"${attributes}><span class="se-project-card__banner">${banner}</span><span class="se-project-card__body"><strong>${escapeHtml(this.getAttribute('title') || 'Project')}</strong>${this.getAttribute('description') ? `<span>${escapeHtml(this.getAttribute('description'))}</span>` : ''}${this.getAttribute('metadata') ? `<small>${escapeHtml(this.getAttribute('metadata'))}</small>` : ''}</span></${tag}>`;
     const color = this.getAttribute('banner-color');
@@ -397,7 +476,7 @@ class SeFolderCard extends HTMLElement {
     const requestedTone = this.getAttribute('tone') || 'brand';
     const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'brand';
     const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
-    this.innerHTML = `<${tag} class="se-folder-card se-folder-card--${tone}"${attributes}><span class="se-folder-card__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'folder')}"></se-icon></span><span><strong>${escapeHtml(this.getAttribute('title') || 'Folder')}</strong><small>${count} ${count === 1 ? 'item' : 'items'}</small></span></${tag}>`;
+    this.innerHTML = `<${tag} class="se-folder-card se-folder-card--${tone}"${attributes}><span class="se-folder-card__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'folder')}"></se-icon></span><span><strong>${escapeHtml(this.getAttribute('title') || 'Folder')}</strong><small>${count} ${count === 1 ? 'item' : 'items'}</small></span></${tag}>`;
   }
 }
 
@@ -418,7 +497,7 @@ class SeButton extends HTMLElement {
     const text = this.hasAttribute('text') ? this.getAttribute('text') : icon ? '' : 'Button';
     const iconOnly = icon && !text ? ' se-button--icon' : '';
     const label = this.getAttribute('aria-label') || text || icon;
-    const content = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
+    const content = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
     const common = `class="se-button se-button--${escapeHtml(variant)}${iconOnly}"${label ? ` aria-label="${escapeHtml(label)}"` : ''}`;
     this.innerHTML = this.hasAttribute('href') && !this.hasAttribute('disabled')
       ? `<a ${common} href="${escapeHtml(this.getAttribute('href'))}">${content}</a>`
@@ -464,7 +543,7 @@ class SeInput extends HTMLElement {
     this.classList.toggle('se-field--error', Boolean(error));
     this.innerHTML = `${label ? `<label class="se-label" for="${id}">${escapeHtml(label)}</label>` : ''}
       <div class="se-input-wrap${icon ? ' se-input-wrap--icon' : ''}">
-        ${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}
+        ${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}
         ${textarea ? `<textarea class="se-control" ${attrs}${this.hasAttribute('autosize') ? ' data-autosize' : this.hasAttribute('fixed') ? ' data-fixed' : ''}>${escapeHtml(this.getAttribute('value') || '')}</textarea>` : `<input class="se-control" type="${escapeHtml(type)}" ${attrs}>`}
         ${error && type !== 'password' ? '<se-icon name="alert"></se-icon>' : ''}
         ${type === 'password' ? '<button class="se-password-toggle" type="button" aria-label="Show password"><se-icon name="eye"></se-icon></button>' : ''}
@@ -562,7 +641,7 @@ class SeChatMessage extends HTMLElement {
     const timestamp = this.getAttribute('timestamp');
     const profile = this.hasAttribute('profile');
     const initials = this.getAttribute('initials');
-    const avatar = initials ? escapeHtml(initials) : `<se-icon name="${escapeHtml(this.getAttribute('icon') || (mode === 'sent' ? 'user' : 'zap'))}"></se-icon>`;
+    const avatar = initials ? escapeHtml(initials) : `<se-icon name="${escapeIcon(this.getAttribute('icon') || (mode === 'sent' ? 'user' : 'zap'))}"></se-icon>`;
     const time = timestamp ? `<time>${escapeHtml(timestamp)}</time>` : '';
     this.innerHTML = `<article class="se-chat-message se-chat-message--${mode}"><div class="se-chat-message__row">${profile ? `<span class="se-chat-message__avatar">${avatar}</span>` : ''}<div class="se-chat-message__bubble"><header>${this.getAttribute('timestamp-position') === 'start' ? time : ''}<strong>${escapeHtml(title)}</strong>${this.getAttribute('timestamp-position') !== 'start' ? time : ''}</header><div class="se-chat-message__content">${content}</div></div></div></article>`;
   }
@@ -577,7 +656,7 @@ class SeChatContext extends HTMLElement {
     this.dataset.ready = 'true';
     const content = this.getAttribute('content') ?? this.innerHTML.trim();
     const variant = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('variant')) ? this.getAttribute('variant') : 'brand';
-    this.innerHTML = `<div class="se-chat-context se-chat-context--${variant}" role="status"><span class="se-chat-context__line"></span><span class="se-chat-context__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'info')}"></se-icon></span><span class="se-chat-context__content">${content}</span>${this.getAttribute('timestamp') ? `<time>${escapeHtml(this.getAttribute('timestamp'))}</time>` : ''}<span class="se-chat-context__line"></span></div>`;
+    this.innerHTML = `<div class="se-chat-context se-chat-context--${variant}" role="status"><span class="se-chat-context__line"></span><span class="se-chat-context__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'info')}"></se-icon></span><span class="se-chat-context__content">${content}</span>${this.getAttribute('timestamp') ? `<time>${escapeHtml(this.getAttribute('timestamp'))}</time>` : ''}<span class="se-chat-context__line"></span></div>`;
   }
 }
 
@@ -598,7 +677,7 @@ class SeThoughtTrain extends HTMLElement {
     const tag = collapsible || clickable ? 'button' : 'div';
     const content = this.getAttribute('content') ?? this.innerHTML.trim();
     const variant = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('variant')) ? this.getAttribute('variant') : 'brand';
-    this.innerHTML = `<div class="se-thought-train se-thought-train--${variant}"><${tag} class="se-thought-train__head"${tag === 'button' ? ' type="button"' : ''}${collapsible ? ` aria-expanded="${expanded}"` : ''}><span class="se-thought-train__marker"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'activity')}"></se-icon></span><strong>${escapeHtml(this.getAttribute('title') || 'Thought process')}</strong>${collapsible ? '<se-icon class="se-thought-train__chevron" name="chevron"></se-icon>' : ''}</${tag}>${content ? `<div class="se-thought-train__content${collapsible && !expanded ? ' se-thought-train__content--collapsed' : ''}"${collapsible ? ` aria-hidden="${!expanded}"` : ''}><div>${content}</div></div>` : ''}</div>`;
+    this.innerHTML = `<div class="se-thought-train se-thought-train--${variant}"><${tag} class="se-thought-train__head"${tag === 'button' ? ' type="button"' : ''}${collapsible ? ` aria-expanded="${expanded}"` : ''}><span class="se-thought-train__marker"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'activity')}"></se-icon></span><strong>${escapeHtml(this.getAttribute('title') || 'Thought process')}</strong>${collapsible ? '<se-icon class="se-thought-train__chevron" name="chevron"></se-icon>' : ''}</${tag}>${content ? `<div class="se-thought-train__content${collapsible && !expanded ? ' se-thought-train__content--collapsed' : ''}"${collapsible ? ` aria-hidden="${!expanded}"` : ''}><div>${content}</div></div>` : ''}</div>`;
     if (!collapsible) return;
     const trigger = this.querySelector('.se-thought-train__head');
     const details = this.querySelector('.se-thought-train__content');
@@ -634,8 +713,8 @@ class SeSelect extends HTMLElement {
     const multiple = this.hasAttribute('multiple');
     const selected = options.filter((option) => this._selected?.has(String(option.id)));
     const value = selected.length ? (multiple
-      ? `<span class="se-select__tags">${selected.map((option) => `<span class="se-select__tag">${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}${option.locked ? '<se-icon name="lock"></se-icon>' : this.hasAttribute('disabled') ? '' : `<button type="button" data-remove="${escapeHtml(option.id)}" aria-label="Remove ${escapeHtml(option.label)}"><se-icon name="x"></se-icon></button>`}</span>`).join('')}</span>`
-      : `<span class="se-select__value">${selected[0].icon ? `<se-icon name="${escapeHtml(selected[0].icon)}"></se-icon>` : ''}<strong>${escapeHtml(selected[0].label)}</strong></span>`)
+      ? `<span class="se-select__tags">${selected.map((option) => `<span class="se-select__tag">${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}${option.locked ? '<se-icon name="lock"></se-icon>' : this.hasAttribute('disabled') ? '' : `<button type="button" data-remove="${escapeHtml(option.id)}" aria-label="Remove ${escapeHtml(option.label)}"><se-icon name="x"></se-icon></button>`}</span>`).join('')}</span>`
+      : `<span class="se-select__value">${selected[0].icon ? `<se-icon name="${escapeIcon(selected[0].icon)}"></se-icon>` : ''}<strong>${escapeHtml(selected[0].label)}</strong></span>`)
       : `<span class="se-select__placeholder">${escapeHtml(this.getAttribute('placeholder') || (multiple ? 'Select multiple...' : 'Choose an option...'))}</span>`;
     const hidden = selected.map((option) => `<input type="hidden" name="${escapeHtml(this.getAttribute('name') || '')}${multiple ? '[]' : ''}" value="${escapeHtml(option.id)}">`).join('');
     const available = multiple ? options.filter((option) => !this._selected.has(String(option.id))) : options;
@@ -644,7 +723,7 @@ class SeSelect extends HTMLElement {
     const trigger = multiple
       ? `<div class="se-select__trigger" role="button" tabindex="${disabled ? '-1' : '0'}" aria-haspopup="listbox" aria-expanded="false" aria-disabled="${disabled}">${value}<span class="se-select__chevron"><se-icon name="chevron"></se-icon></span></div>`
       : `<button class="se-select__trigger" type="button" aria-haspopup="listbox" aria-expanded="false"${disabled ? ' disabled' : ''}>${value}<span class="se-select__chevron"><se-icon name="chevron"></se-icon></span></button>`;
-    this.innerHTML = `<div class="se-select${multiple ? ' se-select--multiple' : ''}${disabled ? ' se-select--disabled' : ''}${clearable ? ' se-select--clearable' : ''}${this.getAttribute('size') === 'small' ? ' se-select--small' : ''}"><label class="se-label">${escapeHtml(this.getAttribute('label') || '')}</label>${hidden}<div class="se-select__control">${trigger}${clearable ? `<button class="se-select__clear" type="button" aria-label="Clear ${multiple ? 'selections' : 'selection'}"><se-icon name="x"></se-icon></button>` : ''}</div><div class="se-select__menu">${this.hasAttribute('searchable') ? '<div class="se-select__search"><se-icon name="search"></se-icon><input class="se-control" type="search" placeholder="Search options..." aria-label="Search options"></div>' : ''}<div class="se-select__options" role="listbox"${multiple ? ' aria-multiselectable="true"' : ''}>${available.map((option) => `<button class="se-select__option" type="button" role="option" data-id="${escapeHtml(option.id)}" aria-selected="${this._selected.has(String(option.id))}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label)}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}<div class="se-select__empty"${available.length ? ' hidden' : ''}>No options ${multiple ? 'available' : 'found'}.</div></div></div></div>`;
+    this.innerHTML = `<div class="se-select${multiple ? ' se-select--multiple' : ''}${disabled ? ' se-select--disabled' : ''}${clearable ? ' se-select--clearable' : ''}${this.getAttribute('size') === 'small' ? ' se-select--small' : ''}"><label class="se-label">${escapeHtml(this.getAttribute('label') || '')}</label>${hidden}<div class="se-select__control">${trigger}${clearable ? `<button class="se-select__clear" type="button" aria-label="Clear ${multiple ? 'selections' : 'selection'}"><se-icon name="x"></se-icon></button>` : ''}</div><div class="se-select__menu">${this.hasAttribute('searchable') ? '<div class="se-select__search"><se-icon name="search"></se-icon><input class="se-control" type="search" placeholder="Search options..." aria-label="Search options"></div>' : ''}<div class="se-select__options" role="listbox"${multiple ? ' aria-multiselectable="true"' : ''}>${available.map((option) => `<button class="se-select__option" type="button" role="option" data-id="${escapeHtml(option.id)}" aria-selected="${this._selected.has(String(option.id))}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label)}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}<div class="se-select__empty"${available.length ? ' hidden' : ''}>No options ${multiple ? 'available' : 'found'}.</div></div></div></div>`;
     this.querySelector('.se-select__trigger').addEventListener('click', () => this.querySelector('.se-select').classList.contains('se-select--open') ? this.close() : this.open());
     if (multiple) this.querySelector('.se-select__trigger').addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.querySelector('.se-select__trigger').click(); }
@@ -700,7 +779,7 @@ class SeSegmentedControl extends HTMLElement {
     const label = this.getAttribute('label') || '';
     const groupLabel = this.getAttribute('aria-label') || label || 'Choose an option';
     const disabled = this.hasAttribute('disabled');
-    this.innerHTML = `<fieldset class="se-segmented" aria-label="${escapeHtml(groupLabel)}" style="--se-segment-count:${Math.max(1, options.length)};--se-segment-index:${selectedIndex}">${label ? `<legend class="se-segmented__label">${escapeHtml(label)}</legend>` : ''}<div class="se-segmented__options">${options.map((option, index) => { const optionLabel = option.label || option.ariaLabel || String(option.id); return `<label class="se-segmented__option"><input type="radio" name="${name}"${detachedForm} value="${escapeHtml(option.id)}"${index === selectedIndex ? ' checked' : ''}${disabled || option.disabled ? ' disabled' : ''} aria-label="${escapeHtml(optionLabel)}"><span>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${option.label ? `<strong>${escapeHtml(option.label)}</strong>` : ''}</span></label>`; }).join('')}</div></fieldset>`;
+    this.innerHTML = `<fieldset class="se-segmented" aria-label="${escapeHtml(groupLabel)}" style="--se-segment-count:${Math.max(1, options.length)};--se-segment-index:${selectedIndex}">${label ? `<legend class="se-segmented__label">${escapeHtml(label)}</legend>` : ''}<div class="se-segmented__options">${options.map((option, index) => { const optionLabel = option.label || option.ariaLabel || String(option.id); return `<label class="se-segmented__option"><input type="radio" name="${name}"${detachedForm} value="${escapeHtml(option.id)}"${index === selectedIndex ? ' checked' : ''}${disabled || option.disabled ? ' disabled' : ''} aria-label="${escapeHtml(optionLabel)}"><span>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${option.label ? `<strong>${escapeHtml(option.label)}</strong>` : ''}</span></label>`; }).join('')}</div></fieldset>`;
     if (!selected) this.querySelector('.se-segmented__options')?.setAttribute('hidden', '');
     this.querySelectorAll('input').forEach((input, index) => input.addEventListener('change', (event) => {
       event.stopPropagation();
@@ -809,7 +888,7 @@ class SeSplitButton extends HTMLElement {
     const variant = this.getAttribute('variant') || 'brand';
     const disabled = this.hasAttribute('disabled');
     const label = this.getAttribute('aria-label') || selected.label || selected.icon;
-    this.innerHTML = `<div class="se-split se-split--${escapeHtml(variant)}"><button class="se-button se-button--${escapeHtml(variant)}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${disabled ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${selected.icon ? `<se-icon name="${escapeHtml(selected.icon)}"></se-icon>` : ''}${escapeHtml(selected.label)}</button><button class="se-button se-button--${escapeHtml(variant)} se-split__toggle" type="button" aria-label="Choose action" aria-expanded="false"${disabled ? ' disabled' : ''}><se-icon name="chevron"></se-icon></button><div class="se-split__menu">${options.map((option, index) => `<button class="se-menu-item" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
+    this.innerHTML = `<div class="se-split se-split--${escapeHtml(variant)}"><button class="se-button se-button--${escapeHtml(variant)}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${disabled ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${selected.icon ? `<se-icon name="${escapeIcon(selected.icon)}"></se-icon>` : ''}${escapeHtml(selected.label)}</button><button class="se-button se-button--${escapeHtml(variant)} se-split__toggle" type="button" aria-label="Choose action" aria-expanded="false"${disabled ? ' disabled' : ''}><se-icon name="chevron"></se-icon></button><div class="se-split__menu">${options.map((option, index) => `<button class="se-menu-item" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-split');
     const trigger = this.querySelector('.se-split__toggle');
     const position = () => placePopover(trigger, this.querySelector('.se-split__menu'));
@@ -859,7 +938,7 @@ class SeFileCard extends HTMLElement {
     const action = this.getAttribute('action');
     const requestedTone = this.getAttribute('tone') || 'brand';
     const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'brand';
-    const content = `<span class="se-file__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'file')}"></se-icon></span><span class="se-file__content"><strong>${escapeHtml(this.getAttribute('filename') || '')}</strong><small>${escapeHtml(this.getAttribute('subtext') || '')}</small></span>`;
+    const content = `<span class="se-file__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'file')}"></se-icon></span><span class="se-file__content"><strong>${escapeHtml(this.getAttribute('filename') || '')}</strong><small>${escapeHtml(this.getAttribute('subtext') || '')}</small></span>`;
     this.innerHTML = `<div class="se-file se-file--${tone}">${clickable ? `<button class="se-file__main" type="button">${content}</button>` : `<span class="se-file__main">${content}</span>`}${action ? `<button class="se-file__remove" type="button" aria-label="Remove ${escapeHtml(this.getAttribute('filename') || 'file')}"><se-icon name="${action === 'trash' ? 'trash' : 'x'}"></se-icon></button>` : ''}<svg class="se-file__fold" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24"/><path d="M1 1v20a3 3 0 0 0 3 3h20Z"/></svg></div>`;
     this.querySelector('.se-file__remove')?.addEventListener('click', (event) => { event.stopPropagation(); emit(this, 'remove', { filename: this.getAttribute('filename') }); });
   }
@@ -891,7 +970,7 @@ class SeMenu extends HTMLElement {
   connectedCallback() { if (!this.dataset.ready) { this.dataset.ready = 'true'; this.render(); } }
   render() {
     const options = parseOptions(this);
-    this.innerHTML = `<div class="se-menu"><button class="se-button se-button--secondary" type="button" aria-expanded="false">${escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
+    this.innerHTML = `<div class="se-menu"><button class="se-button se-button--secondary" type="button" aria-expanded="false">${escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-menu');
     const trigger = this.querySelector('.se-button');
     const position = () => placePopover(trigger, this.querySelector('.se-menu__items'));
@@ -915,7 +994,7 @@ class SeProfile extends HTMLElement {
     const tone = variants.includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'brand';
     const identity = `<span class="se-profile__avatar">${escapeHtml(this.getAttribute('initials') || '')}</span><span><strong>${escapeHtml(this.getAttribute('name') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span>`;
     if (!options.length) { this.innerHTML = `<${tag} class="se-profile se-profile--${tone}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
-    this.innerHTML = `<div class="se-profile-menu"><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
+    this.innerHTML = `<div class="se-profile-menu"><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
     const menu = this.querySelector('.se-profile-menu');
     const trigger = this.querySelector('.se-profile');
     trigger.addEventListener('click', () => { const open = menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(open)); if (open) placePopover(trigger, this.querySelector('.se-profile-menu__items')); });
@@ -942,7 +1021,7 @@ class SeModal extends HTMLElement {
     const requestedTone = this.getAttribute('tone') || 'error';
     const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'error';
     const title = escapeHtml(this.getAttribute('title') || '');
-    const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${tone}"><se-icon name="${escapeHtml(this.getAttribute('icon'))}"></se-icon></span>` : '';
+    const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${tone}"><se-icon name="${escapeIcon(this.getAttribute('icon'))}"></se-icon></span>` : '';
     const actions = `<div class="se-modal__actions"><se-button variant="${expanded ? 'secondary' : 'ghost'}" text="${escapeHtml(this.getAttribute('cancel-label') || (expanded ? 'Close' : 'Cancel'))}" data-cancel></se-button><se-button variant="${escapeHtml(this.getAttribute('confirm-variant') || 'brand')}" text="${escapeHtml(this.getAttribute('confirm-label') || 'Confirm')}" data-confirm></se-button></div>`;
     const body = expanded
       ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`
@@ -1028,7 +1107,7 @@ class SeToast extends HTMLElement {
     const actionMarkup = action
       ? href ? `<a class="se-toast__action" href="${escapeHtml(href)}">${escapeHtml(action)}</a>` : `<button class="se-toast__action" type="button" data-action>${escapeHtml(action)}</button>`
       : '';
-    this.innerHTML = `<div class="se-toast se-toast--${tone}" role="${['error', 'warning'].includes(tone) ? 'alert' : 'status'}" aria-live="${['error', 'warning'].includes(tone) ? 'assertive' : 'polite'}"><se-icon name="${escapeHtml(icon)}" aria-hidden="true"></se-icon><span class="se-toast__message">${escapeHtml(message)}</span>${actionMarkup}<button class="se-toast__dismiss" type="button" aria-label="Dismiss notification"><se-icon name="x" aria-hidden="true"></se-icon></button></div>`;
+    this.innerHTML = `<div class="se-toast se-toast--${tone}" role="${['error', 'warning'].includes(tone) ? 'alert' : 'status'}" aria-live="${['error', 'warning'].includes(tone) ? 'assertive' : 'polite'}"><se-icon name="${escapeIcon(icon)}" aria-hidden="true"></se-icon><span class="se-toast__message">${escapeHtml(message)}</span>${actionMarkup}<button class="se-toast__dismiss" type="button" aria-label="Dismiss notification"><se-icon name="x" aria-hidden="true"></se-icon></button></div>`;
     this.querySelector('.se-toast__dismiss').addEventListener('click', () => this.close());
     this.querySelector('[data-action]')?.addEventListener('click', () => emit(this, 'action', {}));
   }
@@ -1177,7 +1256,7 @@ class SeLayoutBrand extends HTMLElement {
     this.toggleAttribute('data-has-dark-icon', Boolean(darkIcon));
     this.toggleAttribute('data-has-compact-dark-icon', Boolean(compactDarkIcon));
     const isAsset = (source) => /^(?:data:|https?:|[./\\])|\.svg(?:$|[?#])/i.test(source);
-    const renderIcon = (source) => isAsset(source) ? `<img src="${escapeHtml(source)}" alt="">` : `<se-icon name="${escapeHtml(source)}"></se-icon>`;
+    const renderIcon = (source) => isAsset(source) && !source.trim().startsWith('{') ? `<img src="${escapeHtml(source)}" alt="">` : `<se-icon name="${escapeIcon(source)}"></se-icon>`;
     this.toggleAttribute('data-wide-icon', isAsset(icon));
     const asset = (source, mode) => source ? `<span class="se-layout-brand__asset se-layout-brand__asset--${mode}">${renderIcon(source)}</span>` : '';
     const identity = href ? 'a' : 'span';
@@ -1214,7 +1293,7 @@ class SeSidebarButton extends HTMLElement {
     const label = this.getAttribute('label') || this.textContent.trim() || 'Navigation item';
     const icon = this.getAttribute('icon');
     const disabled = this.hasAttribute('disabled');
-    const content = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}<span>${escapeHtml(label)}</span>`;
+    const content = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}<span>${escapeHtml(label)}</span>`;
     this.innerHTML = this.getAttribute('href') && !disabled
       ? `<a class="se-sidebar-button" href="${escapeHtml(this.getAttribute('href'))}" title="${escapeHtml(label)}">${content}</a>`
       : `<button class="se-sidebar-button" type="button" title="${escapeHtml(label)}"${disabled ? ' disabled' : ''}>${content}</button>`;
@@ -1233,7 +1312,7 @@ class SeSidebarGroup extends HTMLElement {
     const icon = this.getAttribute('icon');
     const page = this.getAttribute('variant') === 'page';
     const href = this.getAttribute('href') || '#';
-    const heading = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}<span><strong>${label}</strong></span>`;
+    const heading = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}<span><strong>${label}</strong></span>`;
     const subtext = this.getAttribute('subtext') ? `<small class="se-sidebar-group__label">${escapeHtml(this.getAttribute('subtext'))}</small>` : '';
     this.innerHTML = `<div class="se-sidebar-group__head">${page ? `<a href="${escapeHtml(href)}">${heading}</a><button type="button" aria-label="Toggle ${label}" aria-expanded="${!this.hasAttribute('collapsed')}"><se-icon name="chevron"></se-icon></button>` : `<button type="button" aria-expanded="${!this.hasAttribute('collapsed')}">${heading}<se-icon name="chevron"></se-icon></button>`}</div><div class="se-sidebar-group__content"><div>${subtext}${content}</div></div>`;
     const toggle = page ? this.querySelector('.se-sidebar-group__head > button') : this.querySelector('.se-sidebar-group__head button');
@@ -1302,7 +1381,7 @@ class SeEmptyState extends HTMLElement {
     this.dataset.ready = 'true';
     const content = this.innerHTML.trim();
     const tone = ['brand', 'gray', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'gray';
-    const icon = this.getAttribute('icon') === 'none' ? '' : `<span class="se-empty-state__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'package')}"></se-icon></span>`;
+    const icon = this.getAttribute('icon') === 'none' ? '' : `<span class="se-empty-state__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'package')}"></se-icon></span>`;
     this.innerHTML = `<div class="se-empty-state se-empty-state--${tone}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('text') ? `<se-text muted>${escapeHtml(this.getAttribute('text'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
   }
 }
@@ -1529,7 +1608,7 @@ class SeBadge extends HTMLElement {
     this.classList.add('se-badge', `se-badge--${variants.has(tone) ? tone : 'gray'}`);
     this.classList.toggle('se-badge--icon', Boolean(icon && !text));
     if (icon && !text) this.setAttribute('role', 'img'); else this.removeAttribute('role');
-    this.innerHTML = `${icon ? `<se-icon name="${escapeHtml(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
+    this.innerHTML = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}${escapeHtml(text)}`;
   }
 }
 

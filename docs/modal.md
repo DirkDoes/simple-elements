@@ -8,3 +8,5 @@
 ```
 
 Methods: `open()` and `close()`. Attributes: `title`, `subtitle`, `icon`, `tone`, `size` (`small`, `medium`, or `large`), `confirm-label`, `confirm-variant`, and `cancel-label`. Small modals always use the centered empty-state composition. Medium and large modals place the optional icon beside the title. Events: `confirm` and `close`. Escape and backdrop clicks close it.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

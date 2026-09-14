@@ -5,3 +5,5 @@
 ```
 
 Attributes: `label`, `icon`, `href`, `active`, and `disabled`. With `href` it renders a link; without it, it renders a button.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

@@ -16,3 +16,5 @@
 `options` accepts items with an `id` and optional `label`, `icon`, `ariaLabel`, and `disabled` state. Options may use text, an icon, or both. The selected surface animates between options.
 
 Use `value` for the selected option, `name` for native form submission, `label` for a visible group label, `aria-label` for an unlabeled group, and `disabled` to disable the whole control. The `value` and `options` properties can also be assigned from JavaScript. A bubbling `change` event includes `value` and `option`.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

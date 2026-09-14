@@ -9,3 +9,5 @@ Use `tone` for the avatar color (`gray`, `brand`, `success`, `warning`, `error`,
 The profile stays within its container. Inside a collapsed `se-sidebar`, it reduces to its avatar; at narrower expanded widths, names and subtitles truncate with an ellipsis. Context menus prefer opening down and right, then flip toward available viewport space.
 
 Attributes: `tone`, `name`, `subtitle`, `initials`, `clickable`, `options`, and `compact`.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

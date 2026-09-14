@@ -11,3 +11,5 @@
 ```
 
 Set `title`, `description`, and `metadata` for the project details. The banner uses `icon` and an optional CSS `banner-color`; `banner-image` replaces both with an image URL. Add `href` for a native link, or omit it for a native button. `disabled` disables button behavior.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

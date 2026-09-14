@@ -7,3 +7,5 @@
 ```
 
 Attributes: `tone` (`gray`, `brand`, `success`, `warning`, `error`, `info`, or `important`), `icon`, `title`, and `text`. Child content is reserved for actions or other use-case-specific controls.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

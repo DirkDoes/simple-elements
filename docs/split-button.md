@@ -18,3 +18,5 @@ Assign `options` as JSON or JavaScript. Choosing an item emits `change`; clickin
 `variant`, `type`, `text`, `icon`, `disabled`, and `aria-label` match the corresponding button attributes. `label` remains available as a compatibility alias for fallback text.
 
 Add `direct` to emit `action` immediately when a menu option is chosen instead of replacing the primary action. Each option accepts its own `label`, `icon`, and optional `disabled` state. Keyboard focus is drawn around the complete split button.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).

@@ -1,4 +1,4 @@
-import { define, emit, escapeHtml, parseOptions, placePopover } from '../helpers.js';
+import { define, escapeIcon, emit, escapeHtml, parseOptions, placePopover } from '../helpers.js';
 
 class SeSplitButton extends HTMLElement {
   set options(value) { this._options = value; if (this.isConnected) this.render(); }
@@ -11,7 +11,7 @@ class SeSplitButton extends HTMLElement {
     const variant = this.getAttribute('variant') || 'brand';
     const disabled = this.hasAttribute('disabled');
     const label = this.getAttribute('aria-label') || selected.label || selected.icon;
-    this.innerHTML = `<div class="se-split se-split--${escapeHtml(variant)}"><button class="se-button se-button--${escapeHtml(variant)}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${disabled ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${selected.icon ? `<se-icon name="${escapeHtml(selected.icon)}"></se-icon>` : ''}${escapeHtml(selected.label)}</button><button class="se-button se-button--${escapeHtml(variant)} se-split__toggle" type="button" aria-label="Choose action" aria-expanded="false"${disabled ? ' disabled' : ''}><se-icon name="chevron"></se-icon></button><div class="se-split__menu">${options.map((option, index) => `<button class="se-menu-item" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeHtml(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
+    this.innerHTML = `<div class="se-split se-split--${escapeHtml(variant)}"><button class="se-button se-button--${escapeHtml(variant)}" type="${escapeHtml(this.getAttribute('type') || 'button')}"${disabled ? ' disabled' : ''}${label ? ` aria-label="${escapeHtml(label)}"` : ''}>${selected.icon ? `<se-icon name="${escapeIcon(selected.icon)}"></se-icon>` : ''}${escapeHtml(selected.label)}</button><button class="se-button se-button--${escapeHtml(variant)} se-split__toggle" type="button" aria-label="Choose action" aria-expanded="false"${disabled ? ' disabled' : ''}><se-icon name="chevron"></se-icon></button><div class="se-split__menu">${options.map((option, index) => `<button class="se-menu-item" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-split');
     const trigger = this.querySelector('.se-split__toggle');
     const position = () => placePopover(trigger, this.querySelector('.se-split__menu'));

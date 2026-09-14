@@ -1,4 +1,4 @@
-import { define, escapeHtml } from '../helpers.js';
+import { define, escapeIcon, escapeHtml } from '../helpers.js';
 
 class SeFolderCard extends HTMLElement {
   connectedCallback() {
@@ -11,7 +11,7 @@ class SeFolderCard extends HTMLElement {
     const requestedTone = this.getAttribute('tone') || 'brand';
     const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'brand';
     const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
-    this.innerHTML = `<${tag} class="se-folder-card se-folder-card--${tone}"${attributes}><span class="se-folder-card__icon"><se-icon name="${escapeHtml(this.getAttribute('icon') || 'folder')}"></se-icon></span><span><strong>${escapeHtml(this.getAttribute('title') || 'Folder')}</strong><small>${count} ${count === 1 ? 'item' : 'items'}</small></span></${tag}>`;
+    this.innerHTML = `<${tag} class="se-folder-card se-folder-card--${tone}"${attributes}><span class="se-folder-card__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'folder')}"></se-icon></span><span><strong>${escapeHtml(this.getAttribute('title') || 'Folder')}</strong><small>${count} ${count === 1 ? 'item' : 'items'}</small></span></${tag}>`;
   }
 }
 

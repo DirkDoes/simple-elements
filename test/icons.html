@@ -1,0 +1,52 @@
+<!doctype html>
+<html data-theme="light"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../dist/styles.css">
+<script defer src="../dist/simple-elements.js"></script>
+<style>* { transition: none !important; } .white { color: white; } .black { color: black; }</style>
+</head><body><div id="fixtures"></div><pre id="result">Running...</pre>
+<script>
+addEventListener('DOMContentLoaded', async () => {
+  const assert = (condition, message) => { if (!condition) throw Error(message); };
+  const settle = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const white = '../examples/assets/GitHub_dark.svg', black = '../examples/assets/GitHub_light.svg';
+  const config = { light: white, dark: black, preserveLightColors: true, preserveDarkColors: true };
+  try {
+    const fixture = document.querySelector('#fixtures');
+    const button = document.createElement('se-button');
+    button.setAttribute('icon', JSON.stringify(config)); button.setAttribute('text', 'GitHub');
+    fixture.append(button); await settle();
+    const control = button.querySelector('button'), icon = button.querySelector('se-icon');
+    for (const mode of ['light', 'dark']) {
+      document.documentElement.dataset.theme = mode;
+      for (const color of ['white', 'black']) {
+        control.style.color = color; await settle();
+        assert(icon.querySelector('img').getAttribute('src') === (color === 'white' ? white : black), 'Asset must follow foreground, not mode');
+      }
+    }
+    icon.icon = { ...config, preserveLightColors: false, preserveDarkColors: false };
+    await settle(); assert(icon.querySelector('.se-icon__mask'), 'Opt-out uses currentColor mask');
+    assert(getComputedStyle(icon.querySelector('.se-icon__mask')).backgroundColor === getComputedStyle(control).color, 'Mask follows text');
+    icon.icon = white; assert(icon.querySelector('img'), 'String asset preserves artwork');
+    icon.icon = 'download'; assert(icon.querySelector('svg'), 'Lucide shorthand remains supported');
+    icon.icon = { light: 'javascript:alert(1)' }; assert(icon.querySelector('svg'), 'Unsafe source falls back safely');
+    icon.icon = { light: { invalid: true } }; assert(icon.querySelector('svg'), 'Malformed source falls back safely');
+    for (const tag of ['se-select', 'se-segmented-control', 'se-menu', 'se-profile']) {
+      const component = document.createElement(tag);
+      component.setAttribute('options', JSON.stringify([{ id: 'github', label: 'GitHub', icon: config }]));
+      component.setAttribute('value', 'github'); fixture.append(component); await settle();
+      assert([...component.querySelectorAll('se-icon')].some(e => e.querySelector('img')), tag + ' supports nested icon objects');
+    }
+    for (const tag of ['se-badge', 'se-chat-context', 'se-chat-message', 'se-empty-state', 'se-folder-card', 'se-input', 'se-sidebar-button', 'se-sidebar-group', 'se-tree-item', 'se-project-card']) {
+      const component = document.createElement(tag); component.setAttribute('icon', JSON.stringify(config)); if (tag === 'se-chat-message') component.setAttribute('profile', ''); fixture.append(component); await settle();
+      assert(component.querySelector('se-icon img'), tag + ' accepts an icon object');
+    }
+    const brand = document.createElement('se-layout-brand');
+    brand.setAttribute('icon', JSON.stringify(config)); brand.setAttribute('compact-icon', JSON.stringify(config));
+    fixture.append(brand); await settle(); assert(brand.querySelector('se-icon img'), 'Brand accepts object');
+    const legacy = document.createElement('se-layout-brand');
+    legacy.setAttribute('icon', black); legacy.setAttribute('dark-icon', white); fixture.append(legacy);
+    assert(legacy.querySelectorAll('.se-layout-brand__asset > img').length >= 2, 'Legacy branding assets preserved');
+    document.documentElement.dataset.test = 'passed'; document.querySelector('#result').textContent = 'PASS: icon sources, foreground selection, masks, options, and legacy branding';
+  } catch (error) { document.documentElement.dataset.test = 'failed'; document.querySelector('#result').textContent = error.stack; throw error; }
+});
+</script></body></html>

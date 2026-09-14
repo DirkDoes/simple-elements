@@ -7,3 +7,5 @@
 ```
 
 Tones: `gray`, `brand`, `success`, `warning`, `error`, `info`, and `important`. Set `text`, `icon`, or both. Add `aria-label` to icon-only badges.
+
+Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
