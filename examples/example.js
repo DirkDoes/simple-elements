@@ -110,6 +110,16 @@ const renderComponentPage = (component) => {
   render();
 };
 componentCatalog.filter(({ custom }) => !custom).forEach(renderComponentPage);
+const syncPatternThemes = () => {
+  document.querySelectorAll('.demo-pattern-frame').forEach((frame) => {
+    const root = frame.contentDocument?.documentElement;
+    if (!root) return;
+    root.dataset.theme = document.documentElement.dataset.theme;
+    root.dataset.seTheme = document.documentElement.dataset.seTheme || 'flat';
+    root.style.cssText = document.documentElement.style.cssText;
+  });
+};
+new MutationObserver(syncPatternThemes).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-se-theme', 'style'] });
 const renderPatternPage = ({ tag, description, examples }) => {
   const section = document.createElement('section');
   const viewportOptions = [{ id: '1024x576', label: 'Desktop · 1024 × 576' }, { id: '768x1024', label: 'Tablet · 768 × 1024' }, { id: '390x844', label: 'Phone · 390 × 844' }];
@@ -142,12 +152,13 @@ const renderPatternPage = ({ tag, description, examples }) => {
         const [frameWidth, frameHeight] = (viewport?.value || '1024x576').split('x').map(Number);
         const frame = document.createElement('iframe');
         frame.className = 'demo-pattern-frame';
+        frame.addEventListener('load', syncPatternThemes);
         frame.title = `${example.querySelector('header se-title').textContent} preview`;
         frame.dataset.width = frameWidth;
         frame.dataset.height = frameHeight;
         frame.style.width = `${frameWidth}px`;
         frame.style.height = `${frameHeight}px`;
-        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260912r"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260912r"></script></head><body>${editor.value}</body></html>`;
+        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260912r"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260912r"></script></head><body>${editor.value}</body></html>`;
         preview.replaceChildren(frame);
         resizeFrame();
         return;
@@ -180,6 +191,12 @@ sidebar.addEventListener('click', (event) => {
 });
 addEventListener('hashchange', () => showPage(location.hash.slice(1)));
 document.querySelectorAll('[data-open]').forEach((button) => button.addEventListener('click', () => document.getElementById(button.dataset.open).open()));
+const familyPicker = document.querySelector('.demo-theme-family');
+familyPicker.querySelector('.se-select__trigger').setAttribute('aria-label', 'Visual theme');
+familyPicker.addEventListener('change', (event) => {
+  document.documentElement.dataset.seTheme = event.currentTarget.value;
+  familyPicker.querySelector('.se-select__trigger').setAttribute('aria-label', 'Visual theme');
+});
 document.querySelector('.demo-theme').addEventListener('change', (event) => { document.documentElement.dataset.theme = event.currentTarget.value; });
 document.querySelector('.demo-dashboard-brand-color')?.addEventListener('change', (event) => { setBrandTheme({ primary: event.detail.value }); });
 

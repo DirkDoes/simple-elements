@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-se-theme="flat">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simple Elements</title>
+    <link rel="stylesheet" href="../dist/styles.css?v=20260912r">
+    <link rel="stylesheet" href="./example.css?v=20260912r">
+    <script defer src="../dist/simple-elements.js?v=20260912r"></script>
+    <script type="module" src="./example.js?v=20260912r"></script>
+  </head>
+  <body>
+    <div class="demo-shell">
+      <main class="demo-main">
+        <se-topbar><section data-start><se-sidebar-toggle for="example-sidebar" layout-mode="mobile-only"></se-sidebar-toggle><se-layout-brand label="Simple Elements" icon="package" href="#dashboard"></se-layout-brand></section><section data-end><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></se-topbar>
+        <div class="demo-body">
+          <se-sidebar id="example-sidebar" layout-mode="responsive" collapsible>
+            <section>
+              <se-sidebar-chapter title="Overview"><se-sidebar-button label="Dashboard" icon="dashboard" href="#dashboard"></se-sidebar-button></se-sidebar-chapter>
+              <se-sidebar-chapter title="Components" data-component-section collapsible></se-sidebar-chapter>
+              <se-sidebar-chapter title="Patterns" data-pattern-section collapsible></se-sidebar-chapter>
+            </section>
+            <footer layout-mode="desktop-only"><small class="demo-version" aria-label="Latest released version"></small></footer>
+          </se-sidebar>
+          <div class="demo-scroll">
+            <div class="demo-content">
+          <!-- page:dashboard -->
+
+          <!-- page:input -->
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

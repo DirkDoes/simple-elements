@@ -950,6 +950,5 @@ se-color-picker { position: relative; display: block; font-family: var(--se-font
 [data-theme="dark"] .se-chat-message--sent .se-chat-message__bubble { color: var(--se-text); background: var(--se-surface-soft); border-color: var(--se-border); }
 [data-theme="dark"] .se-chat-message--sent .se-chat-message__bubble time { color: var(--se-muted); }
 [data-theme="dark"] .se-toast--gray { background: var(--se-surface-raised); }
-[data-theme="dark"] se-sidebar-button[active] .se-sidebar-button { box-shadow: inset 2px 0 var(--se-primary); }
 [data-theme="dark"] :is(button, a, input, textarea, [tabindex], [contenteditable="true"]):focus-visible { outline: 2px solid var(--se-primary); outline-offset: 2px; }
 [data-theme="dark"] .se-choice input:focus-visible + .se-choice__control { outline: 2px solid var(--se-primary); outline-offset: 3px; }

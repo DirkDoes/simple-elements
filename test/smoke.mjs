@@ -319,3 +319,19 @@ const datetimeSource = await readFile('src/components/datetime-picker.js', 'utf8
 assert.match(datetimeSource, /variant === 'combined'/);
 assert.match(datetimeSource, /:scope > \.se-datetime-single > input, :scope > fieldset > input/, 'default combined picker must resolve its hidden form input');
 console.log(`Checked ${components.length} components, ${componentCatalog.length} component pages, and ${patternCatalog.length} pattern page.`);
+
+const flatCss = await readFile('src/themes/flat.css', 'utf8');
+assert.equal(await readFile('dist/themes/flat.css', 'utf8'), flatCss, 'the optional Flat stylesheet must be built');
+assert.match(compiledCss, /:root:not\(\[data-se-theme="clean"\]\)/, 'Flat must apply when no theme is selected');
+assert.doesNotMatch(await readFile('dist/themes/clean.css', 'utf8'), /data-se-theme/, 'Clean-only apps must not bundle Flat');
+assert.doesNotMatch(await readFile('dist/simple-elements.js', 'utf8'), /se-flat|themes\/flat/, 'theme CSS must not be embedded in component JavaScript');
+assert.equal(JSON.parse(await readFile('package.json', 'utf8')).exports['./themes/flat.css'], './dist/themes/flat.css');
+assert.match(flatCss, /--se-shadow: none/);
+assert.match(flatCss, /--se-shadow-lg: none/);
+assert.match(flatCss, /border-bottom-color: var\(--se-border-strong\)/, 'flat fields must retain a visible control boundary');
+assert.match(flatCss, /:focus-visible/, 'flat controls must retain keyboard focus');
+const showcaseShell = await readFile('examples/pages/shell.html', 'utf8');
+assert.ok(showcaseShell.length < exampleHtml.length / 2, 'the entry template should stay small');
+for (const page of ['dashboard', 'input']) assert.ok(exampleHtml.includes((await readFile(`examples/pages/${page}.html`, 'utf8')).trim()), `${page} must be assembled into the deployed showcase`);
+assert.doesNotMatch(exampleHtml, /<!-- page:/, 'all page includes must be resolved at build time');
+assert.match(exampleHtml, /class="demo-theme-family"[^>]*"label":"Flat"[^>]*"label":"Clean"/);

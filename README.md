@@ -1,6 +1,6 @@
 # Simple Elements
 
-Framework-free UI components built with standard custom elements, Tailwind CSS, and vanilla JavaScript. Every component supports light and dark themes.
+Framework-free UI components built with standard custom elements, Tailwind CSS, and vanilla JavaScript. Every component supports Flat and Clean visual themes, each with light and dark modes.
 
 ## Install
 
@@ -17,7 +17,7 @@ import 'simple-elements/styles.css';
 <se-button variant="brand" text="Save changes"></se-button>
 ```
 
-Set the theme on any ancestor (normally `<html>`):
+Set the color mode on `<html>`:
 
 ```js
 document.documentElement.dataset.theme = 'dark'; // or 'light'
@@ -30,6 +30,14 @@ import { setBrandTheme } from 'simple-elements';
 
 setBrandTheme({ primary: '#7c3aed' });
 ```
+
+Flat is the default visual theme in both light and dark modes. Select Clean (previously Standard) with the same stylesheet:
+
+```js
+document.documentElement.dataset.seTheme = 'clean'; // or 'flat'
+```
+
+Clean-only apps can import `simple-elements/themes/clean.css` instead of `styles.css` to omit Flat's styles. See [themes](./docs/theme.md) or the [GitHub wiki](https://github.com/DirkDoes/simple-elements/wiki/theme) for fixed themes, a theme selector, saved preferences, and migration from 0.4.0.
 
 Consumers do not need a build step or Tailwind configuration: the package ships compiled CSS. Tailwind is a development dependency used for the library's theme tokens and CSS build, so it does not reset or couple the host application's styles.
 
@@ -50,6 +58,6 @@ npm run build
 npm test
 ```
 
-Open `examples/index.html` directly in a browser; no server is needed.
+Build the showcase after editing `examples/pages/*.html`, then open `examples/index.html` in a browser. The generated index is also the deployed entry point.
 
 The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates the components. Concise, AI-friendly API documentation lives in [`docs`](./docs/index.md) and is included when installing directly from GitHub.

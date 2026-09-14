@@ -4,6 +4,7 @@
 <title>Select layout regression</title>
 <link rel="stylesheet" href="../dist/styles.css">
 <link rel="stylesheet" href="../examples/example.css">
+<link rel="stylesheet" href="../dist/themes/flat.css">
 <script defer src="../dist/simple-elements.js"></script>
 <body>
 <pre id="result">Running selection layout checks...</pre>
@@ -14,8 +15,9 @@
   const fixture = document.querySelector('#fixture');
   let checks = 0;
   try {
-    for (const theme of ['light', 'dark']) for (const size of ['', 'small']) for (const width of [160, 220, 320]) for (const icon of ['', 'user']) {
+    for (const family of ['clean', 'flat']) for (const theme of ['light', 'dark']) for (const size of ['', 'small']) for (const width of [160, 220, 320]) for (const icon of ['', 'user']) {
       document.documentElement.dataset.theme = theme;
+      document.documentElement.dataset.seTheme = family;
       fixture.style.width = `${width}px`;
       const select = document.createElement('se-select');
       select.setAttribute('size', size);
@@ -34,8 +36,9 @@
         checks++;
       }
     }
-    for (const theme of ['light', 'dark']) for (const width of [600, 1100]) {
+    for (const family of ['clean', 'flat']) for (const theme of ['light', 'dark']) for (const width of [600, 1100]) {
       document.documentElement.dataset.theme = theme;
+      document.documentElement.dataset.seTheme = family;
       fixture.style.width = `${width}px`;
       fixture.innerHTML = `<div class="demo-component-attributes"><se-collection type="table" class="demo-template-table" columns="1fr 1fr 1fr 1fr"><se-list-row><strong data-description="Attribute description">Variant</strong><span>Description</span><span>Default</span><se-select clearable placeholder="No override"></se-select></se-list-row></se-collection></div>`;
       const select = fixture.querySelector('se-select');
