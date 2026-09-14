@@ -1,6 +1,19 @@
 import { icons as lucideIcons } from 'lucide';
-import { iconNames } from '../icon-names.js';
+import { iconNames, extraIcons } from '../icon-names.js';
 import { define } from '../helpers.js';
+
+Object.assign(lucideIcons, extraIcons);
+
+export const registerIcons = (icons) => {
+  for (const [key, nodes] of Object.entries(icons)) {
+    const name = key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+    if (!Object.hasOwn(iconNames, name)) {
+      iconNames[name] = key;
+      lucideIcons[key] = nodes;
+    }
+  }
+  document.querySelectorAll('se-icon').forEach((icon) => icon.render());
+};
 
 const attributeName = (name) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 const iconMarkup = (nodes) => nodes.map(([tag, attributes]) =>
@@ -47,7 +60,7 @@ const iconAsset = (source) => {
 };
 
 class SeIcon extends HTMLElement {
-  static names = Object.freeze(Object.keys(iconNames));
+  static get names() { return Object.freeze(Object.keys(iconNames)); }
   static observedAttributes = ['name'];
   get icon() { try { return JSON.parse(this.getAttribute('name')); } catch { return this.getAttribute('name'); } }
   set icon(value) { this.setAttribute('name', typeof value === 'object' ? JSON.stringify(value) : value); }

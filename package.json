@@ -1,6 +1,6 @@
 {
   "name": "simple-elements",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Simple, framework-free web components with light and dark themes.",
   "repository": {
     "type": "git",
@@ -19,7 +19,9 @@
     "./themes/flat.css": "./dist/themes/flat.css",
     "./themes/clean.css": "./dist/themes/clean.css",
     "./themes/studio.css": "./dist/themes/studio.css",
-    "./themes/edge.css": "./dist/themes/edge.css"
+    "./themes/edge.css": "./dist/themes/edge.css",
+    "./icons/all": "./src/all-icons.js",
+    "./icons/all.js": "./dist/icons-all.js"
   },
   "files": [
     "src",

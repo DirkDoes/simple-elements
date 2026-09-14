@@ -1,6 +1,6 @@
 import { setBrandTheme } from './theme.js';
-export { setBrandTheme };
-import './components/icon.js';
+import { registerIcons } from './components/icon.js';
+export { setBrandTheme, registerIcons };
 import './components/text.js';
 import './components/title.js';
 import './components/card.js';

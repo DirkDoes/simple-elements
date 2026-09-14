@@ -67,3 +67,5 @@ Build the showcase after editing `examples/pages/*.html`, then open `examples/in
 The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates the components. Concise, AI-friendly API documentation lives in [`docs`](./docs/index.md) and is included when installing directly from GitHub.
 
 Component icon inputs support Lucide names, external SVGs, and foreground-aware light/dark artwork with optional color preservation. See [icons](./docs/icon.md).
+
+Need every Lucide icon? Import `simple-elements/icons/all` after the components, or load `dist/icons-all.js` after the browser bundle. The [icon guide](./docs/icon.md#default-and-full-lucide-sets) also covers individual registration. Browse the showcase’s **Patterns → Icon gallery** to search and copy icon names.

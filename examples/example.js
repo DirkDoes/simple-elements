@@ -3,7 +3,7 @@ import { componentCatalog, patternCatalog } from './catalog.js?v=20260912r';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
-const patternPages = patternCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
+const patternPages = [...patternCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]), ['icons', 'Icon gallery', 'blocks']];
 const pages = [['dashboard', 'Dashboard', 'dashboard'], ...componentPages, ...patternPages];
 const requestedPage = location.hash.slice(1) || 'dashboard';
 const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'dashboard';
@@ -175,6 +175,31 @@ const renderPatternPage = ({ tag, description, examples }) => {
   viewport?.addEventListener('change', () => renders.forEach((render) => render()));
 };
 patternCatalog.forEach(renderPatternPage);
+
+const iconGallery = document.createElement('section');
+iconGallery.dataset.demo = 'icons';
+iconGallery.hidden = true;
+iconGallery.innerHTML = `<div class="demo-icon-heading"><se-title level="section">Icon gallery</se-title><se-badge tone="brand" data-icon-count aria-live="polite"></se-badge></div><se-text muted>Search the included icon set. Hover for an icon name; click to copy it.</se-text><se-card class="demo-icon-card"><div class="demo-icon-tools"><label>Search icons<input class="se-control" type="search" placeholder="Search by name" data-icon-search></label></div><div class="demo-icon-gallery"></div></se-card><se-card class="demo-icon-card"><se-title level="section">Need all Lucide icons?</se-title><se-text muted>Load the optional full pack after the components in your application.</se-text><se-code block language="javascript">import 'simple-elements';
+import 'simple-elements/icons/all';</se-code><se-button variant="link" href="https://lucide.dev/icons/" icon="external-link" text="Browse all Lucide icons"></se-button></se-card>`;
+document.querySelector('.demo-content').append(iconGallery);
+
+const renderIconGallery = () => {
+  const query = iconGallery.querySelector('[data-icon-search]').value.toLowerCase().trim();
+  const names = customElements.get('se-icon').names.filter(name => name.includes(query)).sort();
+  const count = iconGallery.querySelector('[data-icon-count]');
+  count.setAttribute('text', `${names.length} icons`);
+  iconGallery.querySelector('.demo-icon-gallery').innerHTML = names.map(name => `<se-tooltip content="${escapeAttribute(name)}"><se-button variant="secondary" icon="${escapeAttribute(name)}" aria-label="Copy ${escapeAttribute(name)}" data-copy-icon="${escapeAttribute(name)}"></se-button></se-tooltip>`).join('');
+};
+iconGallery.querySelector('[data-icon-search]').addEventListener('input', renderIconGallery);
+const iconCopyNotice = document.createElement('se-toast');
+iconCopyNotice.setAttribute('duration', '2500');
+document.body.append(iconCopyNotice);
+iconGallery.addEventListener('click', async (event) => {
+  const tile = event.target.closest('[data-copy-icon]'); if (!tile) return;
+  try { await navigator.clipboard.writeText(tile.dataset.copyIcon); iconCopyNotice.setAttribute('tone', 'success'); iconCopyNotice.setAttribute('message', `Copied ${tile.dataset.copyIcon}`); iconCopyNotice.render(); iconCopyNotice.open(); }
+  catch { iconCopyNotice.setAttribute('tone', 'error'); iconCopyNotice.setAttribute('message', `Could not copy ${tile.dataset.copyIcon}. Clipboard access is unavailable.`); iconCopyNotice.render(); iconCopyNotice.open(); }
+});
+renderIconGallery();
 
 const showPage = (id) => {
   const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';

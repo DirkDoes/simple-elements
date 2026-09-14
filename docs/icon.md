@@ -51,3 +51,36 @@ Run the build/smoke checks with `npm test`, and open `test/icons.html` for brows
 Built-in icon data comes from [Lucide](https://lucide.dev/) (ISC); the browser bundle includes the library's curated icon names.
 
 The preservation flags are JSON booleans (`true`/`false`), not strings. Omitting `dark` reuses `light`; omitting `preserveDarkColors` inherits the light preservation setting. Plain filenames with image extensions and relative or absolute URLs are supported. A missing/unloadable image remains a browser image-loading failure; fallback to the alert icon applies to unknown names or invalid configuration, not network failures.
+
+## Default and full Lucide sets
+
+The default bundle contains 147 names, including the existing aliases plus the requested navigation, files, media, travel, and workspace icons. Use `network` and `boxes` separately, and `square-terminal` (correct spelling). Existing aliases keep their meanings: for example, `trash` remains Trash2. `trash-off` is a local slashed trash icon, not an upstream Lucide name.
+
+Browse **Patterns → Icon gallery** in the showcase. Search the icon-only secondary buttons, hover for a name, or click to copy it and receive a confirmation notice. The grid shows the complete default set. Below it, a code snippet explains how to include the full pack in your app, with a link to the Lucide icon catalog.
+
+### Load every icon with a JavaScript bundler
+
+```js
+import 'simple-elements';
+import 'simple-elements/icons/all';
+import 'simple-elements/styles.css';
+```
+
+### Load every icon with browser scripts
+
+```html
+<script defer src="/simple-elements/dist/simple-elements.js"></script>
+<script defer src="/simple-elements/dist/icons-all.js"></script>
+```
+
+Load the full pack after the component bundle. Both approaches register Lucide's complete installed icon set, using kebab-case names such as `alarm-clock`. Existing default aliases are preserved. Previously rendered unknown icons refresh after registration. The extra pack is not downloaded by ordinary default-bundle consumers.
+
+### Register only selected additional icons
+
+```js
+import { registerIcons } from 'simple-elements';
+import { AlarmClock } from 'lucide';
+registerIcons({ AlarmClock });
+```
+
+For browser scripts, the same function is `SimpleElements.registerIcons`. Supply trusted Lucide icon-node data from your application, not user-provided markup. Registered names are available through `customElements.get('se-icon').names` and work in every component icon input.

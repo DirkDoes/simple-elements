@@ -3,7 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { highlightCode, renderMarkdown } from '../src/syntax.js';
 import { calendarDays, dateValue, parseDate, parseTime, timeValue, wrapNumber } from '../src/calendar.js';
-import { iconNames } from '../src/icon-names.js';
+import { iconNames, extraIcons } from '../src/icon-names.js';
 import { primaryTheme, setBrandTheme } from '../src/theme.js';
 import { placePopover } from '../src/helpers.js';
 import { componentCatalog, patternCatalog } from '../examples/catalog.js';
@@ -29,7 +29,7 @@ assert.equal(spawnSync(process.execPath, ['--check', 'src/index.js']).status, 0)
 assert.doesNotMatch(await readFile('src/native-input.js', 'utf8'), /required/, 'native inputs must not expose required validation');
 assert.equal(spawnSync(process.execPath, ['--check', 'dist/simple-elements.js']).status, 0);
 assert.match(await readFile('dist/simple-elements.js', 'utf8'), /const connectChoice =/, 'shared choice renderer must be included in the browser bundle');
-assert.match(await readFile('dist/simple-elements.js', 'utf8'), /globalThis\.SimpleElements = \{ setBrandTheme \}/, 'browser bundle must expose the theme setter');
+assert.match(await readFile('dist/simple-elements.js', 'utf8'), /globalThis\.SimpleElements = \{ setBrandTheme, registerIcons \}/, 'browser bundle must expose the theme setter');
 assert.match(entry, /setBrandTheme/);
 const generatedTheme = primaryTheme('#2563eb');
 assert.equal(generatedTheme.light.base, '#2563eb');
@@ -142,7 +142,7 @@ assert.match(badgeSource, /getAttribute\('text'\)/);
 const iconSource = await readFile('src/components/icon.js', 'utf8');
 assert.match(iconSource, /from 'lucide'/);
 assert.doesNotMatch(iconSource, /<path|<circle|<rect/);
-Object.entries(iconNames).forEach(([name, lucideName]) => assert.ok(lucideIcons[lucideName], `${name} must map to a real Lucide icon`));
+Object.entries(iconNames).forEach(([name, lucideName]) => assert.ok(lucideIcons[lucideName] || extraIcons[lucideName], `${name} must map to a real Lucide icon`));
 const phoneSource = await readFile('src/components/phone-input.js', 'utf8');
 assert.equal((phoneSource.match(/[A-Z]{2}\|[^;`]+\|\d+/g) || []).length, 245, 'expected complete phone country data');
 assert.match(phoneSource, /No countries found\./);
@@ -344,3 +344,5 @@ assert.match(exampleHtml, /"label":"Studio"/);
 
 assert.equal(await readFile('dist/themes/edge.css', 'utf8'), await readFile('src/themes/edge.css', 'utf8'));
 assert.doesNotMatch(compiledCss, /:root\[data-se-theme="edge"\]/, 'Edge must remain optional');
+
+for (const name of ["unlink", "external-link", "qr-code", "star", "house", "circle-check", "map-pin", "sparkles", "pencil", "circle-x", "calendar", "log-out", "download", "arrow-left", "arrow-up", "arrow-down", "arrow-right", "save", "camera", "rocket", "truck", "languages", "box", "map", "paperclip", "database", "notebook-pen", "message-square", "messages-square", "grip-vertical", "car", "blocks", "pin", "palette", "timer", "receipt-text", "crown", "scroll-text", "book-open-text", "thumbs-up", "audio-lines", "leaf", "network", "boxes", "list-checks", "plane", "folder-open", "ticket", "images", "files", "inbox", "scan", "type", "laptop", "locate", "lock", "lock-open", "scan-qr-code", "archive", "ruler", "square-terminal", "thumbs-down", "skip-forward", "play", "pause", "trash", "trash-off", "rotate-ccw", "book-plus", "share-2", "star-off", "play-off"]) assert.ok(iconNames[name], `Requested icon ${name} must be bundled`);

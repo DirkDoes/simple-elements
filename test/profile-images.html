@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css">
+<script defer src="../dist/simple-elements.js"></script></head><body><pre id="result">Running</pre>
+<script>
+addEventListener('DOMContentLoaded', async () => {
+try {
+for (const theme of ['flat','clean','studio','edge']) for (const mode of ['light','dark']) for (const variant of ['plain','clickable','menu','compact']) for (const [width,height] of [[160,80],[80,160]]) {
+ document.documentElement.dataset.seTheme=theme; document.documentElement.dataset.theme=mode;
+ const p=document.createElement('se-profile'); p.setAttribute('name','Test Person');p.setAttribute('initials','TP');p.setAttribute('image','data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="white"/></svg>`));
+ if(variant==='clickable'||variant==='compact')p.setAttribute(variant,'');
+ if(variant==='menu')p.setAttribute('options','[{"label":"Settings"}]');
+ document.body.append(p);const avatar=p.querySelector('.se-profile__avatar'), img=avatar.querySelector('img');await img.decode();
+ const colorProbe=document.createElement('span');colorProbe.style.color='var(--se-border)';document.body.append(colorProbe);if(getComputedStyle(avatar).borderTopColor!==getComputedStyle(colorProbe).color)throw Error('Image border must match subtle theme border');colorProbe.remove();
+ const rect=img.getBoundingClientRect();if(Math.abs(rect.width-avatar.clientWidth)>0.1||Math.abs(rect.height-avatar.clientHeight)>0.1)throw Error('Image must fill avatar');
+ if(avatar.textContent || getComputedStyle(avatar).borderRadius!=='50%' || getComputedStyle(avatar).overflow!=='hidden'||getComputedStyle(img).objectFit!=='cover')throw Error('Image crop/precedence failed: '+theme+mode+variant);
+ if(variant==='menu'){p.querySelector('button').click();if(!p.querySelector('.se-profile-menu--open'))throw Error('Menu failed');}
+ p.remove();
+}
+const p=document.createElement('se-profile');p.setAttribute('initials','TP');document.body.append(p);if(p.querySelector('.se-profile__avatar').textContent!=='TP')throw Error('Initials regressed');
+document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: 64 portrait/landscape image profile variants and initials fallback';
+}catch(e){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=e.stack;}
+});
+</script></body></html>

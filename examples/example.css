@@ -178,3 +178,14 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 
 :root[data-se-theme="edge"] :is(.demo-dashboard-hero-copy, .demo-profile-static, .demo-notice, .demo-icon, .demo-dashboard-overview__icon, .demo-dashboard-tip__icon, .demo-template-table .se-list__header) { border-radius: 0; }
 :root[data-se-theme="edge"] .demo-dashboard-hero-copy { box-shadow: var(--se-shadow-lg); }
+
+.demo-icon-tools { display: flex; flex-wrap: wrap; align-items: end; gap: 1rem; margin: 1.5rem 0; }
+.demo-icon-tools label { display: grid; gap: .5rem; flex: 1; min-width: 12rem; }
+.demo-icon-card { margin-top: 1.5rem; }
+.demo-icon-card .demo-icon-tools { margin-top: 0; }
+.demo-icon-gallery { display: grid; grid-template-columns: repeat(auto-fill, 2.5rem); gap: .75rem; }
+
+.demo-icon-card > se-text, .demo-icon-card > se-code { margin-top: 1rem; }
+.demo-icon-card a { color: var(--se-primary-text); }
+
+.demo-icon-heading { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; }
