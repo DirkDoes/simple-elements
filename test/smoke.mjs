@@ -203,7 +203,7 @@ assert.doesNotMatch(colorPickerSource, /hasAttribute\('popover'\)/);
 const documentedComponents = components;
 assert.equal(componentCatalog.length, documentedComponents.length, 'every standalone component needs a catalog page');
 assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(documentedComponents), 'catalog tags must match standalone component files');
-assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['workspaces', 'page-layout', 'chats', 'file-system', 'forms'], 'all patterns must be documented');
+assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['multi-scope-navigation', 'workspaces', 'page-layout', 'chats', 'file-system', 'forms'], 'all patterns must be documented');
 assert.ok(patternCatalog.every(({ examples }) => examples?.length), 'each pattern needs named examples');
 assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.every(({ markup }) => markup.includes('layout-mode="responsive"')), 'every page layout pattern needs responsive navigation');
 assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.slice(0, 3).every(({ markup }) => markup.includes('<se-topbar layout-mode="mobile-only">')), 'sidebar-only layouts need a mobile top bar');

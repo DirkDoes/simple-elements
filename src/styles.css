@@ -975,3 +975,29 @@ se-icon > .se-icon__mask { background: currentColor; mask-size: contain; mask-po
 
 .se-workspace-card__identity--image { position: relative; overflow: hidden; border: 1px solid var(--se-border); border-radius: 50%; }
 .se-workspace-card__identity > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+se-breadcrumbs, se-nav-tabs { display: block; min-width: 0; font-family: var(--se-font); }
+.se-breadcrumbs ol { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; list-style: none; margin: 0; padding: 0; }
+.se-breadcrumbs li, .se-breadcrumbs a, .se-breadcrumbs li > span { display: inline-flex; align-items: center; gap: .5rem; }
+.se-breadcrumbs { color: var(--se-muted); font-size: .8125rem; }
+.se-breadcrumbs a { color: inherit; text-decoration: none; }
+.se-breadcrumbs a:hover { color: var(--se-text); text-decoration: underline; }
+.se-breadcrumbs [aria-current] { color: var(--se-text); }
+.se-breadcrumbs__separator { color: var(--se-faint); }
+.se-nav-tabs { display: flex; gap: 1.25rem; overflow-x: auto; border-bottom: 1px solid var(--se-border); }
+.se-nav-tabs__item { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: .5rem; padding: .75rem 0; border-bottom: 2px solid transparent; color: var(--se-muted); font-size: .8125rem; font-weight: 550; text-decoration: none; white-space: nowrap; }
+.se-nav-tabs__item:hover { color: var(--se-text); }
+.se-nav-tabs__item[aria-current] { color: var(--se-primary-text); border-bottom-color: var(--se-primary); }
+.se-nav-tabs__item[aria-disabled] { opacity: .5; }
+.se-nav-tabs__count { padding: .1rem .4rem; border-radius: var(--se-radius); background: var(--se-surface-soft); color: var(--se-muted); font-size: .6875rem; }
+.se-nav-tabs--pill { gap: .375rem; border-bottom: 0; }
+.se-nav-tabs--pill .se-nav-tabs__item { padding: .5rem .75rem; border: 0; border-radius: var(--se-radius); }
+.se-nav-tabs--pill .se-nav-tabs__item[aria-current] { background: var(--se-primary-soft); }
+.se-breadcrumbs a:focus-visible, .se-nav-tabs__item:focus-visible { outline: 2px solid var(--se-primary); outline-offset: -2px; }
+
+/* Sidebar variants change appearance, independently of collapsed state. */
+se-sidebar[variant="primary"] { background: var(--se-surface-soft); }
+se-sidebar[variant="secondary"] { background: var(--se-surface); }
+se-sidebar[variant="primary"][collapsed]:not([closed]) { width: 4rem; }
+se-sidebar[variant="primary"][collapsed] > header { padding-inline: .5rem; }
+se-sidebar[variant="primary"][collapsed] > section { padding-inline: .375rem; }
+se-sidebar[variant="secondary"] > section { padding: 1.5rem 1rem; }

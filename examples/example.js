@@ -14,7 +14,7 @@ fetch('https://api.github.com/repos/DirkDoes/simple-elements/tags?per_page=1')
   .catch(() => {});
 const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-sidebar-button label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-sidebar-button>`).join('');
 const groups = [
-  ['Page layout', 'panel-left-open', ['profile', 'layout-brand', 'sidebar', 'sidebar-toggle', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],
+  ['Page layout', 'panel-left-open', ['breadcrumbs', 'nav-tabs', 'profile', 'layout-brand', 'sidebar', 'sidebar-toggle', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'toast', 'tooltip']],
   ['Chat', 'message-square', ['chat-context', 'chat-message', 'thought-train']],
@@ -35,6 +35,7 @@ const formatHtml = (source) => {
   const formatNode = (node, depth = 0) => {
     const padding = '  '.repeat(depth);
     if (node.nodeType === Node.TEXT_NODE) return `${padding}${node.textContent.trim().replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}`;
+    if (['SCRIPT', 'STYLE'].includes(node.nodeName)) return `${padding}${node.outerHTML}`;
     const opening = node.outerHTML.slice(0, node.outerHTML.indexOf('>') + 1);
     const children = [...node.childNodes].filter((child) => child.nodeType !== Node.TEXT_NODE || child.textContent.trim());
     if (!children.length) return `${padding}${opening}</${node.localName}>`;
@@ -120,14 +121,16 @@ const syncPatternThemes = () => {
   });
 };
 new MutationObserver(syncPatternThemes).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-se-theme', 'style'] });
-const renderPatternPage = ({ tag, description, examples }) => {
+const renderPatternPage = ({ tag, description, examples, isolated = false }) => {
+  const windowed = isolated || tag === 'page-layout';
   const section = document.createElement('section');
   const viewportOptions = [{ id: '1024x576', label: 'Desktop · 1024 × 576' }, { id: '768x1024', label: 'Tablet · 768 × 1024' }, { id: '390x844', label: 'Phone · 390 × 844' }];
   section.dataset.demo = tag;
   section.className = 'demo-pattern-page';
+  section.toggleAttribute('data-windowed', windowed);
   section.hidden = true;
   const heading = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text>`;
-  section.innerHTML = `${tag === 'page-layout' ? `<header class="demo-pattern-heading"><div>${heading}</div><se-select data-pattern-viewport label="Preview viewport" value="1024x576" options="${escapeAttribute(JSON.stringify(viewportOptions))}"></se-select></header>` : heading}${examples.map(({ title, description: exampleDescription, markup }) => `<article class="demo-pattern-example"><header><se-title level="card">${title}</se-title><se-text muted>${exampleDescription}</se-text></header><se-card class="demo-pattern-example-card"><div class="demo-pattern-code"><se-title level="sidebar">Code</se-title><se-code-editor language="html" value="${escapeAttribute(formatHtml(markup))}" wrap></se-code-editor></div><div class="demo-pattern-result"><se-title level="sidebar">Preview</se-title><se-card class="demo-pattern-preview-card"><div data-pattern-preview></div></se-card></div></se-card></article>`).join('')}`;
+  section.innerHTML = `${windowed ? `<header class="demo-pattern-heading"><div>${heading}</div><se-select data-pattern-viewport label="Preview viewport" value="1024x576" options="${escapeAttribute(JSON.stringify(viewportOptions))}"></se-select></header>` : heading}${examples.map(({ title, description: exampleDescription, markup }) => `<article class="demo-pattern-example"><header><se-title level="card">${title}</se-title><se-text muted>${exampleDescription}</se-text></header><se-card class="demo-pattern-example-card"><div class="demo-pattern-code"><se-title level="sidebar">Code</se-title><se-code-editor language="html" value="${escapeAttribute(formatHtml(markup))}" wrap></se-code-editor></div><div class="demo-pattern-result"><se-title level="sidebar">Preview</se-title><se-card class="demo-pattern-preview-card"><div data-pattern-preview></div></se-card></div></se-card></article>`).join('')}`;
   document.querySelector('.demo-content').append(section);
   const viewport = section.querySelector('[data-pattern-viewport]');
   const renders = [];
@@ -148,7 +151,7 @@ const renderPatternPage = ({ tag, description, examples }) => {
       result.style.setProperty('--demo-pattern-preview-width', `${frameWidth * scale + preview.parentElement.offsetWidth - preview.parentElement.clientWidth}px`);
     };
     const render = () => {
-      if (tag === 'page-layout') {
+      if (windowed) {
         const [frameWidth, frameHeight] = (viewport?.value || '1024x576').split('x').map(Number);
         const frame = document.createElement('iframe');
         frame.className = 'demo-pattern-frame';
@@ -170,7 +173,7 @@ const renderPatternPage = ({ tag, description, examples }) => {
     editor.addEventListener('input', render);
     renders.push(render);
     render();
-    if (tag === 'page-layout') new ResizeObserver(resizeFrame).observe(preview.closest('.demo-pattern-result'));
+    if (windowed) new ResizeObserver(resizeFrame).observe(preview.closest('.demo-pattern-result'));
   });
   viewport?.addEventListener('change', () => renders.forEach((render) => render()));
 };

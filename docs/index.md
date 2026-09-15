@@ -94,3 +94,7 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 Browse the page-like component sections in [`examples/index.html`](../examples/index.html).
 
 The showcase’s **Patterns → Icon gallery** lists the 147 default icon names with tooltips and click-to-copy. The [icon guide](icon.md#default-and-full-lucide-sets) explains optional full-pack loading and individual registration. [Profiles](profile.md) support circular image avatars as well as initials.
+
+- [Breadcrumbs](breadcrumbs.md)
+- [Navigation tabs](nav-tabs.md)
+- [Multi-scope navigation pattern](multi-scope-navigation.md)

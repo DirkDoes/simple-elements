@@ -1,0 +1,34 @@
+<!doctype html><html data-theme="dark" data-se-theme="flat"><head><meta charset="utf-8"><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body><pre id="result">Running… Serve this repository over HTTP.</pre><div id="fixtures"></div>
+<script type="module">
+import { multiScopePattern } from '../examples/patterns/multi-scope.js';
+const assert = (ok, message) => { if (!ok) throw Error(message); };
+const wait = async fn => { const end = Date.now()+10000; while(!fn()){if(Date.now()>end)throw Error('Timed out waiting for preview');await new Promise(r=>setTimeout(r,30));} };
+try {
+await customElements.whenDefined('se-select');
+const fixtures=document.querySelector('#fixtures');
+const crumbs=document.createElement('se-breadcrumbs');crumbs.options=[{label:'<Acme>',href:'#org'},{label:'Website',href:'#web'}];fixtures.append(crumbs);assert(crumbs.querySelectorAll('a').length===1,'Current breadcrumb is not a link');assert(crumbs.textContent.includes('<Acme>'),'Escaped breadcrumb label');
+const tabs=document.createElement('se-nav-tabs');tabs.options=[{id:'a',label:'Overview',href:'#a'},{id:'b',label:'Disabled',disabled:true}];tabs.value='a';fixtures.append(tabs);assert(tabs.querySelector('a[aria-current="page"]'),'Active route');assert(!tabs.querySelector('a[aria-disabled]'),'Disabled route not interactive');
+const frames=[];
+for(const example of multiScopePattern.examples){const frame=document.createElement('iframe');frame.style.cssText='width:1024px;height:768px';frame.srcdoc=`<html data-theme="dark" data-se-theme="flat"><head><link rel="stylesheet" href="${new URL('../dist/styles.css',location.href)}"><script defer src="${new URL('../dist/simple-elements.js',location.href)}"><\/script></head><body style="margin:0;height:768px">${example.markup}</body></html>`;fixtures.append(frame);frames.push(frame);await wait(()=>frame.contentDocument.querySelector('.mock-content se-card'));}
+const first=frames[0].contentDocument;
+const picker=first.querySelector('se-select');picker.querySelector('.se-select__trigger').click();picker.querySelector('[data-id="api"]').click();assert(first.querySelector('.mock-page-heading').textContent.includes('Platform API'),'Existing select changes context');await wait(()=>first.querySelector('se-button[href="#org/overview"] a'));first.querySelector('se-button[href="#org/overview"] a').click();
+
+first.querySelector('.mock-projects a').click();assert(first.querySelector('.mock-page-heading').textContent.includes('Website'),'Repository opened');assert(frames[2].contentDocument.querySelector('.mock-projects'),'Other preview unchanged');
+[...first.querySelectorAll('se-nav-tabs a')].find(a=>a.textContent==='Settings').click();first.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));assert(first.querySelector('[data-save-status]').textContent.includes('Saved'),'Mock save');await wait(()=>first.querySelector('se-button[href="#org/overview"] a'));first.querySelector('se-button[href="#org/overview"] a').click();assert(first.querySelector('.mock-projects'),'Return to organization');
+const double=frames[1].contentDocument;
+assert(double.querySelector('se-sidebar[variant="primary"]').collapsed,'Primary collapses with repository sidebar');
+assert(double.querySelector('se-sidebar[variant="secondary"]'),'Real secondary sidebar');
+double.querySelector('a[href="#org/members"]').click();
+assert(!double.querySelector('se-sidebar[variant="primary"]').collapsed,'Organization page expands primary');
+assert(!double.querySelector('se-sidebar[variant="secondary"]'),'Organization page has no secondary');
+double.querySelector('a[href="#org/repositories"]').click();double.querySelector('.mock-projects a').click();
+frames[1].style.width='390px';await wait(()=>double.querySelector('dialog se-sidebar[variant="secondary"]'));
+assert(double.querySelectorAll('dialog se-sidebar').length===2,'One mobile panel contains both sidebars');
+assert(!double.querySelector('dialog se-sidebar').collapsed,'Mobile primary expanded');
+double.querySelector('.mock-hamburger').click();assert(double.querySelector('dialog').open,'One hamburger opens dialog');
+double.querySelector('dialog a[href="#org/members"]').click();assert(!double.querySelector('dialog').open,'Navigation closes menu');
+frames[1].style.width='1024px';await wait(()=>double.querySelector('.mock-shell>se-sidebar'));
+assert(!double.querySelector('.mock-primary').collapsed,'Desktop organization remains expanded');
+document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: select context navigation, breadcrumbs, route tabs, three isolated previews, scope navigation, and mock save';
+}catch(e){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=e.stack;throw e;}
+</script></body></html>

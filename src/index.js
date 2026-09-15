@@ -50,3 +50,6 @@ import './components/color-picker.js';
 import './components/date-picker.js';
 import './components/time-picker.js';
 import './components/datetime-picker.js';
+
+import './components/breadcrumbs.js';
+import './components/nav-tabs.js';
