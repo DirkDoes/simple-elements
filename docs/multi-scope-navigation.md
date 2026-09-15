@@ -1,8 +1,8 @@
 # Multi-scope navigation
 
-Patterns → Multi Scope Navigation demonstrates contextual sidebars, a persistent organization rail, and top navigation. The resolution selector controls isolated desktop, tablet, and phone iframes, matching the Page Layout pattern. Each frame contains mock JavaScript with independent in-memory routing, context selection, parent navigation, route tabs, and a local save confirmation. Nothing is sent to a server.
+Patterns → Multi Scope Navigation demonstrates contextual sidebars, a persistent organization rail, and top navigation. The resolution selector controls isolated desktop, tablet, and phone iframes, matching the Page Layout pattern. Each frame contains mock JavaScript with independent in-memory routing, workspace card selection, parent navigation, route tabs, and a local save confirmation. Nothing is sent to a server.
 
-Applications own routing, authorization, persistence, and context data. The mobile sidebar overlays the content and can be dismissed using its backdrop or Escape. The mobile menu uses a native modal dialog. Context selection uses the existing `se-select` and parent navigation uses a link-style `se-button`; application code handles routing. Component APIs are documented in [Select](select.md), [Button](button.md), [Breadcrumbs](breadcrumbs.md), and [Navigation tabs](nav-tabs.md).
+Applications own routing, authorization, persistence, and context data. The mobile sidebar overlays the content and can be dismissed using its backdrop or Escape. The mobile menu uses a native modal dialog. Switching workspaces means following the link-style `se-button` labeled Back to workspaces and choosing another card on the listing page; application code handles routing. Component APIs are documented in [Button](button.md), [Breadcrumbs](breadcrumbs.md), and [Navigation tabs](nav-tabs.md).
 
 Serve the repository over HTTP and open `test/navigation.html` to run the browser checks. Open `examples/index.html#multi-scope-navigation` for the interactive showcase. No authentication or real tenant data is simulated; all actions are local demonstration state.
 
