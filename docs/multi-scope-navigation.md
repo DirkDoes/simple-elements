@@ -10,3 +10,5 @@ Serve the repository over HTTP and open `test/navigation.html` to run the browse
 The Organization rail example now composes real `se-sidebar` elements with `primary` and `secondary` visual variants. Organization pages show an expanded primary sidebar; repository pages collapse it and add secondary navigation. The application owns that decision, not the visual variant. On mobile, one hamburger opens a native dialog containing both expanded navigation sections. The same elements move back to their desktop positions when the viewport widens. No `se-layout` component is required.
 
 Desktop scope changes animate the primary sidebar width and the secondary navigation space over 220ms. The pattern uses the native Web Animations API because it replaces its mock page DOM on navigation. Reduced-motion preferences skip these transitions; mobile navigation remains immediate.
+
+These layouts are optional compositions: an application can use one sidebar plus navigation tabs instead of two sidebars. The shared mobile dialog is an example choice, not behavior imposed by `se-sidebar`; applications can choose a drawer or another mobile presentation.
