@@ -10,3 +10,6 @@ A top-level tenant entry with a monogram and a horizontal identity panel. Projec
 ```
 
 Set `title`, `description`, and `metadata` for the workspace details. `initials` defaults to the first two title characters. Add `href` for a native link, or omit it for a native button. `disabled` renders a disabled button even when `href` is present. Like project cards, attributes are read on first connection.
+
+
+Set `image="/images/workspace.jpg"` for an image avatar. The image takes priority over initials and fills a circular crop using `object-fit: cover`, with a subtle theme border. Without an image, the existing monogram is unchanged.

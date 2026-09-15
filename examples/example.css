@@ -194,3 +194,6 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-pattern-page[data-demo="workspaces"] .demo-pattern-preview-card,
 .demo-pattern-page[data-demo="file-system"] .demo-pattern-preview-card { background: var(--se-bg); }
 @media (max-width: 480px) { [data-component-preview][data-preview-surface="page"] { padding: 1rem; } }
+
+.demo-pattern-page[data-demo="workspaces"] .demo-pattern-preview-card { padding: 1.5rem; }
+@media (max-width: 480px) { .demo-pattern-page[data-demo="workspaces"] .demo-pattern-preview-card { padding: 1rem; } }

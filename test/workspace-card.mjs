@@ -21,3 +21,8 @@ const before = link.innerHTML;
 link.connectedCallback();
 assert.equal(link.innerHTML, before);
 console.log('Workspace card native semantics, escaping, and reconnect checks passed.');
+
+const imageCard = render({ title: 'Acme', initials: 'AS', image: '/avatar.jpg?a=1&b=2' });
+assert.match(imageCard.innerHTML, /src="\/avatar.jpg\?a=1&amp;b=2"/);
+assert.match(imageCard.innerHTML, /se-workspace-card__identity--image/);
+assert.doesNotMatch(imageCard.innerHTML, />AS</);

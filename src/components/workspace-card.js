@@ -10,7 +10,9 @@ class SeWorkspaceCard extends HTMLElement {
     const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
     const title = this.getAttribute('title') || 'Workspace';
     const initials = this.getAttribute('initials') || title.slice(0, 2).toUpperCase();
-    this.innerHTML = `<${tag} class="se-workspace-card"${attributes}><span class="se-workspace-card__identity" aria-hidden="true">${escapeHtml(initials)}</span><span class="se-workspace-card__body"><strong>${escapeHtml(title)}</strong>${this.getAttribute('description') ? `<span class="se-workspace-card__description">${escapeHtml(this.getAttribute('description'))}</span>` : ''}${this.getAttribute('metadata') ? `<small class="se-workspace-card__metadata">${escapeHtml(this.getAttribute('metadata'))}</small>` : ''}</span><se-icon class="se-workspace-card__arrow" name="arrow-right" aria-hidden="true"></se-icon></${tag}>`;
+    const image = this.getAttribute('image');
+    const avatar = image ? `<img src="${escapeHtml(image)}" alt="" draggable="false">` : escapeHtml(initials);
+    this.innerHTML = `<${tag} class="se-workspace-card"${attributes}><span class="se-workspace-card__identity${image ? ' se-workspace-card__identity--image' : ''}" aria-hidden="true">${avatar}</span><span class="se-workspace-card__body"><strong>${escapeHtml(title)}</strong>${this.getAttribute('description') ? `<span class="se-workspace-card__description">${escapeHtml(this.getAttribute('description'))}</span>` : ''}${this.getAttribute('metadata') ? `<small class="se-workspace-card__metadata">${escapeHtml(this.getAttribute('metadata'))}</small>` : ''}</span><se-icon class="se-workspace-card__arrow" name="arrow-right" aria-hidden="true"></se-icon></${tag}>`;
   }
 }
 
