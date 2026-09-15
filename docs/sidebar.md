@@ -24,6 +24,8 @@ Arrange sibling sidebars with normal flex/grid containers. Put the primary besid
 
 Application routing controls state: `primarySidebar.collapsed = Boolean(page.sidebar)`. Omit `collapsible` and any custom collapse controls when the application owns this state. Pages without secondary navigation expand the primary again.
 
-For a combined mobile menu, use one native modal `dialog` with one hamburger. Move both sidebar elements into it below 768px, set `collapsed = false`, and show their labeled sections vertically, separated by a theme border. Override the default mobile sidebar hiding inside that dialog with `display: flex; width: 100%; height: auto`. Do not use each sidebar's independent `layout-mode="responsive"` for this arrangement. Restore their desktop positions and routing-controlled collapse state at the desktop breakpoint. Native `showModal()` provides focus containment, Escape dismissal, and an inert background. Close the menu after navigation and focus the new page heading.
+For a combined mobile menu, use one `se-sidebar-toggle` targeting a `se-sidebar` with `layout-mode="responsive"`. Put organization and page navigation in separate `se-sidebar-chapter` elements inside it. Desktop sidebars can use `layout-mode="desktop-only"`; hide the combined mobile sidebar at desktop widths with layout CSS. The Multi Scope Navigation pattern shows the full markup and route handlers. This uses the sidebar's existing top-opening behavior rather than a modal dialog.
 
-The Multi Scope Navigation pattern contains a working example, including breakpoint changes and a single mobile menu.
+The Multi Scope Navigation pattern contains a working example with a single mobile menu.
+
+In Clean and Flat light mode, the primary variant has a white surface when expanded and the page background gray when collapsed. Width and background color transition together; reduced-motion preferences disable this transition. Dark-mode colors are unchanged.

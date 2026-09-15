@@ -31,7 +31,7 @@
 /* Fine boundaries and small corners make dense workspaces feel orderly. */
 :root[data-se-theme="studio"] :is(se-card, .se-workspace-card, .se-project-card, .se-folder-card, .se-file, .se-list, .se-code-block) { border-color: var(--se-border); border-radius: .5rem; }
 :root[data-se-theme="studio"] :is(se-card:not([variant="transparent"]), .se-project-card, .se-folder-card) { box-shadow: var(--se-shadow); }
-:root[data-se-theme="studio"] :is(.se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { border-color: var(--se-border-strong); background: var(--se-surface-soft); box-shadow: var(--se-shadow); transform: none; }
+:root[data-se-theme="studio"] :is(.se-workspace-card:hover:not(:disabled), .se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { border-color: var(--se-border-strong); background: var(--se-surface-soft); box-shadow: var(--se-shadow); transform: none; }
 :root[data-se-theme="studio"] .se-project-card__banner { color: var(--se-primary-text); background: color-mix(in srgb, var(--se-primary) 7%, var(--se-surface-soft)); }
 :root[data-se-theme="studio"] .se-title--page { font-weight: 650; letter-spacing: -.035em; }
 :root[data-se-theme="studio"] .se-title--section { font-weight: 650; letter-spacing: -.02em; }
@@ -53,3 +53,5 @@
 :root[data-se-theme="studio"] .se-select__option[aria-selected="true"] { background: color-mix(in srgb, var(--se-primary) 14%, var(--se-surface)); box-shadow: none; }
 :root[data-se-theme="studio"] :is(.se-select__menu, .se-phone__menu, .se-split__menu, .se-menu__items, .se-profile-menu__items, .se-modal__panel, .se-drawer__panel, .se-date__popover, .se-time__popover, .se-color-picker__popover, .se-datetime-single__popover, .se-tooltip__bubble, .se-toast) { border-color: var(--se-border); box-shadow: var(--se-shadow-lg); }
 :root[data-se-theme="studio"] :is(button, a, input, textarea, [tabindex], [contenteditable="true"]):focus-visible { outline: 2px solid var(--se-primary); outline-offset: 2px; }
+
+:root[data-se-theme="studio"] { --se-sidebar-primary-expanded: var(--se-surface-soft); --se-sidebar-primary-collapsed: var(--se-surface-soft); }

@@ -7,8 +7,8 @@
 /* Group content with space and surface contrast instead of nested boxes. */
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(se-card, .se-workspace-card, .se-project-card, .se-folder-card, .se-file, .se-list, .se-code-block, .se-badge, .se-profile__avatar, .se-chat-message__avatar, .se-chat-message__bubble, .se-select__tag) { border-color: transparent; }
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(se-sidebar, .se-sidebar, se-topbar, se-sidebar > header, se-sidebar > footer) { border-color: transparent; }
-:root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(.se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { box-shadow: none; transform: none; }
-:root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(.se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { background: var(--se-surface-soft); }
+:root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(.se-workspace-card:hover:not(:disabled), .se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { border-color: transparent; box-shadow: none; transform: none; }
+:root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(.se-workspace-card:hover:not(:disabled), .se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { background: var(--se-surface-soft); }
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) .se-file__fold { display: none; }
 
 /* The filled field and underline remain recognizable without a full outline. */

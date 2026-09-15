@@ -121,7 +121,7 @@ const syncPatternThemes = () => {
   });
 };
 new MutationObserver(syncPatternThemes).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-se-theme', 'style'] });
-const renderPatternPage = ({ tag, description, examples, isolated = false, initialize }) => {
+const renderPatternPage = ({ tag, description, examples, isolated = false }) => {
   const windowed = isolated || tag === 'page-layout';
   const section = document.createElement('section');
   const viewportOptions = [{ id: '1024x576', label: 'Desktop · 1024 × 576' }, { id: '768x1024', label: 'Tablet · 768 × 1024' }, { id: '390x844', label: 'Phone · 390 × 844' }];
@@ -169,7 +169,6 @@ const renderPatternPage = ({ tag, description, examples, isolated = false, initi
       const template = document.createElement('template');
       template.innerHTML = editor.value;
       preview.replaceChildren(template.content.cloneNode(true));
-      initialize?.(preview);
     };
     editor.addEventListener('input', render);
     renders.push(render);

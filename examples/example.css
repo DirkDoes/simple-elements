@@ -197,3 +197,8 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 
 .demo-pattern-page[data-demo="workspaces"] .demo-pattern-preview-card { padding: 1.5rem; }
 @media (max-width: 480px) { .demo-pattern-page[data-demo="workspaces"] .demo-pattern-preview-card { padding: 1rem; } }
+
+/* Comments pattern layout; component styling stays in the library. */
+.comment-demo{max-width:800px;margin:auto;padding:16px;color:var(--se-text);font-family:var(--se-font)}.comment-list{display:grid;gap:28px;margin-top:28px}.blog-article{padding-bottom:28px;border-bottom:1px solid var(--se-border);margin-bottom:28px}.blog-meta{margin:16px 0 28px}@media(max-width:480px){.comment-demo{padding:20px 16px}}
+
+.comment-resolve { display: block; margin-top: 20px; }

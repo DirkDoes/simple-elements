@@ -4,27 +4,24 @@ const assert=(ok,message)=>{if(!ok)throw Error(message)};
 const wait=async fn=>{for(let i=0;i<100;i++){if(fn())return;await new Promise(r=>setTimeout(r,30))}throw Error('Timed out')};
 try {
 for(const example of commentsPattern.examples){
+ assert(!/<script|<style| style=/i.test(example.markup),'Comments code contains only markup');
  const frame=document.createElement('iframe');frame.style.cssText='width:900px;height:1000px';frame.srcdoc=`<html data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="${new URL('../dist/styles.css',location.href)}"><script defer src="${new URL('../dist/simple-elements.js',location.href)}"><\/script></head><body>${example.markup}</body></html>`;document.body.append(frame);
  await wait(()=>frame.contentDocument.querySelector('.se-comment__reply'));
+
  const doc=frame.contentDocument;const comment=doc.querySelector('se-comment');const reactions=comment.querySelector('se-reactions');let events=0;reactions.addEventListener('reactionchange',()=>events++);
  assert(comment.replies.querySelector('se-comment'),'Initial reply is nested');assert(comment.querySelector('.se-comment__body').textContent.trim(),'Initial body is inside comment');
- if(doc.querySelector('[data-new-comment]')){
- const form=doc.querySelector('[data-new-comment]');form.querySelector('textarea').value='A new blog comment';form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await wait(()=>doc.querySelector('[data-blog-comments]').lastElementChild.querySelector('.se-comment__body'));assert(doc.querySelector('[data-blog-comments]').lastElementChild.textContent.includes('A new blog comment'),'Top-level blog comment posted');assert(doc.querySelector('se-markdown h1'),'Blog uses rendered Markdown');
- }
+ assert(reactions.querySelector('summary se-icon[name="plus"]'),'Add reaction uses an icon');
  const choices=[...reactions.querySelectorAll('.se-reactions__picker button')].map(button=>button.textContent);
  for(const emoji of ['👍','❤️','🎉','😂','👀','🙏'])assert(choices.includes(emoji),'Picker must render real emoji: '+emoji);
  assert(choices.every(emoji=>!emoji.includes('ð')&&!emoji.includes('�')),'No corrupted emoji');
  const initial=reactions.options[0].count;reactions.querySelector('[aria-pressed]').click();assert(reactions.options[0].count===initial+1,'Reaction increments');reactions.querySelector('[aria-pressed]').click();assert(reactions.options[0].count===initial&&events===2,'Reaction toggles once');
- comment.querySelector('.se-comment__reply').click();await wait(()=>comment.querySelector('form textarea'));const before=comment.replies.children.length;
- comment.querySelector('textarea').value='<img src=x onerror=alert(1)>';comment.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));assert(comment.replies.children.length===before+1,'Reply appended to parent');await wait(()=>comment.replies.lastElementChild.querySelector('.se-comment__body'));assert(!comment.replies.lastElementChild.querySelector('img'),'Reply text is escaped');
- if(doc.querySelector('[data-resolve]')){doc.querySelector('[data-resolve]').click();assert(doc.querySelector('[data-resolve]').getAttribute('aria-pressed')==='true','Resolve works');}
+ let replies=0;comment.addEventListener('reply',event=>{if(event.target===comment)replies++});
+ comment.querySelector('.se-comment__reply').click();assert(replies===1,'Reply emits one event');assert(!comment.querySelector('form'),'No hidden reply editor behavior');
+
 }
+const toned=document.createElement('se-comment');toned.setAttribute('author','Alex');toned.setAttribute('tone','success');document.body.append(toned);await wait(()=>toned.querySelector('.se-profile--success'));assert(toned.querySelector('se-profile').getAttribute('tone')==='success','Comment forwards avatar tone');
 assert(!commentsPattern.isolated,'Comments use a normal pattern page');
-for(const example of commentsPattern.examples){
- const preview=document.createElement('div');preview.innerHTML=example.markup;document.body.append(preview);commentsPattern.initialize(preview);
- await wait(()=>preview.querySelector('.se-comment__reply'));
- preview.querySelector('.se-comment__reply').click();assert(preview.querySelector('form textarea'),'Inline example replies initialize independently');
-}
-document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: reactions, nested replies, safe text, document resolution';
+assert(!commentsPattern.initialize,'No hidden preview initialization');
+document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: markup-only previews, nested comments, reply events, real emoji and reaction toggles';
 }catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack;}
 </script></body></html>

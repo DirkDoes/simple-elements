@@ -1,4 +1,4 @@
-import { define, escapeIcon, escapeHtml } from '../helpers.js';
+import { define, escapeIcon, escapeHtml, sidebarTooltip } from '../helpers.js';
 
 class SeSidebarGroup extends HTMLElement {
   connectedCallback() {
@@ -23,6 +23,9 @@ class SeSidebarGroup extends HTMLElement {
       }
       this.collapsed = !this.collapsed;
     });
+    const headingControl = this.querySelector('.se-sidebar-group__head > :first-child');
+    headingControl.setAttribute('aria-label', this.getAttribute('label') || 'Group');
+    sidebarTooltip(this, headingControl, this.getAttribute('label') || 'Group');
   }
   get collapsed() { return this.hasAttribute('collapsed'); }
   set collapsed(value) {

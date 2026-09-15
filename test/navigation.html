@@ -8,37 +8,45 @@ await customElements.whenDefined('se-nav-tabs');
 const fixtures=document.querySelector('#fixtures');
 const crumbs=document.createElement('se-breadcrumbs');crumbs.options=[{label:'<Acme>',href:'#org'},{label:'Website',href:'#web'}];fixtures.append(crumbs);assert(crumbs.querySelectorAll('a').length===1,'Current breadcrumb is not a link');assert(crumbs.textContent.includes('<Acme>'),'Escaped breadcrumb label');
 const tabs=document.createElement('se-nav-tabs');tabs.options=[{id:'a',label:'Overview',href:'#a'},{id:'b',label:'Disabled',disabled:true}];tabs.value='a';fixtures.append(tabs);assert(tabs.querySelector('a[aria-current="page"]'),'Active route');assert(!tabs.querySelector('a[aria-disabled]'),'Disabled route not interactive');
-const frames=[];
-for(const example of multiScopePattern.examples){const frame=document.createElement('iframe');frame.style.cssText='width:1024px;height:768px';frame.srcdoc=`<html data-theme="dark" data-se-theme="flat"><head><link rel="stylesheet" href="${new URL('../dist/styles.css',location.href)}"><script defer src="${new URL('../dist/simple-elements.js',location.href)}"><\/script></head><body style="margin:0;height:768px">${example.markup}</body></html>`;fixtures.append(frame);frames.push(frame);await wait(()=>frame.contentDocument.querySelector('.mock-content se-card'));}
-const first=frames[0].contentDocument;
-for(const frame of frames){
- const doc=frame.contentDocument;assert(!doc.querySelector('se-select'),'No workspace dropdown');
- if(!doc.querySelector('.mock-projects')){await wait(()=>doc.querySelector('se-button[href="#org/repositories"] a'));doc.querySelector('se-button[href="#org/repositories"] a').click();}
- doc.querySelector('.mock-projects a[href="#api/overview"]').click();assert(doc.querySelector('.mock-page-heading').textContent.includes('Platform API'),'Card selects workspace');
- await wait(()=>doc.querySelector('se-button[href="#org/repositories"] a'));doc.querySelector('se-button[href="#org/repositories"] a').click();
- if(frame===frames[1])doc.querySelector('.mock-projects a[href="#web/overview"]').click();
+const sidebar=document.createElement('se-sidebar');sidebar.innerHTML='<section><se-sidebar-button label="Dashboard" icon="dashboard"></se-sidebar-button><se-sidebar-group label="Projects" icon="folder"></se-sidebar-group></section>';fixtures.append(sidebar);sidebar.collapsed=true;
+for(const control of sidebar.querySelectorAll('.se-sidebar-button,.se-sidebar-group__head > button')){
+ control.focus();const tip=control.closest('se-sidebar-button,se-sidebar-group').querySelector('[role="tooltip"]');assert(tip.matches(':popover-open'),'Collapsed label tooltip opens on focus');assert(tip.textContent===control.getAttribute('aria-label'),'Tooltip matches label');control.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(!tip.matches(':popover-open'),'Escape dismisses tooltip');control.blur();
 }
-
-
-first.querySelector('.mock-projects a').click();assert(first.querySelector('.mock-page-heading').textContent.includes('Website'),'Repository opened');assert(frames[2].contentDocument.querySelector('.mock-projects'),'Other preview unchanged');
-[...first.querySelectorAll('se-nav-tabs a')].find(a=>a.textContent==='Settings').click();first.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));assert(first.querySelector('[data-save-status]').textContent.includes('Saved'),'Mock save');await wait(()=>first.querySelector('se-button[href="#org/repositories"] a'));first.querySelector('se-button[href="#org/repositories"] a').click();assert(first.querySelector('.mock-projects'),'Return to organization');
+sidebar.collapsed=false;sidebar.querySelector('.se-sidebar-button').focus();assert(!sidebar.querySelector(':popover-open'),'Expanded sidebar has no tooltip');
+const frames=[];
+for(const example of multiScopePattern.examples){const frame=document.createElement('iframe');frame.style.cssText='width:1024px;height:768px';frame.srcdoc=`<html data-theme="dark" data-se-theme="flat"><head><link rel="stylesheet" href="${new URL('../dist/styles.css',location.href)}"><script defer src="${new URL('../dist/simple-elements.js',location.href)}"><\/script></head><body style="margin:0;height:768px">${example.markup}</body></html>`;fixtures.append(frame);frames.push(frame);await wait(()=>frame.contentDocument.querySelector('.mock-content'));}
+for(const frame of frames){
+ const doc=frame.contentDocument;
+ assert(!doc.querySelector('dialog'),'No modal navigation');
+ assert(doc.querySelectorAll('se-layout-brand').length===1,'One brand');
+ assert(!doc.querySelector('se-sidebar > section > se-title'),'Only chapter headings in sidebars');
+ if(!doc.querySelector('.mock-projects'))doc.querySelector('se-breadcrumbs a').click();
+ await wait(()=>doc.querySelector('.mock-projects a'));
+ doc.querySelector('.mock-projects a[href="#api/overview"]').click();
+ assert(doc.querySelector('.mock-page-heading').textContent.includes('Platform API'),'Project card changes scope');
+ doc.querySelector('se-nav-tabs a[href="#api/settings"]').click();
+ assert(doc.querySelector('.mock-page-heading').textContent.includes('Settings'),'Page navigation works');
+ assert(!doc.querySelector('se-breadcrumbs').hidden,'Two scopes show breadcrumbs');
+ assert(!doc.querySelector('se-breadcrumbs').textContent.includes('Settings'),'Breadcrumbs omit navigation page');
+ assert(doc.querySelector('se-breadcrumbs').textContent.includes('Platform API'),'Breadcrumbs show current scope');
+ doc.querySelector('se-breadcrumbs a').click();
+ assert(doc.querySelector('.mock-projects'),'Breadcrumb returns to directory');
+ assert(doc.querySelector('se-breadcrumbs').hidden,'Single scope hides breadcrumbs');
+}
 const double=frames[1].contentDocument;
-assert(double.querySelector('se-sidebar[variant="primary"]').collapsed,'Primary collapses with repository sidebar');
-assert(double.querySelector('se-sidebar[variant="secondary"]'),'Real secondary sidebar');
-double.querySelector('a[href="#org/members"]').click();
-assert(!double.querySelector('se-sidebar[variant="primary"]').collapsed,'Organization page expands primary');
-assert((double.querySelector('.mock-primary').getAnimations().length > 0) === !matchMedia('(prefers-reduced-motion: reduce)').matches,'Desktop sidebar animates on scope change');
-await Promise.all(double.querySelector('.mock-primary').getAnimations().map(animation=>animation.finished));
-
-assert(!double.querySelector('se-sidebar[variant="secondary"]'),'Organization page has no secondary');
-double.querySelector('a[href="#org/repositories"]').click();double.querySelector('.mock-projects a').click();
-frames[1].style.width='390px';await wait(()=>double.querySelector('dialog se-sidebar[variant="secondary"]'));
-assert(double.querySelectorAll('dialog se-sidebar').length===2,'One mobile panel contains both sidebars');
-assert(!double.querySelector('dialog se-sidebar').collapsed,'Mobile primary expanded');
-double.querySelector('.mock-hamburger').click();assert(double.querySelector('dialog').open,'One hamburger opens dialog');
-double.querySelector('dialog a[href="#org/members"]').click();assert(!double.querySelector('dialog').open,'Navigation closes menu');
-frames[1].style.width='1024px';await wait(()=>double.querySelector('.mock-shell>se-sidebar'));
-assert(!double.querySelector('.mock-primary').collapsed,'Desktop organization remains expanded');
-document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: workspace card navigation, breadcrumbs, route tabs, three isolated previews, scope navigation, and mock save';
+await wait(()=>double.querySelector('.mock-projects a'));double.querySelector('.mock-projects a').click();
+assert(double.querySelector('.mock-primary').collapsed,'Primary collapses');
+await Promise.all(double.querySelector('.mock-primary').getAnimations().map(a=>a.finished));
+frames[1].style.width='390px';
+await wait(()=>double.querySelector('#scope-navigation').closed);
+const toggle=double.querySelector('se-sidebar-toggle button');toggle.click();
+assert(!double.querySelector('#scope-navigation').closed,'Native toggle opens top sidebar');
+assert(double.querySelectorAll('#scope-navigation se-sidebar-chapter').length===2,'Both chapters are in mobile sidebar');
+double.querySelector('#scope-navigation a[href="#org/repositories"]').click();
+assert(double.querySelector('.mock-projects'),'Mobile organization route');
+assert(double.querySelector('#scope-navigation').closed,'Mobile menu closes on route');
+frames[1].style.width='1024px';
+assert(!double.querySelector('.mock-primary').collapsed,'Organization primary expanded');
+document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: workspace card navigation, breadcrumbs, route tabs, three isolated previews, scope navigation, and minimal page navigation';
 }catch(e){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=e.stack;throw e;}
 </script></body></html>

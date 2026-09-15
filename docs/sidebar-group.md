@@ -9,3 +9,5 @@
 Attributes: `variant` (`group` or `page`), `label`, `icon`, `href`, `subtext`, and `collapsed`. `group` is a disclosure only. With `page`, the label navigates through `href` while a separate chevron toggles the nested buttons. Supporting `subtext` is shown only while the nested items are open.
 
 Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
+
+When the containing sidebar is collapsed, the icon shows its label in a tooltip on hover or keyboard focus. Escape dismisses it. Expanded sidebars keep the normal visible label.

@@ -35,6 +35,30 @@ const placePopover = (trigger, popover) => {
 // Icon objects cross HTML attribute boundaries as JSON, never as SVG markup.
 const escapeIcon = (value) => escapeHtml(value && typeof value === 'object' ? JSON.stringify(value) : value);
 
+// Sidebar sections scroll, so their tooltips use the top layer to avoid clipping.
+const sidebarTooltip = (host, trigger, label) => {
+  const tip = document.createElement('span');
+  tip.className = 'se-tooltip__bubble se-sidebar-tooltip';
+  tip.setAttribute('role', 'tooltip');
+  tip.setAttribute('popover', 'manual');
+  tip.textContent = label;
+  host.append(tip);
+  const hide = () => { if (tip.matches(':popover-open')) tip.hidePopover(); };
+  const show = () => {
+    if (!host.closest('[data-sidebar-collapsed]') || trigger.matches(':disabled')) return;
+    tip.showPopover();
+    const rect = trigger.getBoundingClientRect();
+    tip.style.left = `${Math.min(rect.right + 8, innerWidth - tip.offsetWidth - 8)}px`;
+    tip.style.top = `${Math.max(8, Math.min(rect.top + (rect.height - tip.offsetHeight) / 2, innerHeight - tip.offsetHeight - 8))}px`;
+  };
+  trigger.addEventListener('pointerenter', show);
+  trigger.addEventListener('pointerleave', hide);
+  trigger.addEventListener('focus', show);
+  trigger.addEventListener('blur', hide);
+  trigger.addEventListener('click', hide);
+  trigger.addEventListener('keydown', event => { if (event.key === 'Escape') hide(); });
+};
+
 const DEFAULT_PRIMARY = '#2563eb';
 
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
@@ -1338,8 +1362,9 @@ class SeSidebarButton extends HTMLElement {
     const disabled = this.hasAttribute('disabled');
     const content = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}<span>${escapeHtml(label)}</span>`;
     this.innerHTML = this.getAttribute('href') && !disabled
-      ? `<a class="se-sidebar-button" href="${escapeHtml(this.getAttribute('href'))}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${content}</a>`
-      : `<button class="se-sidebar-button" type="button" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"${disabled ? ' disabled' : ''}>${content}</button>`;
+      ? `<a class="se-sidebar-button" href="${escapeHtml(this.getAttribute('href'))}" aria-label="${escapeHtml(label)}">${content}</a>`
+      : `<button class="se-sidebar-button" type="button" aria-label="${escapeHtml(label)}"${disabled ? ' disabled' : ''}>${content}</button>`;
+    sidebarTooltip(this, this.querySelector('.se-sidebar-button'), label);
   }
 }
 
@@ -1369,6 +1394,9 @@ class SeSidebarGroup extends HTMLElement {
       }
       this.collapsed = !this.collapsed;
     });
+    const headingControl = this.querySelector('.se-sidebar-group__head > :first-child');
+    headingControl.setAttribute('aria-label', this.getAttribute('label') || 'Group');
+    sidebarTooltip(this, headingControl, this.getAttribute('label') || 'Group');
   }
   get collapsed() { return this.hasAttribute('collapsed'); }
   set collapsed(value) {
@@ -2119,7 +2147,7 @@ class SeReactions extends HTMLElement {
     const input = parseOptions(this);
     this._options = (Array.isArray(input) ? input : []).filter(item => item && typeof item.emoji === 'string').map(item => ({ emoji: item.emoji, count: Math.max(item.selected ? 1 : 0, Number.isFinite(Number(item.count)) ? Math.floor(Number(item.count)) : 0), selected: Boolean(item.selected) }));
     const choices = [...new Set([...this._options.map(item => item.emoji), '👍', '❤️', '🎉', '😂', '👀', '🙏'])];
-    this.innerHTML = `<div class="se-reactions" role="group" aria-label="Reactions">${this._options.filter(item => item.count).map(item => `<button type="button" data-emoji="${escapeHtml(item.emoji)}" aria-pressed="${item.selected}" aria-label="${escapeHtml(item.emoji)} reaction, ${item.count}">${escapeHtml(item.emoji)} <span>${item.count}</span></button>`).join('')}<details><summary aria-label="Add reaction" title="Add reaction">+</summary><div class="se-reactions__picker" role="group" aria-label="Choose a reaction">${choices.map(emoji => `<button type="button" data-emoji="${escapeHtml(emoji)}" aria-label="React with ${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`).join('')}</div></details><span class="se-reactions__status" role="status"></span></div>`;
+    this.innerHTML = `<div class="se-reactions" role="group" aria-label="Reactions">${this._options.filter(item => item.count).map(item => `<button type="button" data-emoji="${escapeHtml(item.emoji)}" aria-pressed="${item.selected}" aria-label="${escapeHtml(item.emoji)} reaction, ${item.count}">${escapeHtml(item.emoji)} <span>${item.count}</span></button>`).join('')}<details><summary aria-label="Add reaction" title="Add reaction"><se-icon name="plus"></se-icon></summary><div class="se-reactions__picker" role="group" aria-label="Choose a reaction">${choices.map(emoji => `<button type="button" data-emoji="${escapeHtml(emoji)}" aria-label="React with ${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`).join('')}</div></details><span class="se-reactions__status" role="status"></span></div>`;
     this.querySelectorAll('[data-emoji]').forEach(button => button.onclick = () => {
       const emoji = button.dataset.emoji;
       let item = this._options.find(item => item.emoji === emoji);
@@ -2149,7 +2177,7 @@ class SeComment extends HTMLElement {
     this.dataset.ready = 'true';
     const children = [...this.childNodes];
     const author = this.getAttribute('author') || 'Anonymous';
-    this.innerHTML = `<article class="se-comment" aria-label="Comment by ${escapeHtml(author)}"><header><se-profile name="${escapeHtml(author)}" initials="${escapeHtml(this.getAttribute('initials') || author.slice(0, 2))}" ${this.hasAttribute('image') ? `image="${escapeHtml(this.getAttribute('image'))}"` : ''} tone="gray"></se-profile><time>${escapeHtml(this.getAttribute('timestamp') || '')}</time></header><div class="se-comment__body"></div><div class="se-comment__actions"><button type="button" class="se-comment__reply">Reply</button></div><div class="se-comment__replies" role="group" aria-label="Replies to ${escapeHtml(author)}"></div></article>`;
+    this.innerHTML = `<article class="se-comment" aria-label="Comment by ${escapeHtml(author)}"><header><se-profile name="${escapeHtml(author)}" initials="${escapeHtml(this.getAttribute('initials') || author.slice(0, 2))}" ${this.hasAttribute('image') ? `image="${escapeHtml(this.getAttribute('image'))}"` : ''} tone="${escapeHtml(this.getAttribute('tone') || 'gray')}"></se-profile><time>${escapeHtml(this.getAttribute('timestamp') || '')}</time></header><div class="se-comment__body"></div><div class="se-comment__actions"><button type="button" class="se-comment__reply">Reply</button></div><div class="se-comment__replies" role="group" aria-label="Replies to ${escapeHtml(author)}"></div></article>`;
     for (const node of children) this.querySelector(node.nodeType === 1 && node.matches('se-comment') ? '.se-comment__replies' : node.nodeType === 1 && node.matches('se-reactions') ? '.se-comment__actions' : '.se-comment__body').append(node);
     this.querySelector('.se-comment__reply').onclick = () => emit(this, 'reply', { author });
   }

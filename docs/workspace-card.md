@@ -13,3 +13,5 @@ Set `title`, `description`, and `metadata` for the workspace details. `initials`
 
 
 Set `image="/images/workspace.jpg"` for an image avatar. The image takes priority over initials and fills a circular crop using `object-fit: cover`, with a subtle theme border. Without an image, the existing monogram is unchanged.
+
+Hover treatment matches file and folder cards in each theme: title color, border, background, and shadow are consistent, with no vertical lift. Disabled cards do not receive the hover effect.
