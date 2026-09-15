@@ -1,0 +1,12 @@
+# Workspace card
+
+A top-level tenant entry with a monogram and a horizontal identity panel. Projects use their own banner cards beneath a workspace.
+
+```html
+<se-workspace-card title="Acme Studio" initials="AS"
+  description="A shared home for your teams and projects."
+  metadata="3 projects · 12 members · Owner" href="/workspaces/acme">
+</se-workspace-card>
+```
+
+Set `title`, `description`, and `metadata` for the workspace details. `initials` defaults to the first two title characters. Add `href` for a native link, or omit it for a native button. `disabled` renders a disabled button even when `href` is present. Like project cards, attributes are read on first connection.

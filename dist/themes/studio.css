@@ -29,7 +29,7 @@
 }
 
 /* Fine boundaries and small corners make dense workspaces feel orderly. */
-:root[data-se-theme="studio"] :is(se-card, .se-project-card, .se-folder-card, .se-file, .se-list, .se-code-block) { border-color: var(--se-border); border-radius: .5rem; }
+:root[data-se-theme="studio"] :is(se-card, .se-workspace-card, .se-project-card, .se-folder-card, .se-file, .se-list, .se-code-block) { border-color: var(--se-border); border-radius: .5rem; }
 :root[data-se-theme="studio"] :is(se-card:not([variant="transparent"]), .se-project-card, .se-folder-card) { box-shadow: var(--se-shadow); }
 :root[data-se-theme="studio"] :is(.se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { border-color: var(--se-border-strong); background: var(--se-surface-soft); box-shadow: var(--se-shadow); transform: none; }
 :root[data-se-theme="studio"] .se-project-card__banner { color: var(--se-primary-text); background: color-mix(in srgb, var(--se-primary) 7%, var(--se-surface-soft)); }

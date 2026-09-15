@@ -26,6 +26,7 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 - [Title](title.md)
 - [Card](card.md)
 - [Project card](project-card.md)
+- [Workspace card](workspace-card.md)
 - [Folder card](folder-card.md)
 - [Code](code.md)
 - [Blockquote](blockquote.md)
@@ -78,6 +79,7 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 ## Patterns
 
 - [Page layout](page-layout.md)
+- [Workspaces](workspaces.md)
 - [Chats](chats.md)
 - [File system](file-system.md)
 - [Forms](forms.md)

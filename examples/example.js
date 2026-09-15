@@ -18,7 +18,7 @@ const groups = [
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'toast', 'tooltip']],
   ['Chat', 'message-square', ['chat-context', 'chat-message', 'thought-train']],
-  ['Composing', 'list', ['card', 'collection', 'empty-state', 'file-card', 'folder-card', 'list-header', 'list-row', 'project-card', 'tree-item']],
+  ['Composing', 'list', ['card', 'collection', 'empty-state', 'file-card', 'folder-card', 'list-header', 'list-row', 'project-card', 'workspace-card', 'tree-item']],
   ['Styling', 'badge', ['badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
 ];
 const componentById = new Map(componentPages.map((page) => [page[0], page]));

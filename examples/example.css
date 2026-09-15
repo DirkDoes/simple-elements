@@ -45,7 +45,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-component-preview [data-component-preview] { display: grid; min-height: 8rem; place-items: center; padding: 1rem; }
 .demo-component-preview [data-preview-surface="gray"] { background: var(--se-bg); }
 .demo-component-preview [data-component-code] { width: 100%; min-width: 0; }
-.demo-component-preview [data-component-preview] > :is(se-code-editor, se-date-picker, se-datetime-picker, se-file-card, se-file-upload, se-folder-card, se-input, se-phone-input, se-project-card, se-range, se-select, se-time-picker, se-tree-item, se-wysiwyg) { width: min(100%, 32rem); }
+.demo-component-preview [data-component-preview] > :is(se-code-editor, se-date-picker, se-datetime-picker, se-file-card, se-file-upload, se-folder-card, se-input, se-phone-input, se-project-card, se-workspace-card, se-range, se-select, se-time-picker, se-tree-item, se-wysiwyg) { width: min(100%, 32rem); }
 .demo-component-preview[data-component="chat-context"] [data-component-preview] > se-chat-context { width: min(100%, 42rem); }
 .demo-component-preview .se-editor, .demo-component-preview .se-editor textarea { height: 4.25rem; min-height: 4.25rem; }
 .demo-component-preview[data-component="sidebar"] [data-component-preview] { display: flex; height: 28rem; align-items: stretch; justify-content: flex-start; padding: 1rem; overflow: hidden; }
@@ -189,3 +189,8 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-icon-card a { color: var(--se-primary-text); }
 
 .demo-icon-heading { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; }
+
+[data-component-preview][data-preview-surface="page"] { background: var(--se-bg); padding: 1.5rem; border-radius: var(--se-radius); }
+.demo-pattern-page[data-demo="workspaces"] .demo-pattern-preview-card,
+.demo-pattern-page[data-demo="file-system"] .demo-pattern-preview-card { background: var(--se-bg); }
+@media (max-width: 480px) { [data-component-preview][data-preview-surface="page"] { padding: 1rem; } }

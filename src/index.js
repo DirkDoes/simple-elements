@@ -5,6 +5,7 @@ import './components/text.js';
 import './components/title.js';
 import './components/card.js';
 import './components/project-card.js';
+import './components/workspace-card.js';
 import './components/folder-card.js';
 import './components/button.js';
 import './components/input.js';
