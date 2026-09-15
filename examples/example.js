@@ -17,7 +17,7 @@ const groups = [
   ['Page layout', 'panel-left-open', ['breadcrumbs', 'nav-tabs', 'profile', 'layout-brand', 'sidebar', 'sidebar-toggle', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'toast', 'tooltip']],
-  ['Chat', 'message-square', ['chat-context', 'chat-message', 'thought-train']],
+  ['Chat', 'message-square', ['comment', 'reactions', 'chat-context', 'chat-message', 'thought-train']],
   ['Composing', 'list', ['card', 'collection', 'empty-state', 'file-card', 'folder-card', 'list-header', 'list-row', 'project-card', 'workspace-card', 'tree-item']],
   ['Styling', 'badge', ['badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
 ];

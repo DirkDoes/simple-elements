@@ -98,3 +98,7 @@ The showcase’s **Patterns → Icon gallery** lists the 147 default icon names 
 - [Breadcrumbs](breadcrumbs.md)
 - [Navigation tabs](nav-tabs.md)
 - [Multi-scope navigation pattern](multi-scope-navigation.md)
+
+- [Comment](comment.md)
+- [Reactions](reactions.md)
+- [Comments pattern](comments.md)
