@@ -20,6 +20,9 @@ assert(double.querySelector('se-sidebar[variant="primary"]').collapsed,'Primary 
 assert(double.querySelector('se-sidebar[variant="secondary"]'),'Real secondary sidebar');
 double.querySelector('a[href="#org/members"]').click();
 assert(!double.querySelector('se-sidebar[variant="primary"]').collapsed,'Organization page expands primary');
+assert((double.querySelector('.mock-primary').getAnimations().length > 0) === !matchMedia('(prefers-reduced-motion: reduce)').matches,'Desktop sidebar animates on scope change');
+await Promise.all(double.querySelector('.mock-primary').getAnimations().map(animation=>animation.finished));
+
 assert(!double.querySelector('se-sidebar[variant="secondary"]'),'Organization page has no secondary');
 double.querySelector('a[href="#org/repositories"]').click();double.querySelector('.mock-projects a').click();
 frames[1].style.width='390px';await wait(()=>double.querySelector('dialog se-sidebar[variant="secondary"]'));

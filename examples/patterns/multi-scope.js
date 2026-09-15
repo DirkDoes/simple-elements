@@ -4,7 +4,27 @@ function scopeDemo(variant) {
     const contexts = [{ id: 'org', label: 'Acme organization', description: 'Organization · 24 members', icon: 'house' }, { id: 'web', label: 'Website', description: 'Repository · TypeScript', icon: 'code' }, { id: 'api', label: 'Platform API', description: 'Repository · Go', icon: 'database' }];
     const names = { org: 'Acme', web: 'Website', api: 'Platform API' };
     let activeRoute = '';
-    const navigate = next => { activeRoute = next.replace(/^#/, ''); route(); const heading = root.querySelector('.mock-page-heading'); heading.tabIndex = -1; heading.focus(); };
+    const navigate = next => {
+      const primary = root.querySelector('.mock-primary');
+      const previousWidth = primary?.getBoundingClientRect().width;
+      const previousSecondary = root.querySelector('.mock-sidebar')?.getBoundingClientRect().width || 0;
+      activeRoute = next.replace(/^#/, '');
+      route();
+      if (primary && !mobile.matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const current = root.querySelector('.mock-primary');
+        const sidebar = root.querySelector('.mock-sidebar');
+        const timing = { duration: 220, easing: 'ease-in-out' };
+        current.animate([{ width: `${previousWidth}px` }, { width: `${current.getBoundingClientRect().width}px` }], timing);
+        if (sidebar && !previousSecondary) {
+          sidebar.animate([{ width: '0px', opacity: 0, overflow: 'clip' }, { width: `${sidebar.getBoundingClientRect().width}px`, opacity: 1, overflow: 'clip' }], timing);
+        } else if (!sidebar && previousSecondary) {
+          root.querySelector('.mock-main').animate([{ marginLeft: `${previousSecondary}px` }, { marginLeft: '0px' }], timing);
+        }
+      }
+      const heading = root.querySelector('.mock-page-heading');
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+    };
     const mobile = matchMedia('(max-width: 767px)');
     let syncMobile = () => {};
     mobile.addEventListener('change', () => syncMobile());
