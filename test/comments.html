@@ -19,6 +19,12 @@ for(const example of commentsPattern.examples){
  comment.querySelector('textarea').value='<img src=x onerror=alert(1)>';comment.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));assert(comment.replies.children.length===before+1,'Reply appended to parent');await wait(()=>comment.replies.lastElementChild.querySelector('.se-comment__body'));assert(!comment.replies.lastElementChild.querySelector('img'),'Reply text is escaped');
  if(doc.querySelector('[data-resolve]')){doc.querySelector('[data-resolve]').click();assert(doc.querySelector('[data-resolve]').getAttribute('aria-pressed')==='true','Resolve works');}
 }
+assert(!commentsPattern.isolated,'Comments use a normal pattern page');
+for(const example of commentsPattern.examples){
+ const preview=document.createElement('div');preview.innerHTML=example.markup;document.body.append(preview);commentsPattern.initialize(preview);
+ await wait(()=>preview.querySelector('.se-comment__reply'));
+ preview.querySelector('.se-comment__reply').click();assert(preview.querySelector('form textarea'),'Inline example replies initialize independently');
+}
 document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: reactions, nested replies, safe text, document resolution';
 }catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack;}
 </script></body></html>
