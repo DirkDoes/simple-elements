@@ -15,4 +15,6 @@ These layouts are optional compositions: an application can use one sidebar plus
 
 Preview pages intentionally contain only navigation, project cards, and a page label. Dashboard statistics, sample lists, profiles, settings forms, and fake save actions are omitted.
 
-Breadcrumbs in this pattern represent scopes only (`Acme / Website`), never the selected navigation page. They are hidden at the organization level, where only one scope exists. These are application conventions, not restrictions of `se-breadcrumbs`.
+Breadcrumbs in this pattern represent scopes only (`Acme / Website`), never the selected navigation page. Content breadcrumbs are hidden at the organization level, where only one scope exists. The Contextual sidebar example instead uses header breadcrumbs, which remain visible with one scope, beside an always-compact layout brand. These are application conventions, not restrictions of `se-breadcrumbs`.
+
+The code snippet includes the navigation layout CSS and route JavaScript needed inside the viewport. The showcase alone manages the viewport selector, iframe size/scaling, and theme synchronization; those host controls are not included in the snippet. The preview executes the displayed code.

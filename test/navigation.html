@@ -24,6 +24,7 @@ for(const frame of frames){
  await wait(()=>doc.querySelector('.mock-projects a'));
  doc.querySelector('.mock-projects a[href="#api/overview"]').click();
  assert(doc.querySelector('.mock-page-heading').textContent.includes('Platform API'),'Project card changes scope');
+ if(frame===frames[0]){assert(doc.querySelector('se-topbar se-breadcrumbs[variant="header"]'),'Contextual breadcrumbs in header');assert(doc.querySelector('se-layout-brand[compact]'),'Contextual brand compact');assert(!doc.querySelector('main se-breadcrumbs'),'No duplicate breadcrumbs');}
  doc.querySelector('se-nav-tabs a[href="#api/settings"]').click();
  assert(doc.querySelector('.mock-page-heading').textContent.includes('Settings'),'Page navigation works');
  assert(!doc.querySelector('se-breadcrumbs').hidden,'Two scopes show breadcrumbs');
@@ -31,11 +32,14 @@ for(const frame of frames){
  assert(doc.querySelector('se-breadcrumbs').textContent.includes('Platform API'),'Breadcrumbs show current scope');
  doc.querySelector('se-breadcrumbs a').click();
  assert(doc.querySelector('.mock-projects'),'Breadcrumb returns to directory');
- assert(doc.querySelector('se-breadcrumbs').hidden,'Single scope hides breadcrumbs');
+ assert(doc.querySelector('se-breadcrumbs').hidden === (frame !== frames[0]),'Header shows single scope; content breadcrumbs hide it');
+ if(frame===frames[0])assert(doc.querySelector('se-layout-brand[compact]'),'Header brand stays compact at organization level');
 }
 const double=frames[1].contentDocument;
 await wait(()=>double.querySelector('.mock-projects a'));double.querySelector('.mock-projects a').click();
 assert(double.querySelector('.mock-primary').collapsed,'Primary collapses');
+assert(double.querySelector('main se-breadcrumbs'),'Rail keeps content breadcrumbs');
+assert(!double.querySelector('se-layout-brand[compact]'),'Rail keeps full brand');
 await Promise.all(double.querySelector('.mock-primary').getAnimations().map(a=>a.finished));
 frames[1].style.width='390px';
 await wait(()=>double.querySelector('#scope-navigation').closed);

@@ -40,18 +40,18 @@ function scopeDemo(variant) {
       root.innerHTML = `<div class="mock-shell">
         ${variant === 'rail' ? `<se-sidebar variant="primary" class="mock-primary" layout-mode="desktop-only" ${secondary ? 'collapsed' : ''}><section>${organization}</section></se-sidebar>` : ''}
         <div class="mock-frame">
-          <se-topbar>${variant !== 'top' ? '<se-sidebar-toggle for="scope-navigation" layout-mode="mobile-only"></se-sidebar-toggle>' : ''}<se-layout-brand label="Acme" icon="box"></se-layout-brand></se-topbar>
+          <se-topbar>${variant !== 'top' ? '<se-sidebar-toggle for="scope-navigation" layout-mode="mobile-only"></se-sidebar-toggle>' : ''}<se-layout-brand label="Acme" icon="box" ${variant === 'sidebar' ? 'compact' : ''}></se-layout-brand>${variant === 'sidebar' ? '<se-breadcrumbs variant="header"></se-breadcrumbs>' : ''}</se-topbar>
           <div class="mock-body">
             ${variant === 'sidebar' || secondary ? `<se-sidebar variant="secondary" class="mock-sidebar" layout-mode="desktop-only"><section>${current}</section></se-sidebar>` : ''}
             ${variant !== 'top' ? `<se-sidebar id="scope-navigation" class="mock-mobile" layout-mode="responsive"><section>${variant === 'rail' ? organization + (repo ? current : '') : current}</section></se-sidebar>` : ''}
-            <main class="mock-main"><se-breadcrumbs></se-breadcrumbs><div class="mock-page-heading"><se-title level="page">${page === 'Overview' ? names[scope] : page}</se-title></div><se-nav-tabs variant="${variant === 'top' ? 'pill' : 'underline'}"></se-nav-tabs><div class="mock-content"></div></main>
+            <main class="mock-main">${variant !== 'sidebar' ? '<se-breadcrumbs></se-breadcrumbs>' : ''}<div class="mock-page-heading"><se-title level="page">${page === 'Overview' ? names[scope] : page}</se-title></div><se-nav-tabs variant="${variant === 'top' ? 'pill' : 'underline'}"></se-nav-tabs><div class="mock-content"></div></main>
           </div>
         </div>
       </div>`;
       const scopes = [{ label: 'Acme', href: '#org/repositories' }, ...(repo ? [{ label: names[scope] }] : [])];
       const breadcrumbs = root.querySelector('se-breadcrumbs');
       breadcrumbs.options = scopes;
-      breadcrumbs.hidden = scopes.length < 2;
+      breadcrumbs.hidden = variant !== 'sidebar' && scopes.length < 2;
       const tabs = root.querySelector('se-nav-tabs');
       tabs.options = pages.map(p => ({ id: p, label: p, href: path(p) })); tabs.value = page;
       const content = root.querySelector('.mock-content');
@@ -68,6 +68,7 @@ function scopeDemo(variant) {
 const scopeStyles = `
 .mock-shell{display:flex;height:100%;background:var(--se-bg)}
 .mock-frame{display:flex;flex:1;min-width:0;flex-direction:column}
+.mock-frame>se-topbar>se-layout-brand[compact]{width:auto;flex:none}
 .mock-body{position:relative;display:flex;flex:1;min-height:0}
 .mock-primary,.mock-sidebar{--se-sidebar-width:244px}
 .mock-main{flex:1;min-width:0;padding:20px;overflow:auto}
