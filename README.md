@@ -69,3 +69,5 @@ The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates th
 Component icon inputs support Lucide names, external SVGs, and foreground-aware light/dark artwork with optional color preservation. See [icons](./docs/icon.md).
 
 Need every Lucide icon? Import `simple-elements/icons/all` after the components, or load `dist/icons-all.js` after the browser bundle. The [icon guide](./docs/icon.md#default-and-full-lucide-sets) also covers individual registration. Browse the showcase’s **Patterns → Icon gallery** to search and copy icon names.
+
+For original, brand-colored empty-state artwork, use [`se-empty-illustration`](./docs/empty-illustration.md). Its 21 variants adapt to light and dark mode from a single SVG per illustration.

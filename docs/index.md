@@ -65,6 +65,7 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 - [Thought train](thought-train.md)
 - [Badge](badge.md)
 - [Empty state](empty-state.md)
+- [Empty illustration](empty-illustration.md)
 
 ## Navigation
 

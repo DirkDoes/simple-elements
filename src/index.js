@@ -36,6 +36,7 @@ import './components/sidebar-button.js';
 import './components/sidebar-group.js';
 import './components/topbar.js';
 import './components/empty-state.js';
+import './components/empty-illustration.js';
 import './components/code.js';
 import './components/blockquote.js';
 import './components/markdown.js';

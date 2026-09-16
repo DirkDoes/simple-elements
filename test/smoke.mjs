@@ -12,6 +12,9 @@ import { icons as lucideIcons } from 'lucide';
 const workspaceCheck = spawnSync(process.execPath, ['test/workspace-card.mjs'], { encoding: 'utf8' });
 assert.equal(workspaceCheck.status, 0, workspaceCheck.stderr);
 
+const illustrationCheck = spawnSync(process.execPath, ['test/empty-illustration.mjs'], { encoding: 'utf8' });
+assert.equal(illustrationCheck.status, 0, illustrationCheck.stderr);
+
 const components = (await readdir('src/components')).filter((file) => file.endsWith('.js'));
 const examplePages = (await readdir('examples')).filter((file) => file.endsWith('.html'));
 const entry = await readFile('src/index.js', 'utf8');

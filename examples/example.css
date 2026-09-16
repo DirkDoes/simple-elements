@@ -202,3 +202,5 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .comment-demo{max-width:800px;margin:auto;padding:16px;color:var(--se-text);font-family:var(--se-font)}.comment-list{display:grid;gap:28px;margin-top:28px}.blog-article{padding-bottom:28px;border-bottom:1px solid var(--se-border);margin-bottom:28px}.blog-meta{margin:16px 0 28px}@media(max-width:480px){.comment-demo{padding:20px 16px}}
 
 .comment-resolve { display: block; margin-top: 20px; }
+
+.demo-component-preview[data-component="empty-illustration"] [data-component-preview] > se-empty-illustration { width: 100%; --se-illustration-width: 36rem; }

@@ -6,6 +6,7 @@ const files = [
   'src/helpers.js',
   'src/theme.js',
   'src/icon-names.js',
+  'src/illustrations.js',
   'src/syntax.js',
   'src/native-input.js',
   'src/choice.js',

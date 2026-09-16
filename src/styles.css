@@ -753,6 +753,10 @@ se-topbar > [data-mobile-search] { display: none; }
 [data-theme="dark"] .se-file--important .se-file__icon, [data-theme="dark"] .se-folder-card--important .se-folder-card__icon { color: var(--se-important); background: var(--se-important-soft); }
 
 se-empty-state { display: block; }
+se-empty-illustration { display: block; min-width: 0; }
+.se-empty-illustration__art { width: min(100%, var(--se-illustration-width, 24rem)); margin-bottom: 1rem; }
+.se-empty-illustration__art:only-child { margin-bottom: 0; }
+.se-empty-illustration__art svg { display: block; width: 100%; height: auto; }
 .se-empty-state { display: grid; justify-items: center; padding: 3rem 1.5rem; color: var(--se-text); text-align: center; }
 .se-empty-state__icon { display: grid; width: 3rem; height: 3rem; margin-bottom: 1rem; place-items: center; border-radius: 50%; }
 .se-empty-state__icon se-icon { width: 1.5rem; height: 1.5rem; }
