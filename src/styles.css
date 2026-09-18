@@ -1052,3 +1052,17 @@ se-breadcrumbs[variant="header"] .se-breadcrumbs { font-size: 1rem; font-weight:
 se-breadcrumbs[variant="header"] .se-breadcrumbs a,
 se-breadcrumbs[variant="header"] .se-breadcrumbs [aria-current] { padding: .5rem .625rem; }
 se-breadcrumbs[variant="header"] .se-breadcrumbs__separator { font-weight: 400; }
+
+se-pagination { display: block; min-width: 0; container-type: inline-size; }
+.se-pagination { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: .25rem; font-family: var(--se-font); }
+.se-pagination > .se-button { width: auto; flex-shrink: 0; }
+.se-pagination__pages { display: flex; align-items: center; gap: .25rem; }
+.se-pagination__pages .se-button { width: auto; min-width: 2.5rem; padding-inline: .625rem; }
+.se-pagination__ellipsis { display: grid; min-width: 2rem; place-items: center; color: var(--se-muted); }
+.se-pagination__status { display: none; color: var(--se-muted); font-size: .8125rem; text-align: center; }
+@container (max-width: 32rem) {
+  .se-pagination { justify-content: space-between; }
+  .se-pagination__pages, .se-pagination__direction { display: none; }
+  .se-pagination__status { display: block; }
+  .se-pagination > .se-button { padding-inline: .75rem; }
+}

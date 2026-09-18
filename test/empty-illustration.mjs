@@ -50,3 +50,5 @@ assert.deepEqual(Object.keys(emptyIllustrations).sort(), ["analytics","files","f
 
 assert.deepEqual(Object.keys(emptyIllustrations), Object.keys(emptyIllustrations).sort());
 assert.equal(render({}).innerHTML, render({variant:'start'}).innerHTML);
+
+assert.match(render({title: 'No projects yet'}).innerHTML, /class="se-empty-state se-empty-illustration" title=""/, 'Suppress inherited native tooltip while keeping the title attribute as component input');

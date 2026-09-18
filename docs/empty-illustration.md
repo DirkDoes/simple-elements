@@ -80,3 +80,5 @@ se-empty-illustration {
 ```
 
 The regular component bundle includes all 21 illustrations. Apps importing individual component modules can omit this component to omit its artwork entirely. The existing `se-empty-state` remains unchanged and uses the standard icon set.
+
+The `title` attribute supplies the visible heading only; the illustration suppresses the browser’s native hover tooltip.

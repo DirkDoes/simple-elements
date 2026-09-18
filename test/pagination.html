@@ -1,0 +1,62 @@
+<!doctype html><html data-se-theme="flat" data-theme="light"><meta charset="utf-8">
+<link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css">
+<script defer src="../dist/simple-elements.js"></script>
+<body><pre id="result">Running…</pre><div id="fixture" style="width:700px"></div>
+<script type="module">
+const assert = (condition, message) => { if (!condition) throw Error(message); };
+try {
+  await customElements.whenDefined('se-pagination');
+  const fixture = document.getElementById('fixture');
+  fixture.innerHTML = '<se-pagination pages="12" page="4"></se-pagination>';
+  const pagination = fixture.firstElementChild;
+  let events = 0, detail;
+  fixture.addEventListener('change', event => { events++; detail = event.detail; });
+  assert(pagination.querySelector('[aria-current]').textContent === '4', 'Current page');
+  pagination.querySelector('[data-page="5"]').click();
+  assert(pagination.page === 5 && events === 1 && detail.page === 5 && detail.pages === 12, 'Bubbling user change');
+  pagination.querySelector('[aria-current]').click();
+  assert(events === 1, 'Current page is a no-op');
+  pagination.pages = 2;
+  assert(pagination.page === 2 && events === 1, 'Shrinking pages clamps without emitting change');
+  pagination.page = 1;
+  assert(pagination.querySelector('[data-pagination-action="previous"]').disabled, 'First boundary');
+  const next = pagination.querySelector('[data-pagination-action="next"]'); next.focus(); next.click();
+  assert(pagination.page === 2 && pagination.querySelector('[data-pagination-action="next"]').disabled, 'Last boundary');
+  assert(pagination.contains(document.activeElement), 'Focus survives navigation');
+  pagination.setAttribute('disabled', '');
+  assert([...pagination.querySelectorAll('button')].every(button => button.disabled), 'Disabled navigation');
+  const disabledEvents = events; pagination.querySelector('[data-page="1"]').click();
+  assert(events === disabledEvents, 'Disabled buttons emit nothing');
+  pagination.removeAttribute('disabled');
+  for (const value of ['NaN', 'Infinity', '-2', '0', '2.5', '9007199254740992']) {
+    pagination.pages = value; pagination.page = value;
+    assert(pagination.pages === 1 && pagination.page === 1, 'Invalid integers fall back to 1');
+  }
+  for (const count of [1, 2, 5, 7, 12, 1000, Number.MAX_SAFE_INTEGER]) {
+    pagination.pages = count;
+    for (const page of [1, Math.ceil(count / 2), count]) {
+      pagination.page = page;
+      const numbers = [...pagination.querySelectorAll('.se-pagination__pages button')].map(button => Number(button.dataset.page));
+      assert(numbers.includes(1) && numbers.includes(count) && numbers.includes(page), 'Range contains first, last, and current');
+      assert(numbers.length <= 7 && new Set(numbers).size === numbers.length, 'Bounded unique range');
+      assert(numbers.every((number,index) => index === 0 || number > numbers[index-1]), 'Sorted range');
+    }
+  }
+  pagination.pages = 12; pagination.page = 4;
+  pagination.setAttribute('label', '<Results> & pages');
+  assert(pagination.querySelector('nav').getAttribute('aria-label') === '<Results> & pages', 'Escaped accessible label');
+  for (const theme of ['flat', 'clean', 'studio', 'edge']) for (const mode of ['light', 'dark']) {
+    document.documentElement.dataset.seTheme = theme; document.documentElement.dataset.theme = mode;
+    assert(getComputedStyle(pagination.querySelector('[aria-current]')).backgroundColor !== getComputedStyle(pagination.querySelector('[data-page="1"]')).backgroundColor, 'Selected page is distinct');
+  }
+  fixture.style.width = '280px';
+  assert(getComputedStyle(pagination.querySelector('.se-pagination__pages')).display === 'none', 'Compact container hides numbers');
+  assert(getComputedStyle(pagination.querySelector('.se-pagination__status')).display !== 'none', 'Compact container shows page status');
+  assert(fixture.scrollWidth === fixture.clientWidth, 'No mobile overflow');
+  pagination.page = 2;
+  const previous = pagination.querySelector('[data-pagination-action="previous"]'); previous.focus(); previous.click();
+  assert(pagination.page === 1 && document.activeElement === pagination.querySelector('[data-pagination-action="next"]'), 'Compact boundary preserves visible focus');
+  document.getElementById('result').textContent = 'Passed: ranges, input validation, events, boundaries, disabled controls, keyboard focus, 8 theme/mode combinations, and narrow containers.';
+  document.documentElement.dataset.test = 'passed';
+} catch (error) { document.getElementById('result').textContent = error.stack; document.documentElement.dataset.test = 'failed'; }
+</script></body></html>

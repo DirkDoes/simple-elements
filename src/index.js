@@ -54,6 +54,7 @@ import './components/datetime-picker.js';
 
 import './components/breadcrumbs.js';
 import './components/nav-tabs.js';
+import './components/pagination.js';
 
 import './components/reactions.js';
 import './components/comment.js';

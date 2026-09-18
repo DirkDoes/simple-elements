@@ -204,3 +204,5 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .comment-resolve { display: block; margin-top: 20px; }
 
 .demo-component-preview[data-component="empty-illustration"] [data-component-preview] > se-empty-illustration { width: 100%; --se-illustration-width: 36rem; }
+
+.demo-component-preview[data-component="pagination"] [data-component-preview] > se-pagination { width: 100%; }

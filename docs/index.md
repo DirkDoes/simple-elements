@@ -69,6 +69,8 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 
 ## Navigation
 
+- [Pagination](pagination.md)
+
 - [Sidebar](sidebar.md)
 - [Sidebar toggle](sidebar-toggle.md)
 - [Layout brand](layout-brand.md)
