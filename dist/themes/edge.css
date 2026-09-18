@@ -33,7 +33,7 @@
 :root[data-se-theme="edge"] .se-title--page { font-weight: 800; letter-spacing: -.04em; }
 :root[data-se-theme="edge"] .se-title--sidebar { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; }
 :root[data-se-theme="edge"] :is(se-sidebar, .se-sidebar) { background: var(--se-surface-soft); }
-:root[data-se-theme="edge"] se-sidebar-button[active] .se-sidebar-button { color: var(--se-primary-contrast); background: var(--se-primary); font-weight: 700; }
+:root[data-se-theme="edge"] se-sidebar-button[active] .se-sidebar-button, :root[data-se-theme="edge"] :is(se-sidebar-group[variant="page"][active], se-sidebar-group[collapsed]:has(se-sidebar-button[active], se-sidebar-group[variant="page"][active])) > .se-sidebar-group__head > :first-child { color: var(--se-primary-contrast); background: var(--se-primary); font-weight: 700; }
 :root[data-se-theme="edge"] :is(.se-workspace-card:hover:not(:disabled), .se-project-card:hover:not(:disabled), .se-folder-card:hover:not(:disabled), .se-file:has(button.se-file__main):hover) { transform: none; box-shadow: 3px 3px 0 var(--se-border); border-color: var(--se-border-strong); }
 :root[data-se-theme="edge"] .se-project-card__banner { background: var(--se-surface-soft); color: var(--se-primary-text); }
 :root[data-se-theme="edge"] .se-select__option[aria-selected="true"] { box-shadow: none; background: var(--se-primary-soft); color: var(--se-primary-text); }

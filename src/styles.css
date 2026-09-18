@@ -676,8 +676,8 @@ se-sidebar-button { display: block; }
 .se-sidebar-button { display: flex; align-items: center; gap: .75rem; width: 100%; margin: .125rem 0; padding: .625rem .75rem; color: var(--se-muted); background: transparent; border: 0; border-radius: .5rem; cursor: pointer; font: 500 .875rem/1.25rem var(--se-font); text-align: left; text-decoration: none; }
 .se-sidebar-button se-icon { width: 1.25rem; height: 1.25rem; flex: 0 0 auto; }
 se-sidebar-button:not([active]) .se-sidebar-button:hover:not(:disabled) { color: var(--se-text); background: var(--se-surface-soft); }
-se-sidebar-button[active] .se-sidebar-button { color: var(--se-primary); background: var(--se-primary-soft); }
-[data-theme="dark"] se-sidebar-button[active] .se-sidebar-button { color: color-mix(in srgb, white 90%, var(--se-primary)); }
+se-sidebar-button[active] .se-sidebar-button, :is(se-sidebar-group[variant="page"][active], se-sidebar-group[collapsed]:has(se-sidebar-button[active], se-sidebar-group[variant="page"][active])) > .se-sidebar-group__head > :first-child { color: var(--se-primary); background: var(--se-primary-soft); }
+[data-theme="dark"] se-sidebar-button[active] .se-sidebar-button, [data-theme="dark"] :is(se-sidebar-group[variant="page"][active], se-sidebar-group[collapsed]:has(se-sidebar-button[active], se-sidebar-group[variant="page"][active])) > .se-sidebar-group__head > :first-child { color: color-mix(in srgb, white 90%, var(--se-primary)); }
 .se-sidebar-button:disabled { opacity: .5; cursor: not-allowed; }
 se-sidebar-group { display: block; }
 .se-sidebar-group__head { display: flex; align-items: stretch; }
@@ -687,6 +687,7 @@ se-sidebar-group { display: block; }
 .se-sidebar-group__head se-icon { width: 1.125rem; height: 1.125rem; flex: 0 0 auto; }
 .se-sidebar-group__head span { min-width: 0; flex: 1; }
 .se-sidebar-group__head strong { display: block; }
+:is(se-sidebar-group[variant="page"], se-sidebar-group[collapsed]:has(se-sidebar-button[active], se-sidebar-group[variant="page"][active])) > .se-sidebar-group__head strong { font-weight: inherit; }
 .se-sidebar-group__label { display: block; padding: .5rem .75rem .25rem; color: var(--se-faint); font-size: .6875rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .se-sidebar-group__head button > se-icon:last-child { transition: transform .2s; }
 se-sidebar-group[collapsed] .se-sidebar-group__head button > se-icon:last-child { transform: rotate(-90deg); }

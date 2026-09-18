@@ -21,7 +21,7 @@
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) .se-button--secondary:hover:not(:disabled) { background: var(--se-border); filter: none; }
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) .se-segmented__options { border-color: transparent; }
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) .se-theme--button button { border-color: transparent; box-shadow: none; }
-:root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) se-sidebar-button[active] .se-sidebar-button { box-shadow: none; font-weight: 700; }
+:root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) se-sidebar-button[active] .se-sidebar-button, :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(se-sidebar-group[variant="page"][active], se-sidebar-group[collapsed]:has(se-sidebar-button[active], se-sidebar-group[variant="page"][active])) > .se-sidebar-group__head > :first-child { box-shadow: none; font-weight: 700; }
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) .se-select__option[aria-selected="true"] { box-shadow: none; }
 
 /* Overlays keep their boundary; their surface color supplies the elevation. */

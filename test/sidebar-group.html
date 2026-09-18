@@ -1,0 +1,97 @@
+<!doctype html>
+<html data-theme="light" data-se-theme="flat">
+<meta charset="utf-8">
+<link rel="stylesheet" href="../dist/styles.css">
+<link rel="stylesheet" href="../dist/themes/studio.css">
+<link rel="stylesheet" href="../dist/themes/edge.css">
+<script defer src="../dist/simple-elements.js"></script>
+<body><pre id="result">Running...</pre><div id="fixtures" style="width:280px"></div>
+<script type="module">
+import { patternCatalog } from '../examples/catalog.js';
+const assert = (ok, message) => { if (!ok) throw Error(message); };
+try {
+  await customElements.whenDefined('se-sidebar-group');
+  const fixtures = document.getElementById('fixtures');
+  fixtures.innerHTML = '<se-sidebar-button active label="Normal" icon="folder"></se-sidebar-button><se-sidebar-group variant="page" active label="Group" icon="folder"><se-sidebar-button label="Child"></se-sidebar-button></se-sidebar-group>';
+  const group = fixtures.querySelector('se-sidebar-group');
+  const heading = group.querySelector('.se-sidebar-group__head > :first-child');
+  const toggle = group.querySelector('.se-sidebar-group__head > :last-child');
+  const normal = fixtures.querySelector('.se-sidebar-button');
+  assert(heading.tagName === 'BUTTON', 'No href renders a native button');
+  const before = location.href;
+  heading.click();
+  assert(location.href === before && !group.collapsed, 'Page activation neither navigates nor collapses');
+  toggle.click();
+  assert(group.collapsed && toggle.getAttribute('aria-expanded') === 'false', 'Disclosure remains independent');
+  assert(!heading.hasAttribute('aria-expanded'), 'Page heading is not a disclosure');
+  group.collapsed = false;
+  for (const theme of ['flat', 'clean', 'studio', 'edge']) for (const mode of ['light', 'dark']) {
+    document.documentElement.dataset.seTheme = theme;
+    document.documentElement.dataset.theme = mode;
+    for (const property of ['color', 'backgroundColor', 'boxShadow', 'fontWeight', 'borderRadius']) {
+      assert(getComputedStyle(heading)[property] === getComputedStyle(normal)[property], `${theme}/${mode}: ${property} matches a selected sidebar button`);
+    }
+    assert(getComputedStyle(group.querySelector('.se-sidebar-button')).backgroundColor !== getComputedStyle(heading).backgroundColor, 'Parent selection does not highlight children');
+  }
+  assert(heading.getAttribute('aria-current') === 'page', 'Initial active accessibility state');
+  group.removeAttribute('active');
+  assert(!heading.hasAttribute('aria-current'), 'Removing active clears accessibility state');
+  group.setAttribute('active', '');
+  assert(heading.getAttribute('aria-current') === 'page', 'Setting active updates accessibility state');
+  const link = document.createElement('se-sidebar-group');
+  link.setAttribute('variant', 'page'); link.setAttribute('href', '/dossiers'); link.setAttribute('active', ''); fixtures.append(link);
+  assert(link.querySelector('a[aria-current="page"]').getAttribute('href') === '/dossiers', 'Explicit href remains a link');
+  for (const variant of ['group', 'page']) {
+    const parent = document.createElement('se-sidebar-group');
+    parent.setAttribute('variant', variant);
+    parent.innerHTML = '<se-sidebar-group label="Nested"><se-sidebar-button active label="Selected child"></se-sidebar-button></se-sidebar-group>';
+    fixtures.append(parent);
+    const parentHeading = parent.querySelector('.se-sidebar-group__head > :first-child');
+    const selectedChild = parent.querySelector('se-sidebar-button');
+    for (const theme of ['flat', 'clean', 'studio', 'edge']) for (const mode of ['light', 'dark']) {
+      document.documentElement.dataset.seTheme = theme;
+      document.documentElement.dataset.theme = mode;
+      parent.collapsed = true;
+      for (const property of ['color', 'backgroundColor', 'boxShadow', 'fontWeight', 'borderRadius']) assert(getComputedStyle(parentHeading)[property] === getComputedStyle(normal)[property], variant + ': collapsed parent matches selected styling for ' + property);
+      assert(!parent.hasAttribute('active') && !parentHeading.hasAttribute('aria-current'), 'Indirect highlight does not claim current page');
+      parent.collapsed = false;
+      assert(getComputedStyle(parentHeading).backgroundColor !== getComputedStyle(normal).backgroundColor, 'Expanding removes indirect highlight');
+      parent.collapsed = true;
+      selectedChild.removeAttribute('active');
+      assert(getComputedStyle(parentHeading).backgroundColor !== getComputedStyle(normal).backgroundColor, 'Removing descendant selection clears highlight');
+      selectedChild.setAttribute('active', '');
+    }
+    selectedChild.removeAttribute('active');
+    const nested = parent.querySelector('se-sidebar-group'); nested.setAttribute('variant', 'page'); nested.setAttribute('active', '');
+    assert(getComputedStyle(parentHeading).backgroundColor === getComputedStyle(normal).backgroundColor, 'Active nested page group also highlights collapsed ancestor');
+    parent.remove();
+  }
+  const example = patternCatalog.find(p => p.tag === 'page-layout').examples.find(e => e.title === 'Application sidebar');
+  const frame = document.createElement('iframe'); frame.style.cssText = 'width:1024px;height:700px';
+  const loaded = new Promise(resolve => frame.onload = resolve);
+  frame.srcdoc = `<html><head><link rel="stylesheet" href="${new URL('../dist/styles.css',location.href)}"><script defer src="${new URL('../dist/simple-elements.js',location.href)}"><\/script></head><body>${example.markup}</body></html>`;
+  document.body.append(frame); await loaded;
+  const doc = frame.contentDocument;
+  const nav = doc.querySelector('#application-sidebar');
+  const page = nav.querySelector('se-sidebar-group');
+  const title = doc.querySelector('main > se-title');
+  const frameUrl = frame.contentWindow.location.href;
+  const settings = nav.querySelector('[data-page="Settings"]');
+  settings.querySelector('button').click();
+  assert(settings.hasAttribute('active') && !page.hasAttribute('active') && title.textContent === 'Settings', 'Example selects a regular page');
+  page.querySelector('.se-sidebar-group__head > :first-child').click();
+  assert(page.hasAttribute('active') && !settings.hasAttribute('active') && title.textContent === 'Dossiers', 'Example selects the group page');
+  page.querySelector('.se-sidebar-group__head > :last-child').click();
+  assert(page.hasAttribute('active') && page.collapsed, 'Example disclosure preserves selection');
+  page.collapsed = false;
+  const child = nav.querySelector('[data-page="Project Atlas"]'); child.querySelector('button').click();
+  assert(child.hasAttribute('active') && !page.hasAttribute('active'), 'Example child selection clears parent selection');
+  assert(frame.contentWindow.location.href === frameUrl, 'Example never redirects');
+  document.getElementById('result').textContent = 'Passed: native controls, active styling across 8 theme/mode combinations, ARIA updates, and local example navigation.';
+  document.documentElement.dataset.test = 'passed';
+} catch (error) {
+  document.getElementById('result').textContent = error.stack;
+  document.documentElement.dataset.test = 'failed';
+}
+</script>
+</body></html>

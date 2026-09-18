@@ -119,7 +119,7 @@ assert.match(componentStyles, /\.se-button--link \{[^}]*color: var\(--se-primary
 assert.match(componentStyles, /se-sidebar-button:not\(\[active\]\) \.se-sidebar-button:hover/, 'active sidebar buttons must ignore hover styling');
 assert.match(componentStyles, /\[data-theme="dark"\] \.se-select__option\[aria-selected="true"\][^{]*\{ color: color-mix\(in srgb, white 90%, var\(--se-primary\)\)/, 'dark selected options need brand-tinted near-white text');
 assert.match(componentStyles, /\[data-theme="dark"\] \.se-select__option:not\(\[aria-selected="true"\]\):not\(:disabled\):hover \{ color: var\(--se-text\); background: var\(--se-surface-soft\)/, 'dark option hover must match sidebar hover');
-assert.match(componentStyles, /\[data-theme="dark"\] se-sidebar-button\[active\] \.se-sidebar-button \{ color: color-mix\(in srgb, white 90%, var\(--se-primary\)\)/, 'dark active sidebar buttons need brand-tinted near-white text');
+assert.match(componentStyles, /\[data-theme="dark"\] se-sidebar-button\[active\] \.se-sidebar-button[^{}]*\{ color: color-mix\(in srgb, white 90%, var\(--se-primary\)\)/, 'dark active sidebar buttons need brand-tinted near-white text');
 assert.match(componentStyles, /\.se-button--link:hover \{[^}]*text-decoration: underline/, 'link buttons must underline on hover');
 assert.match(componentStyles, /\.se-button \{[^}]*width: 100%/, 'buttons must fill stretched hosts');
 assert.match(componentStyles, /\.se-profile strong, \.se-profile small \{[^}]*text-overflow: ellipsis/, 'profile text must truncate in narrow containers');
