@@ -183,7 +183,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-icon-tools label { display: grid; gap: .5rem; flex: 1; min-width: 12rem; }
 .demo-icon-card { margin-top: 1.5rem; }
 .demo-icon-card .demo-icon-tools { margin-top: 0; }
-.demo-icon-gallery { display: grid; grid-template-columns: repeat(auto-fill, 2.5rem); gap: .75rem; }
+.demo-icon-gallery { display: grid; grid-template-columns: repeat(auto-fill, 2.5rem); justify-content: space-between; gap: .75rem; }
 
 .demo-icon-card > se-text, .demo-icon-card > se-code { margin-top: 1rem; }
 .demo-icon-card a { color: var(--se-primary-text); }

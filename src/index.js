@@ -58,3 +58,6 @@ import './components/pagination.js';
 
 import './components/reactions.js';
 import './components/comment.js';
+
+import './components/spinner.js';
+import './components/progress-ring.js';

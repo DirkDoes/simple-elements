@@ -1,0 +1,46 @@
+<!doctype html><html data-theme="light" data-se-theme="flat"><meta charset="utf-8">
+<link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css">
+<script defer src="../dist/simple-elements.js"></script>
+<body><pre id="result">Running…</pre><div id="fixtures"></div>
+<script type="module">
+const assert = (condition, message) => { if (!condition) throw Error(message); };
+try {
+  await customElements.whenDefined('se-progress-ring');
+  const fixtures = document.getElementById('fixtures');
+  fixtures.innerHTML = '<se-spinner></se-spinner><se-progress-ring value="82" label="Confidence" show-value></se-progress-ring>';
+  const spinner = fixtures.querySelector('se-spinner'), ring = fixtures.querySelector('se-progress-ring');
+  for (const variant of ['ring', 'dots', 'bars']) {
+    spinner.setAttribute('variant', variant);
+    assert(spinner.querySelector('.se-spinner--' + variant), 'Spinner variant');
+    assert(spinner.querySelectorAll('i').length === (variant === 'ring' ? 1 : 3), 'Correct animation elements');
+  }
+  spinner.setAttribute('variant', '<bad>'); spinner.setAttribute('label', '<Loading> & saving');
+  assert(spinner.querySelector('.se-spinner--ring'), 'Unknown variant fallback');
+  assert(spinner.querySelector('[role="status"]').getAttribute('aria-label') === '<Loading> & saving', 'Safe spinner label');
+  const meter = ring.querySelector('[role="meter"]'), tooltip = ring.querySelector('[role="tooltip"]');
+  assert(meter.getAttribute('aria-valuenow') === '82' && tooltip.textContent === 'Confidence: 82%', 'Value and automatic tooltip');
+  assert(meter.getAttribute('aria-describedby') === tooltip.id, 'Tooltip association');
+  meter.focus();
+  ring.value = 94.5;
+  assert(document.activeElement === meter && tooltip.textContent === 'Confidence: 94.5%', 'Live update retains focus and updates tooltip');
+  assert(ring.querySelector('.se-progress-ring__text').textContent === '94.5%', 'Visible value');
+  ring.removeAttribute('show-value'); assert(ring.querySelector('.se-progress-ring__text').hidden, 'Value label optional');
+  ring.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true})); assert(tooltip.hidden, 'Escape dismisses tooltip');
+  ring.dispatchEvent(new Event('pointerenter')); assert(!tooltip.hidden, 'Tooltip can reopen');
+  for (const [input, expected] of [[-5,0],[150,100],['bad',0],['Infinity',0],[42.75,42.75]]) { ring.value=input; assert(ring.value===expected && Number(meter.getAttribute('aria-valuenow'))===expected, 'Value normalization'); }
+  ring.setAttribute('label','<Confidence> & completion'); assert(tooltip.textContent.startsWith('<Confidence> & completion:'), 'Safe live label');
+  const color = () => getComputedStyle(ring.querySelector('.se-progress-ring__value')).stroke;
+  for (const theme of ['flat','clean','studio','edge']) for (const mode of ['light','dark']) {
+    document.documentElement.dataset.seTheme=theme; document.documentElement.dataset.theme=mode;
+    ring.value=50; meter.style.transition='none';
+    assert((getComputedStyle(ring.querySelector('.se-progress-ring__square')).display!=='none')===(theme==='edge'), 'Square only in Edge');
+    assert((getComputedStyle(ring.querySelector('.se-progress-ring__round')).display==='none')===(theme==='edge'), 'Circle in other themes');
+    assert(ring.querySelector('svg').getAttribute('viewBox')==='0 0 24 24', 'Stable vector geometry');
+  }
+  ring.value=0; assert(meter.hasAttribute('data-empty'), 'Zero hides colored stroke');
+  ring.value=100; assert(!meter.hasAttribute('data-empty') && meter.style.getPropertyValue('--se-progress-value')==='100', 'Complete outline');
+  for (const size of ['small','medium','large']) {ring.setAttribute('size',size);spinner.setAttribute('size',size);assert(ring.querySelector('.se-progress-ring--'+size) && spinner.querySelector('.se-spinner--'+size),'Sizes');}
+  document.getElementById('result').textContent='Passed: spinner variants, live ring values, bounds, labels, tooltip/focus behavior, sizes, and theme geometry.';
+  document.documentElement.dataset.test='passed';
+} catch(error) { document.getElementById('result').textContent=error.stack; document.documentElement.dataset.test='failed'; }
+</script></body></html>

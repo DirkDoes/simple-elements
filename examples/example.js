@@ -1,5 +1,5 @@
 import { setBrandTheme } from '../src/theme.js';
-import { componentCatalog, patternCatalog } from './catalog.js?v=20260919v0132';
+import { componentCatalog, patternCatalog } from './catalog.js?v=20260919v0133';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
@@ -19,7 +19,7 @@ const groups = [
   ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'toast', 'tooltip']],
   ['Chat', 'message-square', ['comment', 'reactions', 'chat-context', 'chat-message', 'thought-train']],
   ['Composing', 'list', ['card', 'collection', 'empty-state', 'empty-illustration', 'file-card', 'folder-card', 'list-header', 'list-row', 'project-card', 'workspace-card', 'tree-item']],
-  ['Styling', 'badge', ['badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
+  ['Styling', 'badge', ['spinner', 'progress-ring', 'badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
 ];
 const componentById = new Map(componentPages.map((page) => [page[0], page]));
 sidebar.querySelector('[data-component-section] .se-sidebar-chapter__content > div').innerHTML = groups.map(([label, icon, ids], index) => `<se-sidebar-group label="${label}" icon="${icon}"${index ? ' collapsed' : ''}>${sidebarItems(ids.map((id) => componentById.get(id)).filter(Boolean))}</se-sidebar-group>`).join('');
@@ -45,6 +45,7 @@ const formatHtml = (source) => {
   return [...template.content.childNodes].filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim()).map((node) => formatNode(node)).join('\n');
 };
 const controlMarkup = (attribute) => {
+  if (attribute.control === 'range') return `<se-range data-component-attribute="${attribute.name}" label="Value" min="0" max="100" value="82" decimals="0" suffix="%"></se-range>`;
   if (attribute.control === 'boolean') return `<se-checkbox variant="switch" data-component-attribute="${attribute.name}" label="Enabled"></se-checkbox>`;
   if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}"${attribute.name === 'layout-mode' ? ` value="${attribute.defaultValue}"` : ''} clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value), ...(['icon', 'name'].includes(attribute.name) ? { icon: value } : {}) }))))}"></se-select>`;
   if (attribute.control === 'code') return `<se-code-editor data-component-attribute="${attribute.name}" language="${attribute.name === 'options' ? 'json' : 'html'}" wrap></se-code-editor>`;
@@ -74,14 +75,14 @@ const renderComponentPage = (component) => {
     sourceTemplate.innerHTML = markup;
     const source = sourceTemplate.content.firstElementChild;
     attributes.forEach(({ name }) => {
-      if (tag !== 'pagination' && (tag !== 'segmented-control' || name !== 'options')) source.removeAttribute(name);
+      if (!['pagination', 'progress-ring'].includes(tag) && (tag !== 'segmented-control' || name !== 'options')) source.removeAttribute(name);
     });
     const clone = source.cloneNode(true);
     const contextMarkers = { 'sidebar-collapsed': 'data-sidebar-collapsed' };
     section.querySelectorAll('[data-component-context]').forEach((control) => { const marker = contextMarkers[control.dataset.componentContext]; if (marker) preview.toggleAttribute(marker, control.checked); });
     section.querySelectorAll('[data-component-attribute]').forEach((control) => {
       const name = control.dataset.componentAttribute;
-      const value = control.matches('se-checkbox') ? control.checked : control.value;
+      const value = control.matches('se-checkbox') ? control.checked : control.matches('se-range') ? control.querySelector('input').value : control.value;
       if (name === 'content' && tag !== 'tooltip') { if (value) clone.innerHTML = value; return; }
       if (name === 'child-content') { if (value) clone.innerHTML = value; return; }
       if (control.matches('se-checkbox')) { if (value) clone.setAttribute(name, ''); else clone.removeAttribute(name); return; }
@@ -106,7 +107,7 @@ const renderComponentPage = (component) => {
     }
     code.value = formatHtml(usageMarkup);
   };
-  section.querySelectorAll('.demo-component-attributes [data-component-attribute], .demo-component-attributes [data-component-context]').forEach((control) => control.addEventListener(control.matches('se-input, se-code-editor') ? 'input' : 'change', render));
+  section.querySelectorAll('.demo-component-attributes [data-component-attribute], .demo-component-attributes [data-component-context]').forEach((control) => control.addEventListener(control.matches('se-input, se-code-editor, se-range') ? 'input' : 'change', render));
   section.querySelector('[data-component-view]').addEventListener('change', (event) => { preview.hidden = event.currentTarget.value === 'code'; code.hidden = event.currentTarget.value !== 'code'; });
   render();
 };
@@ -161,7 +162,7 @@ const renderPatternPage = ({ tag, description, examples, isolated = false }) => 
         frame.dataset.height = frameHeight;
         frame.style.width = `${frameWidth}px`;
         frame.style.height = `${frameHeight}px`;
-        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260919v0132"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260919v0132"></script></head><body>${editor.value}</body></html>`;
+        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260919v0133"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260919v0133"></script></head><body>${editor.value}</body></html>`;
         preview.replaceChildren(frame);
         resizeFrame();
         return;

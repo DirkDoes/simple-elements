@@ -9,7 +9,9 @@ class SeModal extends HTMLElement {
   render() {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.innerHTML.trim();
+    const children = [...this.childNodes];
+    const content = '<span data-modal-content></span>';
+    children.forEach(node => node.remove());
     const requestedSize = this.getAttribute('size') || 'small';
     const size = ['small', 'medium', 'large'].includes(requestedSize) ? requestedSize : 'small';
     const expanded = size !== 'small';
@@ -22,6 +24,7 @@ class SeModal extends HTMLElement {
       ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`
       : `<div class="se-modal__body"><se-empty-state tone="${tone}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
     this.innerHTML = `<div class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
+    this.querySelector('[data-modal-content]').replaceWith(...children);
     this.querySelector('[data-cancel]').addEventListener('click', () => this.close());
     this.querySelector('[data-confirm]').addEventListener('click', () => { emit(this, 'confirm', {}); this.close(); });
     this.querySelector('.se-close')?.addEventListener('click', () => this.close());
@@ -33,7 +36,7 @@ class SeModal extends HTMLElement {
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
   open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); this.querySelector('.se-button')?.focus(); }
-  close() { this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
+  close() { this.querySelectorAll('se-select, se-menu').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
 }
 
 define('se-modal', SeModal);

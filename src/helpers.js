@@ -55,3 +55,40 @@ export const sidebarTooltip = (host, trigger, label) => {
   trigger.addEventListener('click', hide);
   trigger.addEventListener('keydown', event => { if (event.key === 'Escape') hide(); });
 };
+
+// Keep popup content in its component for inherited themes, but paint above clipping containers.
+export const openPopup = (trigger, popup, close, matchWidth = false) => {
+  popup.setAttribute('popover', 'manual');
+  popup.classList.add('se-popup');
+  const position = () => {
+    const rect = trigger.getBoundingClientRect();
+    popup.style.width = matchWidth ? Math.min(rect.width, innerWidth - 16) + 'px' : '';
+    popup.style.maxWidth = Math.max(0, innerWidth - 16) + 'px';
+    popup.style.maxHeight = Math.max(0, innerHeight - 16) + 'px';
+    const height = popup.offsetHeight;
+    const below = innerHeight - rect.bottom - 8;
+    const above = rect.top - 8;
+    const down = below >= height || below >= above;
+    popup.style.maxHeight = Math.max(0, down ? below - 8 : above - 8) + 'px';
+    popup.style.left = Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8)) + 'px';
+    popup.style.top = Math.max(8, down ? rect.bottom + 8 : rect.top - 8 - popup.offsetHeight) + 'px';
+  };
+  popup.showPopover();
+  position();
+  const outside = event => { if (!popup.contains(event.target) && !trigger.contains(event.target)) close(); };
+  const escape = event => {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); trigger.focus(); }
+  };
+  const scroll = event => { if (!popup.contains(event.target)) close(); };
+  document.addEventListener('pointerdown', outside);
+  popup.parentElement.addEventListener('keydown', escape);
+  document.addEventListener('scroll', scroll, true);
+  window.addEventListener('resize', position);
+  return () => {
+    if (popup.matches(':popover-open')) popup.hidePopover();
+    document.removeEventListener('pointerdown', outside);
+    popup.parentElement?.removeEventListener('keydown', escape);
+    document.removeEventListener('scroll', scroll, true);
+    window.removeEventListener('resize', position);
+  };
+};

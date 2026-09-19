@@ -11,3 +11,12 @@
 `variant` accepts `primary`, `brand`, `secondary`, `ghost`, `danger`, `label`, or `link`. Use `link` for low-emphasis navigation that is brand-colored and underlined on hover. Use `href` for navigation. Native `type`, `disabled`, and click events are supported. The internal control fills its `se-button` host, including stretched flex items.
 
 Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
+
+Open a modal without application JavaScript using `command="show-modal"` and `commandfor` matching its ID:
+
+```html
+<se-button text="Add sub-project" command="show-modal" commandfor="sub-project"></se-button>
+<se-modal id="sub-project" size="medium" title="Add sub-project">
+  <se-input label="Name"></se-input>
+</se-modal>
+```

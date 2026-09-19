@@ -51,6 +51,9 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 
 ## Actions and feedback
 
+- [Spinner](spinner.md)
+- [Progress ring](progress-ring.md)
+
 - [Button](button.md)
 - [Split button](split-button.md)
 - [File card](file-card.md)

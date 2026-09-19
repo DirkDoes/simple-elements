@@ -1,4 +1,4 @@
-import { define, escapeIcon, emit, escapeHtml, parseOptions } from '../helpers.js';
+import { define, escapeIcon, emit, escapeHtml, parseOptions, openPopup } from '../helpers.js';
 
 class SeSelect extends HTMLElement {
   set options(value) { this._options = value; if (this.isConnected) this.render(); }
@@ -15,12 +15,13 @@ class SeSelect extends HTMLElement {
     document.addEventListener('pointerdown', this._outside);
   }
 
-  disconnectedCallback() { document.removeEventListener('pointerdown', this._outside); }
+  disconnectedCallback() { this.close(); document.removeEventListener('pointerdown', this._outside); }
   get value() { return this.hasAttribute('multiple') ? [...this._selected] : [...this._selected][0] || ''; }
-  open() { if (!this.hasAttribute('disabled')) { this.querySelector('.se-select').classList.add('se-select--open'); this.querySelector('.se-select__trigger').setAttribute('aria-expanded', 'true'); } }
-  close() { this.querySelector('.se-select')?.classList.remove('se-select--open'); this.querySelector('.se-select__trigger')?.setAttribute('aria-expanded', 'false'); }
+  open() { if (!this.hasAttribute('disabled')) { this.querySelector('.se-select').classList.add('se-select--open'); this.querySelector('.se-select__trigger').setAttribute('aria-expanded', 'true'); this._popup?.(); this._popup = openPopup(this.querySelector('.se-select__trigger'), this.querySelector('.se-select__menu'), () => this.close(), true); } }
+  close() { this._popup?.(); this._popup = null; this.querySelector('.se-select')?.classList.remove('se-select--open'); this.querySelector('.se-select__trigger')?.setAttribute('aria-expanded', 'false'); }
 
   render() {
+    this.close();
     const options = parseOptions(this);
     const multiple = this.hasAttribute('multiple');
     const selected = options.filter((option) => this._selected?.has(String(option.id)));

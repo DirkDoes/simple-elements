@@ -19,6 +19,9 @@ class SeButton extends HTMLElement {
     this.innerHTML = this.hasAttribute('href') && !this.hasAttribute('disabled')
       ? `<a ${common} href="${escapeHtml(this.getAttribute('href'))}">${content}</a>`
       : `<button ${common} type="${escapeHtml(this.getAttribute('type') || 'button')}"${this.hasAttribute('disabled') ? ' disabled' : ''}>${content}</button>`;
+    this.querySelector('button')?.addEventListener('click', () => {
+      if (this.getAttribute('command') === 'show-modal') document.getElementById(this.getAttribute('commandfor'))?.open?.();
+    });
   }
 }
 

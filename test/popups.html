@@ -1,0 +1,40 @@
+<!doctype html>
+<html data-theme="light"><head><link rel="stylesheet" href="../dist/styles.css"><script src="../dist/simple-elements.js"></script></head><body>
+<se-button text="Open" command="show-modal" commandfor="test-modal"></se-button>
+<se-modal id="test-modal" size="medium" title="Sub-project"><se-input label="Name"></se-input><se-select label="Type" options='[{"id":"a","label":"Design"},{"id":"b","label":"Development"},{"id":"c","label":"Research"},{"id":"d","label":"Marketing"}]'></se-select><se-select multiple label="People" options='[{"id":"a","label":"Alex"},{"id":"b","label":"Maya"},{"id":"c","label":"Jordan"}]'></se-select></se-modal>
+<div style="overflow:hidden;width:100px;height:45px"><se-menu icon-only label="Project actions" options='[{"label":"Edit"},{"label":"Remove"}]'></se-menu></div>
+<pre id="result"></pre>
+<script type="module">
+const assert=(v,m)=>{if(!v)throw Error(m)};
+const frame=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+try {
+ await frame();
+ document.querySelector('se-button button').click();
+ const modal=document.querySelector('se-modal'), selects=[...modal.querySelectorAll('se-select')];
+ assert(modal.opened,'Declarative modal opens');
+ for(const select of selects){
+   select.querySelector('.se-select__trigger').click(); await frame();
+   const menu=select.querySelector('.se-select__menu'), rect=menu.getBoundingClientRect();
+   assert(menu.matches(':popover-open'),'Select uses top layer');
+   assert(rect.left>=0 && rect.right<=innerWidth && rect.bottom<=innerHeight,'Popup fits viewport');
+   assert(menu.contains(document.elementFromPoint(rect.left+10,rect.bottom-10)),'Options painted above modal/footer');
+   select.querySelector('[data-id="a"]').click();
+   assert(select.hasAttribute('multiple')?select.value.includes('a'):select.value==='a','Selection works');
+   select.open();
+   select.querySelector('.se-select__trigger').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+   assert(modal.opened && !select.querySelector('.se-select__menu').matches(':popover-open'),'Escape closes dropdown before modal');
+ }
+ selects[1].open(); modal.close();
+ assert(!document.querySelector(':popover-open'),'Closing modal dismisses menus');
+ const host=document.querySelector('se-menu'), button=host.querySelector('button');
+ assert(button.classList.contains('se-button--icon') && button.getAttribute('aria-label')==='Project actions','Accessible icon-only trigger');
+ button.click(); await frame();
+ const menu=host.querySelector('.se-menu__items'), r=menu.getBoundingClientRect();
+ assert(menu.contains(document.elementFromPoint(r.left+10,r.bottom-10)),'Menu escapes clipped cell');
+ document.body.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));
+ assert(!menu.matches(':popover-open'),'Outside click dismisses');
+ button.click(); host.remove();
+ assert(!document.querySelector(':popover-open'),'Disconnect cleans popup');
+ document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Popup checks passed';
+} catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack;}
+</script></body></html>

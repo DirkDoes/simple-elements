@@ -55,3 +55,22 @@
 :root[data-se-theme="edge"] .se-range input::-moz-range-thumb { border-radius: 0; background: var(--se-primary); rotate: 45deg; }
 
 :root[data-se-theme="edge"] { --se-sidebar-primary-expanded: var(--se-surface-soft); --se-sidebar-primary-collapsed: var(--se-surface-soft); }
+
+:root[data-se-theme="edge"] .se-spinner--ring i, :root[data-se-theme="edge"] .se-spinner--dots i { border-radius: 0; }
+:root[data-se-theme="edge"] .se-progress-ring__round { display: none; }
+:root[data-se-theme="edge"] .se-progress-ring__square { display: inline; }
+:root[data-se-theme="edge"] .se-progress-ring__value { stroke-linecap: butt; }
+
+@property --se-spinner-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+:root[data-se-theme="edge"] .se-spinner--ring i { position: relative; border: 0; animation-duration: 12s; }
+:root[data-se-theme="edge"] .se-spinner--ring i::before {
+  content: ''; position: absolute; inset: 0; padding: 2px;
+  background: conic-gradient(from var(--se-spinner-angle), color-mix(in srgb, currentColor 20%, transparent), currentColor, color-mix(in srgb, currentColor 20%, transparent));
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: se-spinner-border 1s linear infinite;
+}
+@keyframes se-spinner-border { to { --se-spinner-angle: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-se-theme="edge"] .se-spinner--ring i::before { animation: none; }
+}

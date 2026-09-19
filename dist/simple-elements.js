@@ -59,6 +59,43 @@ const sidebarTooltip = (host, trigger, label) => {
   trigger.addEventListener('keydown', event => { if (event.key === 'Escape') hide(); });
 };
 
+// Keep popup content in its component for inherited themes, but paint above clipping containers.
+const openPopup = (trigger, popup, close, matchWidth = false) => {
+  popup.setAttribute('popover', 'manual');
+  popup.classList.add('se-popup');
+  const position = () => {
+    const rect = trigger.getBoundingClientRect();
+    popup.style.width = matchWidth ? Math.min(rect.width, innerWidth - 16) + 'px' : '';
+    popup.style.maxWidth = Math.max(0, innerWidth - 16) + 'px';
+    popup.style.maxHeight = Math.max(0, innerHeight - 16) + 'px';
+    const height = popup.offsetHeight;
+    const below = innerHeight - rect.bottom - 8;
+    const above = rect.top - 8;
+    const down = below >= height || below >= above;
+    popup.style.maxHeight = Math.max(0, down ? below - 8 : above - 8) + 'px';
+    popup.style.left = Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8)) + 'px';
+    popup.style.top = Math.max(8, down ? rect.bottom + 8 : rect.top - 8 - popup.offsetHeight) + 'px';
+  };
+  popup.showPopover();
+  position();
+  const outside = event => { if (!popup.contains(event.target) && !trigger.contains(event.target)) close(); };
+  const escape = event => {
+    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); trigger.focus(); }
+  };
+  const scroll = event => { if (!popup.contains(event.target)) close(); };
+  document.addEventListener('pointerdown', outside);
+  popup.parentElement.addEventListener('keydown', escape);
+  document.addEventListener('scroll', scroll, true);
+  window.addEventListener('resize', position);
+  return () => {
+    if (popup.matches(':popover-open')) popup.hidePopover();
+    document.removeEventListener('pointerdown', outside);
+    popup.parentElement?.removeEventListener('keydown', escape);
+    document.removeEventListener('scroll', scroll, true);
+    window.removeEventListener('resize', position);
+  };
+};
+
 const DEFAULT_PRIMARY = '#2563eb';
 
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
@@ -592,6 +629,9 @@ class SeButton extends HTMLElement {
     this.innerHTML = this.hasAttribute('href') && !this.hasAttribute('disabled')
       ? `<a ${common} href="${escapeHtml(this.getAttribute('href'))}">${content}</a>`
       : `<button ${common} type="${escapeHtml(this.getAttribute('type') || 'button')}"${this.hasAttribute('disabled') ? ' disabled' : ''}>${content}</button>`;
+    this.querySelector('button')?.addEventListener('click', () => {
+      if (this.getAttribute('command') === 'show-modal') document.getElementById(this.getAttribute('commandfor'))?.open?.();
+    });
   }
 }
 
@@ -793,12 +833,13 @@ class SeSelect extends HTMLElement {
     document.addEventListener('pointerdown', this._outside);
   }
 
-  disconnectedCallback() { document.removeEventListener('pointerdown', this._outside); }
+  disconnectedCallback() { this.close(); document.removeEventListener('pointerdown', this._outside); }
   get value() { return this.hasAttribute('multiple') ? [...this._selected] : [...this._selected][0] || ''; }
-  open() { if (!this.hasAttribute('disabled')) { this.querySelector('.se-select').classList.add('se-select--open'); this.querySelector('.se-select__trigger').setAttribute('aria-expanded', 'true'); } }
-  close() { this.querySelector('.se-select')?.classList.remove('se-select--open'); this.querySelector('.se-select__trigger')?.setAttribute('aria-expanded', 'false'); }
+  open() { if (!this.hasAttribute('disabled')) { this.querySelector('.se-select').classList.add('se-select--open'); this.querySelector('.se-select__trigger').setAttribute('aria-expanded', 'true'); this._popup?.(); this._popup = openPopup(this.querySelector('.se-select__trigger'), this.querySelector('.se-select__menu'), () => this.close(), true); } }
+  close() { this._popup?.(); this._popup = null; this.querySelector('.se-select')?.classList.remove('se-select--open'); this.querySelector('.se-select__trigger')?.setAttribute('aria-expanded', 'false'); }
 
   render() {
+    this.close();
     const options = parseOptions(this);
     const multiple = this.hasAttribute('multiple');
     const selected = options.filter((option) => this._selected?.has(String(option.id)));
@@ -1058,16 +1099,21 @@ class SeMenu extends HTMLElement {
   set options(value) { this._options = value; if (this.isConnected) this.render(); }
   get options() { return this._options; }
   connectedCallback() { if (!this.dataset.ready) { this.dataset.ready = 'true'; this.render(); } }
+  disconnectedCallback() { this.close(); }
+  close() { this._popup?.(); this._popup = null; this.querySelector('.se-menu')?.classList.remove('se-menu--open'); this.querySelector('.se-button')?.setAttribute('aria-expanded', 'false'); }
   render() {
+    this.close();
     const options = parseOptions(this);
-    this.innerHTML = `<div class="se-menu"><button class="se-button se-button--secondary" type="button" aria-expanded="false">${escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
+    this.innerHTML = `<div class="se-menu"><button class="se-button se-button--secondary${this.hasAttribute('icon-only') ? ' se-button--icon' : ''}" aria-label="${escapeHtml(this.getAttribute('label') || 'More')}" type="button" aria-expanded="false">${this.hasAttribute('icon-only') ? '' : escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-menu');
     const trigger = this.querySelector('.se-button');
-    const position = () => placePopover(trigger, this.querySelector('.se-menu__items'));
-    trigger.addEventListener('click', () => { const open = root.classList.toggle('se-menu--open'); trigger.setAttribute('aria-expanded', open); if (open) position(); });
-    root.addEventListener('pointerenter', position);
-    root.addEventListener('focusin', position);
-    this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { root.classList.remove('se-menu--open'); emit(this, 'select', options[Number(button.dataset.index)]); }));
+    trigger.addEventListener('click', () => {
+      if (this._popup) return this.close();
+      root.classList.add('se-menu--open');
+      trigger.setAttribute('aria-expanded', 'true');
+      this._popup = openPopup(trigger, this.querySelector('.se-menu__items'), () => this.close());
+    });
+    this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { this.close(); emit(this, 'select', options[Number(button.dataset.index)]); }));
   }
 }
 
@@ -1106,7 +1152,9 @@ class SeModal extends HTMLElement {
   render() {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.innerHTML.trim();
+    const children = [...this.childNodes];
+    const content = '<span data-modal-content></span>';
+    children.forEach(node => node.remove());
     const requestedSize = this.getAttribute('size') || 'small';
     const size = ['small', 'medium', 'large'].includes(requestedSize) ? requestedSize : 'small';
     const expanded = size !== 'small';
@@ -1119,6 +1167,7 @@ class SeModal extends HTMLElement {
       ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`
       : `<div class="se-modal__body"><se-empty-state tone="${tone}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
     this.innerHTML = `<div class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
+    this.querySelector('[data-modal-content]').replaceWith(...children);
     this.querySelector('[data-cancel]').addEventListener('click', () => this.close());
     this.querySelector('[data-confirm]').addEventListener('click', () => { emit(this, 'confirm', {}); this.close(); });
     this.querySelector('.se-close')?.addEventListener('click', () => this.close());
@@ -1130,7 +1179,7 @@ class SeModal extends HTMLElement {
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
   open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); this.querySelector('.se-button')?.focus(); }
-  close() { this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
+  close() { this.querySelectorAll('se-select, se-menu').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
 }
 
 define('se-modal', SeModal);
@@ -2307,6 +2356,63 @@ class SeComment extends HTMLElement {
   get replies() { return this.querySelector(':scope > article > .se-comment__replies'); }
 }
 define('se-comment', SeComment);
+
+
+class SeSpinner extends HTMLElement {
+  static observedAttributes = ['variant', 'size', 'label'];
+  connectedCallback() { this.render(); }
+  attributeChangedCallback() { if (this.isConnected) this.render(); }
+  render() {
+    const variant = ['ring', 'dots', 'bars'].includes(this.getAttribute('variant')) ? this.getAttribute('variant') : 'ring';
+    const size = ['small', 'medium', 'large'].includes(this.getAttribute('size')) ? this.getAttribute('size') : 'medium';
+    this.innerHTML = `<span class="se-spinner se-spinner--${variant} se-spinner--${size}" role="status" aria-label="${escapeHtml(this.getAttribute('label') || 'Loading')}"><span aria-hidden="true">${variant === 'ring' ? '<i></i>' : '<i></i><i></i><i></i>'}</span></span>`;
+  }
+}
+
+define('se-spinner', SeSpinner);
+
+
+class SeProgressRing extends HTMLElement {
+  static observedAttributes = ['value', 'label', 'show-value', 'size'];
+  get value() {
+    const number = Number(this.getAttribute('value'));
+    return Number.isFinite(number) ? Math.max(0, Math.min(100, number)) : 0;
+  }
+  set value(value) { this.setAttribute('value', value); }
+  connectedCallback() { this.render(); }
+  attributeChangedCallback() { if (this.isConnected) this.render(); }
+  render() {
+    if (!this.querySelector('.se-progress-ring')) {
+      const id = `se-progress-ring-${crypto.randomUUID()}`;
+      this.innerHTML = `<span class="se-tooltip"><span class="se-progress-ring" role="meter" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-describedby="${id}"><svg viewBox="0 0 24 24" aria-hidden="true"><g class="se-progress-ring__round"><circle cx="12" cy="12" r="9" pathLength="100"></circle><circle class="se-progress-ring__value" cx="12" cy="12" r="9" pathLength="100"></circle></g><g class="se-progress-ring__square"><path d="M12 3H21V21H3V3H12" pathLength="100"></path><path class="se-progress-ring__value" d="M12 3H21V21H3V3H12" pathLength="100"></path></g></svg><span class="se-progress-ring__text" aria-hidden="true"></span></span><span class="se-tooltip__bubble" role="tooltip" id="${id}"></span></span>`;
+      const tooltip = this.querySelector('[role="tooltip"]');
+      this.addEventListener('keydown', event => { if (event.key === 'Escape') tooltip.hidden = true; });
+      this.addEventListener('pointerenter', () => { tooltip.hidden = false; });
+      this.addEventListener('focusin', () => { tooltip.hidden = false; });
+    }
+    const value = this.value;
+    const label = this.getAttribute('label') || 'Progress';
+    const size = ['small', 'medium', 'large'].includes(this.getAttribute('size')) ? this.getAttribute('size') : 'medium';
+    const ring = this.querySelector('.se-progress-ring');
+    const percentage = `${Number(value.toFixed(1))}%`;
+    ring.className = `se-progress-ring se-progress-ring--${size}`;
+    ring.setAttribute('aria-label', label);
+    ring.setAttribute('aria-valuenow', value);
+    ring.setAttribute('aria-valuetext', percentage);
+    ring.toggleAttribute('data-empty', value === 0);
+    ring.style.setProperty('--se-progress-value', value);
+    const mix = value <= 50 ? value * 2 : (value - 50) * 2;
+    const from = value <= 50 ? 'low' : 'middle';
+    const to = value <= 50 ? 'middle' : 'high';
+    ring.style.setProperty('--se-progress-color', `color-mix(in srgb, var(--se-progress-${from}) ${100 - mix}%, var(--se-progress-${to}) ${mix}%)`);
+    const text = this.querySelector('.se-progress-ring__text');
+    text.textContent = percentage;
+    text.hidden = !this.hasAttribute('show-value');
+    this.querySelector('[role="tooltip"]').textContent = `${label}: ${percentage}`;
+  }
+}
+
+define('se-progress-ring', SeProgressRing);
 
  globalThis.SimpleElements = { setBrandTheme, registerIcons };
 })();

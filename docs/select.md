@@ -12,3 +12,5 @@ Add `size="small"` for compact toolbars and dense controls. Use `placeholder` to
 Supports `label`, `name`, `value`, `placeholder`, `options`, `size`, `multiple`, `searchable`, `clearable`, and `disabled`.
 
 Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
+
+Select lists (single and multiple) and action menus appear above modal footers and scrolling containers using the browser top layer. They flip upward when needed and stay within the viewport; long lists retain their own scrolling. Escape dismisses an open list before the modal.
