@@ -25,6 +25,7 @@ class SeInput extends HTMLElement {
     const placeholder = this.hasAttribute('placeholder') ? this.getAttribute('placeholder') : defaults.placeholder || '';
     const error = this.getAttribute('error');
     const attrs = [
+      this.hasAttribute('aria-label') ? `aria-label="${escapeHtml(this.getAttribute('aria-label'))}"` : '',
       `id="${id}"`,
       `name="${escapeHtml(this.getAttribute('name') || '')}"`,
       `placeholder="${escapeHtml(placeholder)}"`,

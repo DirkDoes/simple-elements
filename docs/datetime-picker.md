@@ -13,3 +13,5 @@ Composes the Simple Elements date and time pickers and submits one hidden `YYYY-
 Supports `variant` (`combined`, `separated`, or `joined`), `label`, `name`, `value`, `min`, `max`, `step`, `locale`, `placeholder`, and `disabled`.
 
 Calendar headings can be clicked to jump directly to another month or year.
+
+`size="normal"` is the default field density; use `size="small"` for compact controls. Applies to combined, joined, and separated layouts.

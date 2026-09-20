@@ -1121,7 +1121,7 @@ se-list-header[sticky] { position: sticky; top: var(--se-list-header-top, 0px); 
 /* Preserve breathing room for action-button focus rings inside the tab scroller. */
 .se-nav-tabs:has(.se-nav-tabs__actions) { padding: 5px; margin: -5px; }
 se-list-header[sticky] { border-start-start-radius: inherit; border-start-end-radius: inherit; }
-se-list-header[sticky][data-stuck] { border-radius: 0; }
+
 .se-table .se-list__row[guides]:not([guides="simple"])[data-tree-continues]:not([level="0"])[level] > :first-child::before { border-radius: 0; }
 se-list-row[data-tree-animating] { overflow: hidden; min-height: 0; }
 .se-table .se-list__row[guides]:not([guides="simple"]) > :first-child {
@@ -1152,7 +1152,7 @@ se-popover { display: inline-block; position: relative; }
 .se-button--mini:hover, .se-button--mini:focus { filter: none; box-shadow: none; }
 .se-table :is(.se-list__header, .se-list__row) > :has(:is(button, input, select, textarea, a, [tabindex])) { overflow: visible; white-space: normal; }
 .se-list > .se-list__header:first-child { border-start-start-radius: inherit; border-start-end-radius: inherit; }
-.se-list > .se-list__header[data-stuck] { border-radius: 0; }
+
 .se-list > .se-list__row:nth-last-child(1 of se-list-row:not([hidden], [data-tree-hidden])) { border-end-start-radius: inherit; border-end-end-radius: inherit; }
 .se-list > .se-list__row:first-child { border-start-start-radius: inherit; border-start-end-radius: inherit; }
 .se-list__header > [data-column-divider] { border-right-color: transparent; }
@@ -1161,3 +1161,34 @@ se-popover { display: inline-block; position: relative; }
 /* Badges are the cell content, so table spacing must not enlarge their pill. */
 .se-list[dividers] > :is(.se-list__header, .se-list__row) > se-badge { align-self: center; justify-self: start; margin-block: .875rem; padding: .25rem .625rem; }
 .se-list[dividers] > :is(.se-list__header, .se-list__row) > se-badge.se-badge--icon { padding: 0; }
+
+/* Compact field density only changes the field, never its calendar/palette contents. */
+se-input[size="small"] > .se-input-wrap > .se-control,
+se-date-picker[size="small"] > .se-date > .se-date__trigger,
+se-time-picker[size="small"] > .se-time > .se-time__trigger,
+se-datetime-picker[size="small"] > .se-datetime-single > .se-datetime-single__trigger,
+se-datetime-picker[size="small"] > .se-datetime .se-date__trigger,
+se-datetime-picker[size="small"] > .se-datetime .se-time__trigger,
+se-color-picker[size="small"] .se-color-picker__trigger { min-height: 2rem; padding: .25rem .5rem; font-size: .75rem; line-height: 1.25rem; }
+se-input[size="small"] .se-input-wrap--icon > .se-control { padding-left: 2.25rem; }
+se-input[size="small"] .se-input-wrap:has(.se-password-toggle) > .se-control { padding-right: 2.5rem; }
+se-input[size="small"] > .se-input-wrap > textarea.se-control { min-height: 4rem; line-height: 1.125rem; }
+se-input[size="small"] > .se-input-wrap > textarea.se-control[data-autosize] { min-height: 2rem; }
+se-phone-input[size="small"] .se-phone__prefix, se-phone-input[size="small"] .se-phone__control input { padding: .25rem .5rem; font-size: .75rem; line-height: 1.25rem; }
+se-phone-input[size="small"] .se-phone__control { min-height: 2rem; }
+.se-menu__heading { padding: .5rem .875rem .25rem; color: var(--se-muted); font: 650 .6875rem/1rem var(--se-font); }
+.se-list__row[variant="secondary"] { background: var(--se-surface-soft); }
+.se-list__row[variant="secondary"]:hover { background: color-mix(in srgb, var(--se-surface-soft), var(--se-border) 35%); }
+.se-list__header:has(:is(se-select, se-input)) { padding-top: .375rem; padding-bottom: .375rem; }
+.se-list[dividers] > .se-list__header:has(:is(se-select, se-input)) { padding-block: 0; }
+.se-list[dividers] > .se-list__header:has(:is(se-select, se-input)) > * { padding-top: .375rem; padding-bottom: .375rem; }
+
+[data-theme="dark"] .se-list__row[variant="secondary"] { background: color-mix(in srgb, var(--se-surface), #000 20%); }
+[data-theme="dark"] .se-list__row[variant="secondary"]:hover { background: color-mix(in srgb, var(--se-surface), #000 8%); }
+/* Native disclosure animation; browsers without these CSS features still toggle normally. */
+se-tree-item > details { interpolate-size: allow-keywords; }
+se-tree-item > details::details-content { height: 0; overflow: clip; transition: height .16s ease-out, content-visibility .16s allow-discrete; }
+se-tree-item > details[open]::details-content { height: auto; }
+@media (prefers-reduced-motion: reduce) {
+  se-tree-item > details::details-content { transition: none; }
+}

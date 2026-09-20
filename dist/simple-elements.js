@@ -669,6 +669,7 @@ class SeInput extends HTMLElement {
     const placeholder = this.hasAttribute('placeholder') ? this.getAttribute('placeholder') : defaults.placeholder || '';
     const error = this.getAttribute('error');
     const attrs = [
+      this.hasAttribute('aria-label') ? `aria-label="${escapeHtml(this.getAttribute('aria-label'))}"` : '',
       `id="${id}"`,
       `name="${escapeHtml(this.getAttribute('name') || '')}"`,
       `placeholder="${escapeHtml(placeholder)}"`,
@@ -1110,7 +1111,7 @@ class SeMenu extends HTMLElement {
   render() {
     this.close();
     const options = parseOptions(this);
-    this.innerHTML = `<div class="se-menu"><button class="se-button se-button--secondary${this.hasAttribute('icon-only') ? ' se-button--icon' : ''}" aria-label="${escapeHtml(this.getAttribute('label') || 'More')}" type="button" aria-expanded="false">${this.hasAttribute('icon-only') ? '' : escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
+    this.innerHTML = `<div class="se-menu"><button class="se-button se-button--${this.getAttribute('variant') === 'mini' ? 'mini' : 'secondary'}${this.hasAttribute('icon-only') ? ' se-button--icon' : ''}" aria-label="${escapeHtml(this.getAttribute('label') || 'More')}" type="button" aria-expanded="false">${this.hasAttribute('icon-only') ? '' : escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => option.heading ? `<div class="se-menu__heading${option.separator ? ' se-menu-item--separated' : ''}">${escapeHtml(option.heading)}</div>` : `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-menu');
     const trigger = this.querySelector('.se-button');
     trigger.addEventListener('click', () => {
@@ -1822,29 +1823,41 @@ class SeListHeader extends HTMLElement {
   attributeChangedCallback() { this._update?.(); }
   connectedCallback() {
     this.classList.add('se-list__header');
+    this._collection = this.parentElement;
     this._update = () => {
-      if (!this.hasAttribute('sticky')) { this.style.translate = ''; this._shift = 0; this.removeAttribute('data-stuck'); return; }
+      if (!this.hasAttribute('sticky')) { this.style.translate = ''; this._shift = 0; this.removeAttribute('data-stuck'); if (this._collection) this._collection.style.clipPath = ''; this.parentElement?.querySelectorAll(':scope > se-list-row').forEach(row => row.style.clipPath = ''); return; }
       const rows = [...(this.parentElement?.children || [])].filter(row => row.matches('se-list-row') && !row.hasAttribute('data-tree-hidden'));
       const lastHeight = rows.at(-1)?.getBoundingClientRect().height || 0;
       const previous = this._shift || 0;
       const bottom = this.getBoundingClientRect().bottom - previous;
       this._shift = Math.min(0, this.parentElement.getBoundingClientRect().bottom - lastHeight - bottom);
       this.style.translate = '0 ' + this._shift + 'px';
-      this.toggleAttribute('data-stuck', this.getBoundingClientRect().top > this.parentElement.getBoundingClientRect().top + 2);
+      const header = this.getBoundingClientRect();
+      const stuck = header.top > this.parentElement.getBoundingClientRect().top + 2;
+      this.toggleAttribute('data-stuck', stuck);
+      const table = this.parentElement;
+      const top = Math.max(0, header.top - table.getBoundingClientRect().top);
+      const radius = getComputedStyle(table).borderTopLeftRadius;
+      table.style.clipPath = stuck ? 'inset(' + top + 'px 0 0 round ' + radius + ')' : '';
+      for (const row of rows) {
+        const rect = row.getBoundingClientRect();
+        const cut = stuck ? Math.max(0, Math.min(rect.height, header.bottom - rect.top)) : 0;
+        row.style.clipPath = cut ? 'inset(' + cut + 'px -100vmax 0)' : '';
+      }
     };
     document.addEventListener('scroll', this._update, true);
     this._resize = new ResizeObserver(this._update);
     this._resize.observe(this.parentElement);
     this._resize.observe(this);
   }
-  disconnectedCallback() { document.removeEventListener('scroll', this._update, true); this._resize?.disconnect(); }
+  disconnectedCallback() { if (this._collection) { this._collection.style.clipPath = ''; this._collection.querySelectorAll(':scope > se-list-row').forEach(row => row.style.clipPath = ''); } document.removeEventListener('scroll', this._update, true); this._resize?.disconnect(); }
 }
 
 define('se-list-header', SeListHeader);
 
 
 class SeListRow extends HTMLElement {
-  static observedAttributes = ['level', 'collapsible', 'collapsed'];
+  static observedAttributes = ['level', 'collapsible', 'collapsed', 'variant'];
   attributeChangedCallback() { if (this.isConnected) this.render(); }
   connectedCallback() { this.render(); requestAnimationFrame(() => { if (this.isConnected) this.render(); }); }
   render() {
@@ -2032,7 +2045,7 @@ class SeColorPicker extends HTMLElement {
     this.dataset.ready = 'true';
     this._variant = this.getAttribute('variant') === 'palette' ? 'palette' : 'gradient';
     this._mode = this.getAttribute('mode') === 'inline' ? 'inline' : 'popover';
-    this._palette = palettes[this.getAttribute('size')] || colorPalette;
+    this._palette = palettes[this.getAttribute('palette-size')] || colorPalette;
     const requested = normalizeColor(this.getAttribute('value'));
     this._value = this._variant === 'palette' && !this._palette.includes(requested) ? defaultColor : requested;
     this._hsv = hexToHsv(this._value);

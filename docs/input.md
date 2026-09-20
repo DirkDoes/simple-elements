@@ -18,3 +18,7 @@ customElements.get('se-input').defaultsFor('email');
 ```
 
 Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
+
+`size="normal"` is the default field density; use `size="small"` for compact controls. For textareas this also reduces line height and minimum height.
+
+Use `aria-label` to name an input without a visible label, for example an editable cell under a named column.

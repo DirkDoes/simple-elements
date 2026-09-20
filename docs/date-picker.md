@@ -9,3 +9,5 @@ Opens the Simple Elements calendar popover and submits a hidden `YYYY-MM-DD` val
 Click the month/year heading to jump directly to another month or year.
 
 The calendar uses the browser top layer so it can extend outside modals and custom popovers. Escape closes it before its containing popover.
+
+`size="normal"` is the default field density; use `size="small"` for compact controls. Popup contents retain their usual layout.

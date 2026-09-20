@@ -1,7 +1,7 @@
 import { define, emit } from '../helpers.js';
 
 class SeListRow extends HTMLElement {
-  static observedAttributes = ['level', 'collapsible', 'collapsed'];
+  static observedAttributes = ['level', 'collapsible', 'collapsed', 'variant'];
   attributeChangedCallback() { if (this.isConnected) this.render(); }
   connectedCallback() { this.render(); requestAnimationFrame(() => { if (this.isConnected) this.render(); }); }
   render() {

@@ -7,3 +7,5 @@
 The searchable picker contains all 245 countries and calling territories and defaults to the Netherlands. Use the two-letter `country` attribute when calling codes are shared, or `code="+31"` as a shortcut. Use `placeholder` to override the default `6 12345678` hint. The native telephone input submits under `name`; country changes emit `countrychange` with `country`, `countryCode`, and `code`.
 
 Supports `label`, `name`, `country`, `code`, and `placeholder`.
+
+`size="normal"` is the default field density; use `size="small"` for compact controls. Popup contents retain their usual layout.

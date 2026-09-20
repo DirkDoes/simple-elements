@@ -200,7 +200,7 @@ assert.match(colorPickerSource, /data-gradient/);
 assert.match(colorPickerSource, /data-color/);
 assert.match(colorPickerSource, /data-swatch/);
 assert.match(colorPickerSource, /getAttribute\('mode'\)/);
-assert.match(colorPickerSource, /getAttribute\('size'\)/);
+assert.match(colorPickerSource, /getAttribute\('palette-size'\)/);
 assert.match(colorPickerSource, /8:|16:|32:/);
 assert.doesNotMatch(colorPickerSource, /hasAttribute\('popover'\)/);
 const documentedComponents = components;

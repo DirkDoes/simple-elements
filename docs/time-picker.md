@@ -10,3 +10,5 @@ Opens the Simple Elements time selector and submits a hidden `HH:MM` value norma
 The hour and minute fields accept typing and respond to the mouse wheel and Up/Down keys. Hours wrap between `23` and `00`; minutes wrap between `59` and `00` using the configured step.
 
 Supports `label`, `name`, `value`, `step`, `placeholder`, and `disabled`. The placeholder defaults to `Choose a time`.
+
+`size="normal"` is the default field density; use `size="small"` for compact controls. Popup contents retain their usual layout.

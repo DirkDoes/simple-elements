@@ -15,3 +15,5 @@ Icon inputs support Lucide names, asset URLs, and the shared [icon configuration
 Use `icon-only` to hide the visible trigger label, retaining `label` as its accessible name. Menus use the browser top layer to escape table and modal clipping. Escape or an outside click dismisses them; they follow their trigger while scrolling and close when it leaves the scrolling area.
 
 For custom content such as grouped filters, use [Popover](popover.md). Menu remains the compact shortcut for an array of actions.
+
+Use `variant="mini"` with `icon-only` for a compact row action trigger (default variant: `secondary`). An option `{ "heading": "Manage", "separator": true }` renders a noninteractive section title with a divider above it. Ordinary action options below it still emit `select`; headings do not.

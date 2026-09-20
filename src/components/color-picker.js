@@ -40,7 +40,7 @@ class SeColorPicker extends HTMLElement {
     this.dataset.ready = 'true';
     this._variant = this.getAttribute('variant') === 'palette' ? 'palette' : 'gradient';
     this._mode = this.getAttribute('mode') === 'inline' ? 'inline' : 'popover';
-    this._palette = palettes[this.getAttribute('size')] || colorPalette;
+    this._palette = palettes[this.getAttribute('palette-size')] || colorPalette;
     const requested = normalizeColor(this.getAttribute('value'));
     this._value = this._variant === 'palette' && !this._palette.includes(requested) ? defaultColor : requested;
     this._hsv = hexToHsv(this._value);
