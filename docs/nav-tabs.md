@@ -5,3 +5,13 @@ Route links, not an ARIA tab widget. Set `options` as JSON or an array property 
 ```html
 <se-nav-tabs value="overview" options='[{"id":"overview","label":"Overview","href":"/overview"},{"id":"issues","label":"Issues","href":"/issues","count":12}]'></se-nav-tabs>
 ```
+
+## Trailing actions
+
+Place a child wrapper with `data-actions` inside `se-nav-tabs` to align buttons at the right end of the tab line. Actions retain their DOM nodes and listeners when the active tab changes. On narrow screens the navigation can scroll horizontally.
+
+```html
+<se-nav-tabs value="files" options='[{"id":"files","label":"Files","href":"#files"}]'>
+  <span data-actions><se-button text="Upload" icon="plus" variant="secondary"></se-button></span>
+</se-nav-tabs>
+```

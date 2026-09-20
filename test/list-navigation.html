@@ -1,0 +1,15 @@
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><script src="../dist/simple-elements.js"></script></head><body>
+<se-nav-tabs options='[{"id":"a","label":"Files"}]'><span data-actions><se-button text="Upload"></se-button></span></se-nav-tabs>
+<se-collection type="table" columns="2fr 1fr" dividers="1"><se-list-header sticky><span>Name</span><span>Size</span></se-list-header><se-list-row collapsible id="parent"><span>Source</span><span>3 files</span></se-list-row><se-list-row level="1" collapsible collapsed id="nested"><span>Components</span><span>1 file</span></se-list-row><se-list-row level="2" id="leaf"><span>card.js</span><span>2 KB</span></se-list-row><se-list-row level="1" id="sibling"><span>index.js</span><span>1 KB</span></se-list-row><se-list-row id="next"><span>Readme</span><span>3 KB</span></se-list-row></se-collection><pre id="result"></pre>
+<script type="module">
+const assert=(x,m)=>{if(!x)throw Error(m)},tick=()=>new Promise(r=>setTimeout(r,210));
+try{await tick();const tabs=document.querySelector('se-nav-tabs'), action=tabs.querySelector('[data-actions]');tabs.value='a';assert(tabs.querySelector('[data-actions]')===action,'Preserve actions');
+const parent=document.querySelector('#parent'),nested=document.querySelector('#nested'),leaf=document.querySelector('#leaf'),sibling=document.querySelector('#sibling');
+assert(leaf.hasAttribute('data-tree-hidden'),'Nested starts closed');parent.querySelector('button').click();await tick();assert(sibling.hasAttribute('data-tree-hidden')&&!document.querySelector('#next').hasAttribute('data-tree-hidden'),'Only descendants collapse');parent.querySelector('button').click();await tick();assert(!sibling.hasAttribute('data-tree-hidden')&&leaf.hasAttribute('data-tree-hidden'),'Retain nested state');nested.querySelector('button').click();await tick();assert(!leaf.hasAttribute('data-tree-hidden'),'Expand nested');
+assert(document.querySelectorAll('[data-column-divider]').length===6,'Divider per row');document.querySelector('se-collection').removeAttribute('dividers');await tick();assert(!document.querySelector('[data-column-divider]'),'Toggle dividers');
+assert(getComputedStyle(document.querySelector('se-list-header')).position==='sticky','Sticky header');
+nested.setAttribute('guides','');sibling.setAttribute('guides','');await tick();
+assert(getComputedStyle(nested.firstElementChild,'::before').borderBottomLeftRadius==='0px','Continuing junction is straight');
+assert(getComputedStyle(sibling.firstElementChild,'::before').borderBottomLeftRadius!=='0px','Final sibling keeps curve');
+assert(getComputedStyle(document.querySelector('se-list-header')).borderTopLeftRadius===getComputedStyle(document.querySelector('se-collection')).borderTopLeftRadius,'Resting header matches table corners');document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Navigation actions, nested disclosure, dividers, and sticky checks passed';}catch(e){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=e.stack}
+</script></body></html>

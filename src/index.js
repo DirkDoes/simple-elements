@@ -61,3 +61,5 @@ import './components/comment.js';
 
 import './components/spinner.js';
 import './components/progress-ring.js';
+
+import './components/popover.js';

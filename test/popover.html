@@ -1,0 +1,10 @@
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<se-popover label="Filter files" icon="funnel" icon-only><fieldset><legend>Owner</legend><se-select options='[{"id":"a","label":"Alex"},{"id":"b","label":"Maya"}]'></se-select></fieldset><fieldset><legend>Modified</legend><se-date-picker></se-date-picker></fieldset></se-popover><pre id="result"></pre>
+<script type="module">
+const assert=(x,m)=>{if(!x)throw Error(m)},tick=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+try{await customElements.whenDefined('se-popover');await tick();const host=document.querySelector('se-popover'),panel=host.querySelector('[role="dialog"]'),trigger=host.querySelector('button');
+trigger.click();assert(panel.matches(':popover-open'),'Top layer');assert(trigger.getAttribute('aria-expanded')==='true','Expanded state');
+const select=host.querySelector('se-select');select.open();select.querySelector('[data-id="b"]').click();assert(select.value==='b'&&panel.matches(':popover-open'),'Nested selection');
+const date=host.querySelector('se-date-picker');date.open();assert(date.querySelector('.se-date__popover').matches(':popover-open'),'Nested calendar top layer');date.querySelector('.se-date__trigger').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(panel.matches(':popover-open')&&!date.querySelector('.se-date__popover').matches(':popover-open'),'Escape closes inner popup first');
+trigger.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(!panel.matches(':popover-open')&&document.activeElement===trigger,'Escape closes panel and restores focus');host.open();assert(select.value==='b','Retain content state');host.remove();assert(!document.querySelector(':popover-open'),'Disconnect cleans up');document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Popover checks passed';}catch(e){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=e.stack}
+</script></body></html>

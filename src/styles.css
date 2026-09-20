@@ -1100,3 +1100,49 @@ se-spinner, se-progress-ring { display: inline-flex; vertical-align: middle; }
 .se-popup[popover] { position: fixed; inset: auto; margin: 0; color: var(--se-text); overflow: auto; }
 .se-popup[popover]:not(:popover-open) { display: none; }
 .se-popup[popover]:popover-open { display: block; }
+
+.se-nav-tabs__actions { display: flex; flex: 0 0 auto; align-items: center; gap: .5rem; margin-left: auto; padding: .25rem 0 .25rem .75rem; }
+.se-list__header > [data-column-divider], .se-list__row > [data-column-divider] { border-right: 1px solid var(--se-border); padding-right: 1rem; }
+se-list-row[data-tree-hidden] { display: none !important; }
+.se-list__toggle { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; margin: -.25rem .375rem -.25rem 0; padding: 0; border: 0; border-radius: var(--se-radius); color: var(--se-muted); background: transparent; vertical-align: middle; cursor: pointer; }
+.se-list__toggle:hover { background: var(--se-primary-soft); color: var(--se-primary-text); }
+.se-list__toggle:focus-visible { outline: 2px solid var(--se-primary); outline-offset: -2px; }
+.se-list__toggle se-icon { width: .875rem; height: .875rem; transition: transform .15s; }
+se-list-row[collapsed] .se-list__toggle se-icon { transform: rotate(-90deg); }
+.se-list:has(> se-list-header[sticky]) { overflow: visible; }
+se-list-header[sticky] { position: sticky; top: var(--se-list-header-top, 0px); z-index: 5; border-radius: .75rem .75rem 0 0; }
+
+.se-list[dividers] > :is(.se-list__header, .se-list__row) { padding-top: 0; padding-bottom: 0; align-items: stretch; }
+.se-list[dividers] > :is(.se-list__header, .se-list__row) > * { padding-top: .875rem; padding-bottom: .875rem; align-content: center; }
+
+.se-table:has(> se-list-row[collapsible]) > .se-list__row > :first-child { padding-left: calc(var(--se-list-row-indent, 0rem) + 1.875rem); }
+.se-table:has(> se-list-row[collapsible]) .se-list__toggle { margin-left: -1.875rem; }
+
+/* Preserve breathing room for action-button focus rings inside the tab scroller. */
+.se-nav-tabs:has(.se-nav-tabs__actions) { padding: 5px; margin: -5px; }
+se-list-header[sticky] { border-start-start-radius: inherit; border-start-end-radius: inherit; }
+se-list-header[sticky][data-stuck] { border-radius: 0; }
+.se-table .se-list__row[guides]:not([guides="simple"])[data-tree-continues]:not([level="0"])[level] > :first-child::before { border-radius: 0; }
+se-list-row[data-tree-animating] { overflow: hidden; min-height: 0; }
+.se-table .se-list__row[guides]:not([guides="simple"]) > :first-child {
+  position: relative; background-image: var(--se-tree-lines, none); background-position: var(--se-tree-positions, 0 0); background-size: 1px 100%; background-repeat: no-repeat;
+}
+.se-table .se-list__row[guides]:not([guides="simple"])[data-tree-continues]:not([level="0"])[level] > :first-child::after {
+  content: ''; position: absolute; left: calc(var(--se-list-row-indent) - .75rem); top: 50%; bottom: 0; border-left: 1px solid var(--se-primary-border);
+}
+
+
+se-popover { display: inline-block; position: relative; }
+.se-popover__panel { width: 22rem; padding: 1.25rem; }
+.se-popover__panel fieldset { min-width: 0; margin: 0; padding: 0; border: 0; display: grid; gap: .875rem; }
+.se-popover__panel fieldset + fieldset { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--se-border); }
+.se-popover__panel legend { float: left; width: 100%; margin-bottom: .25rem; color: var(--se-text); font-size: .8125rem; font-weight: 650; }
+
+.se-popover__panel details + details { border-top: 1px solid var(--se-border); margin-top: .75rem; padding-top: .75rem; }
+.se-popover__panel summary { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .375rem; margin: -.375rem; border-radius: var(--se-radius); color: var(--se-text); font-size: .8125rem; font-weight: 650; list-style: none; cursor: pointer; }
+.se-popover__panel summary::-webkit-details-marker { display: none; }
+.se-popover__panel summary::after { content: ''; width: .375rem; height: .375rem; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); margin-right: .25rem; }
+.se-popover__panel details[open] > summary::after { transform: rotate(45deg); }
+.se-popover__panel summary:hover { background: var(--se-surface-soft); }
+.se-popover__panel summary:focus-visible { outline: 2px solid var(--se-primary); outline-offset: 2px; }
+.se-popover__panel details > fieldset { margin-top: 1rem; }

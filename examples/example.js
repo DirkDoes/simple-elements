@@ -1,5 +1,5 @@
 import { setBrandTheme } from '../src/theme.js';
-import { componentCatalog, patternCatalog } from './catalog.js?v=20260919v0133';
+import { componentCatalog, patternCatalog } from './catalog.js?v=20260920v0140';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
@@ -16,7 +16,7 @@ const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-sidebar-bu
 const groups = [
   ['Page layout', 'panel-left-open', ['breadcrumbs', 'nav-tabs', 'pagination', 'profile', 'layout-brand', 'sidebar', 'sidebar-toggle', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
-  ['Overlays', 'panel-right', ['drawer', 'menu', 'modal', 'toast', 'tooltip']],
+  ['Overlays', 'panel-right', ['drawer', 'menu', 'popover', 'modal', 'toast', 'tooltip']],
   ['Chat', 'message-square', ['comment', 'reactions', 'chat-context', 'chat-message', 'thought-train']],
   ['Composing', 'list', ['card', 'collection', 'empty-state', 'empty-illustration', 'file-card', 'folder-card', 'list-header', 'list-row', 'project-card', 'workspace-card', 'tree-item']],
   ['Styling', 'badge', ['spinner', 'progress-ring', 'badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
@@ -162,7 +162,7 @@ const renderPatternPage = ({ tag, description, examples, isolated = false }) => 
         frame.dataset.height = frameHeight;
         frame.style.width = `${frameWidth}px`;
         frame.style.height = `${frameHeight}px`;
-        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260919v0133"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260919v0133"></script></head><body>${editor.value}</body></html>`;
+        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260920v0140"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260920v0140"></script></head><body>${editor.value}</body></html>`;
         preview.replaceChildren(frame);
         resizeFrame();
         return;

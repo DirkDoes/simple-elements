@@ -7,3 +7,5 @@
 Opens the Simple Elements calendar popover and submits a hidden `YYYY-MM-DD` value normally in HTML and Ruby on Rails forms. Supports `name`, `value`, `min`, `max`, `disabled`, `placeholder`, and an optional BCP 47 `locale` such as `nl-NL`.
 
 Click the month/year heading to jump directly to another month or year.
+
+The calendar uses the browser top layer so it can extend outside modals and custom popovers. Escape closes it before its containing popover.

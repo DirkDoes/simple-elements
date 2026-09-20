@@ -1,4 +1,4 @@
-import { define, emit, escapeHtml } from '../helpers.js';
+import { define, emit, escapeHtml, openPopup } from '../helpers.js';
 import { calendarDays, dateValue, parseDate } from '../calendar.js';
 
 class SeDatePicker extends HTMLElement {
@@ -25,11 +25,11 @@ class SeDatePicker extends HTMLElement {
     this.renderCalendar();
   }
 
-  disconnectedCallback() { document.removeEventListener('pointerdown', this._outside); }
+  disconnectedCallback() { this.close(); document.removeEventListener('pointerdown', this._outside); }
   get value() { return this.querySelector('input')?.value || ''; }
   set value(value) { this._selected = parseDate(value); if (this._selected) this._view = this._selected; this.querySelector('input').value = value || ''; this.renderCalendar(); }
-  open() { this.querySelector('.se-date__popover').hidden = false; this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'true'); }
-  close() { this.querySelector('.se-date__popover').hidden = true; this.querySelector('.se-date__jump').hidden = true; this.querySelector('[data-jump-toggle]').setAttribute('aria-expanded', 'false'); this.querySelector('[data-month-select]')?.close(); this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'false'); }
+  open() { if (this.hasAttribute('disabled')) return; this._popup?.(); this.querySelector('.se-date__popover').hidden = false; this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'true'); this._popup = openPopup(this.querySelector('.se-date__trigger'), this.querySelector('.se-date__popover'), () => this.close()); }
+  close() { this._popup?.(); this._popup = null; if (!this.querySelector('.se-date__popover')) return; this.querySelector('.se-date__popover').hidden = true; this.querySelector('.se-date__jump').hidden = true; this.querySelector('[data-jump-toggle]').setAttribute('aria-expanded', 'false'); this.querySelector('[data-month-select]')?.close(); this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'false'); }
   select(date) {
     const value = date ? dateValue(date) : '';
     if (date && ((this.getAttribute('min') && value < this.getAttribute('min')) || (this.getAttribute('max') && value > this.getAttribute('max')))) return;

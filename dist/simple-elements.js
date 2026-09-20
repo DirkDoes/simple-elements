@@ -82,7 +82,13 @@ const openPopup = (trigger, popup, close, matchWidth = false) => {
   const escape = event => {
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); trigger.focus(); }
   };
-  const scroll = event => { if (!popup.contains(event.target)) close(); };
+  const scroll = event => {
+    if (popup.contains(event.target) || (event.target !== document && !event.target.contains?.(trigger))) return;
+    const rect = trigger.getBoundingClientRect();
+    const bounds = event.target === document ? { top: 0, left: 0, bottom: innerHeight, right: innerWidth } : event.target.getBoundingClientRect();
+    if (rect.bottom <= bounds.top || rect.top >= bounds.bottom || rect.right <= bounds.left || rect.left >= bounds.right) close();
+    else position();
+  };
   document.addEventListener('pointerdown', outside);
   popup.parentElement.addEventListener('keydown', escape);
   document.addEventListener('scroll', scroll, true);
@@ -1179,7 +1185,7 @@ class SeModal extends HTMLElement {
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
   open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); this.querySelector('.se-button')?.focus(); }
-  close() { this.querySelectorAll('se-select, se-menu').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
+  close() { this.querySelectorAll('se-select, se-menu, se-popover').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
 }
 
 define('se-modal', SeModal);
@@ -1812,18 +1818,56 @@ define('se-badge', SeBadge);
 
 
 class SeListHeader extends HTMLElement {
-  connectedCallback() { this.classList.add('se-list__header'); }
+  static observedAttributes = ['sticky'];
+  attributeChangedCallback() { this._update?.(); }
+  connectedCallback() {
+    this.classList.add('se-list__header');
+    this._update = () => {
+      if (!this.hasAttribute('sticky')) { this.style.translate = ''; this._shift = 0; this.removeAttribute('data-stuck'); return; }
+      const rows = [...(this.parentElement?.children || [])].filter(row => row.matches('se-list-row') && !row.hasAttribute('data-tree-hidden'));
+      const lastHeight = rows.at(-1)?.getBoundingClientRect().height || 0;
+      const previous = this._shift || 0;
+      const bottom = this.getBoundingClientRect().bottom - previous;
+      this._shift = Math.min(0, this.parentElement.getBoundingClientRect().bottom - lastHeight - bottom);
+      this.style.translate = '0 ' + this._shift + 'px';
+      this.toggleAttribute('data-stuck', this.getBoundingClientRect().top > this.parentElement.getBoundingClientRect().top + 2);
+    };
+    document.addEventListener('scroll', this._update, true);
+    this._resize = new ResizeObserver(this._update);
+    this._resize.observe(this.parentElement);
+    this._resize.observe(this);
+  }
+  disconnectedCallback() { document.removeEventListener('scroll', this._update, true); this._resize?.disconnect(); }
 }
 
 define('se-list-header', SeListHeader);
 
 
 class SeListRow extends HTMLElement {
-  connectedCallback() {
+  static observedAttributes = ['level', 'collapsible', 'collapsed'];
+  attributeChangedCallback() { if (this.isConnected) this.render(); }
+  connectedCallback() { this.render(); requestAnimationFrame(() => { if (this.isConnected) this.render(); }); }
+  render() {
     this.classList.add('se-list__row');
-    this.setAttribute('role', 'listitem');
+    this.setAttribute('role', this.parentElement?.matches('se-collection[type="table"]') ? 'row' : 'listitem');
     const level = Math.max(0, Number.parseInt(this.getAttribute('level') || '0', 10) || 0);
     this.style.setProperty('--se-list-row-indent', `${level * 1.25}rem`);
+    let toggle = this.querySelector(':scope > :first-child > .se-list__toggle');
+    if (!this.hasAttribute('collapsible')) { toggle?.remove(); return; }
+    if (!this.firstElementChild) return;
+    if (!toggle) {
+      toggle = document.createElement('button');
+      toggle.type = 'button'; toggle.className = 'se-list__toggle';
+      toggle.innerHTML = '<se-icon name="chevron"></se-icon>';
+      toggle.addEventListener('click', event => {
+        event.stopPropagation(); this.toggleAttribute('collapsed');
+        emit(this, 'toggle', { collapsed: this.hasAttribute('collapsed') });
+      });
+      this.firstElementChild.prepend(toggle);
+    }
+    const collapsed = this.hasAttribute('collapsed');
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', (collapsed ? 'Expand ' : 'Collapse ') + this.firstElementChild.textContent.trim());
   }
 }
 
@@ -1837,6 +1881,10 @@ class SeCollection extends HTMLElement {
     this.classList.toggle('se-list', type !== 'tree');
     this.classList.toggle('se-table', type === 'table');
 
+    this._observer?.disconnect();
+    this._observer = new MutationObserver(() => this.sync());
+    this._observer.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['level', 'collapsed', 'collapsible', 'dividers', 'guides'] });
+    this.sync();
     if (type === 'tree') return;
     this.setAttribute('role', type);
     if (type === 'list') return;
@@ -1845,6 +1893,62 @@ class SeCollection extends HTMLElement {
     if (this.hasAttribute('mobile-columns')) this.style.setProperty('--se-mobile-columns', this.getAttribute('mobile-columns'));
     this.querySelectorAll('se-list-header').forEach((header) => { header.setAttribute('role', 'row'); [...header.children].forEach((cell) => cell.setAttribute('role', 'columnheader')); });
     this.querySelectorAll('se-list-row').forEach((row) => { row.setAttribute('role', 'row'); [...row.children].forEach((cell) => cell.setAttribute('role', 'cell')); });
+  }
+  disconnectedCallback() { this._observer?.disconnect(); this.querySelectorAll('se-list-row').forEach(row => row._treeAnimation?.cancel()); }
+  sync() {
+    const dividers = new Set((this.getAttribute('dividers') || '').split(',').map(Number));
+    const rows = [...this.children].filter(row => row.matches('se-list-row'));
+    const levelOf = row => Math.max(0, parseInt(row.getAttribute('level') || '0', 10) || 0);
+    const nextLevels = new Set(), hasNext = new Map();
+    for (const row of [...rows].reverse()) {
+      const level = levelOf(row);
+      for (const depth of nextLevels) if (depth > level) nextLevels.delete(depth);
+      hasNext.set(row, nextLevels.has(level));
+      nextLevels.add(level);
+    }
+    const branches = new Map();
+    const closed = [];
+    for (const row of this.children) {
+      if (!row.matches('se-list-row, se-list-header')) continue;
+      if (this.matches('[type="table"]')) { row.setAttribute('role', 'row'); [...row.children].forEach(cell => cell.setAttribute('role', row.matches('se-list-header') ? 'columnheader' : 'cell')); }
+      [...row.children].forEach((cell, index) => cell.toggleAttribute('data-column-divider', dividers.has(index + 1) && index < row.children.length - 1));
+      if (!row.matches('se-list-row')) continue;
+      const level = Math.max(0, parseInt(row.getAttribute('level') || '0', 10) || 0);
+      while (closed.length && closed.at(-1) >= level) closed.pop();
+      const hidden = closed.length > 0;
+      if (row._treeHidden !== hidden) {
+        const animate = row._treeHidden !== undefined && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const start = row.getBoundingClientRect().height;
+        row._treeAnimation?.cancel();
+        row._treeHidden = hidden;
+        row.inert = hidden;
+        if (hidden) row.setAttribute('aria-hidden', 'true'); else row.removeAttribute('aria-hidden');
+        row.removeAttribute('data-tree-hidden');
+        if (animate) {
+          const end = hidden ? 0 : row.getBoundingClientRect().height;
+          row._treeAnimation = row.animate([
+            { height: start + 'px', opacity: hidden ? 1 : 0 },
+            { height: end + 'px', opacity: hidden ? 0 : 1 }
+          ], { duration: 160, easing: 'ease-out' });
+          row.setAttribute('data-tree-animating', '');
+          row._treeAnimation.onfinish = () => {
+            row.toggleAttribute('data-tree-hidden', hidden);
+            row.removeAttribute('data-tree-animating');
+            row._treeAnimation = null;
+          };
+        } else { row.toggleAttribute('data-tree-hidden', hidden); row.removeAttribute('data-tree-animating'); }
+      }
+      for (const depth of branches.keys()) if (depth >= level) branches.delete(depth);
+      const lines = [...branches].filter(([depth, continues]) => depth > 0 && continues);
+      const cell = row.firstElementChild;
+      if (cell) {
+        cell.style.setProperty('--se-tree-lines', lines.map(() => 'linear-gradient(var(--se-border), var(--se-border))').join(',') || 'none');
+        cell.style.setProperty('--se-tree-positions', lines.map(([depth]) => (depth * 1.25 - .75) + 'rem 0').join(',') || '0 0');
+      }
+      row.toggleAttribute('data-tree-continues', hasNext.get(row));
+      branches.set(level, hasNext.get(row));
+      if (row.hasAttribute('collapsible') && row.hasAttribute('collapsed')) closed.push(level);
+    }
   }
 }
 
@@ -2065,11 +2169,11 @@ class SeDatePicker extends HTMLElement {
     this.renderCalendar();
   }
 
-  disconnectedCallback() { document.removeEventListener('pointerdown', this._outside); }
+  disconnectedCallback() { this.close(); document.removeEventListener('pointerdown', this._outside); }
   get value() { return this.querySelector('input')?.value || ''; }
   set value(value) { this._selected = parseDate(value); if (this._selected) this._view = this._selected; this.querySelector('input').value = value || ''; this.renderCalendar(); }
-  open() { this.querySelector('.se-date__popover').hidden = false; this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'true'); }
-  close() { this.querySelector('.se-date__popover').hidden = true; this.querySelector('.se-date__jump').hidden = true; this.querySelector('[data-jump-toggle]').setAttribute('aria-expanded', 'false'); this.querySelector('[data-month-select]')?.close(); this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'false'); }
+  open() { if (this.hasAttribute('disabled')) return; this._popup?.(); this.querySelector('.se-date__popover').hidden = false; this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'true'); this._popup = openPopup(this.querySelector('.se-date__trigger'), this.querySelector('.se-date__popover'), () => this.close()); }
+  close() { this._popup?.(); this._popup = null; if (!this.querySelector('.se-date__popover')) return; this.querySelector('.se-date__popover').hidden = true; this.querySelector('.se-date__jump').hidden = true; this.querySelector('[data-jump-toggle]').setAttribute('aria-expanded', 'false'); this.querySelector('[data-month-select]')?.close(); this.querySelector('.se-date__trigger').setAttribute('aria-expanded', 'false'); }
   select(date) {
     const value = date ? dateValue(date) : '';
     if (date && ((this.getAttribute('min') && value < this.getAttribute('min')) || (this.getAttribute('max') && value > this.getAttribute('max')))) return;
@@ -2255,10 +2359,13 @@ class SeNavTabs extends HTMLElement {
   set options(value) { this._options = value; if (this.isConnected) this.render(); }
   get value() { return this.getAttribute('value') || ''; }
   set value(value) { this.setAttribute('value', value); }
-  connectedCallback() { this.render(); }
+  connectedCallback() { requestAnimationFrame(() => { if (this.isConnected) this.render(); }); }
   attributeChangedCallback() { if (this.isConnected) this.render(); }
   render() {
+    const actions = this.querySelector('[data-actions]');
+    actions?.remove();
     this.innerHTML = `<nav class="se-nav-tabs${this.getAttribute('variant') === 'pill' ? ' se-nav-tabs--pill' : ''}" aria-label="${escapeHtml(this.getAttribute('label') || 'Section navigation')}">${parseOptions(this).map(item => `<${item.disabled ? 'span' : 'a'} class="se-nav-tabs__item"${item.disabled ? ' aria-disabled="true"' : ` href="${escapeHtml(item.href || '#')}"`}${String(item.id) === this.value ? ' aria-current="page"' : ''}>${item.icon ? `<se-icon name="${escapeIcon(item.icon)}"></se-icon>` : ''}${escapeHtml(item.label)}${item.count !== undefined ? `<span class="se-nav-tabs__count">${escapeHtml(item.count)}</span>` : ''}</${item.disabled ? 'span' : 'a'}>`).join('')}</nav>`;
+    if (actions) { actions.classList.add('se-nav-tabs__actions'); this.querySelector('nav').append(actions); }
   }
 }
 define('se-nav-tabs', SeNavTabs);
@@ -2413,6 +2520,39 @@ class SeProgressRing extends HTMLElement {
 }
 
 define('se-progress-ring', SeProgressRing);
+
+
+class SePopover extends HTMLElement {
+  connectedCallback() {
+    requestAnimationFrame(() => {
+      if (!this.isConnected || this._ready) return;
+      this._ready = true;
+      const content = [...this.childNodes];
+      content.forEach(node => node.remove());
+      const label = this.getAttribute('label') || 'Options';
+      const icon = this.getAttribute('icon') || 'more';
+      const id = 'se-popover-' + crypto.randomUUID();
+      this.innerHTML = `<button type="button" class="se-button se-button--secondary${this.hasAttribute('icon-only') ? ' se-button--icon' : ''}" aria-label="${escapeHtml(label)}" aria-haspopup="dialog" aria-expanded="false" aria-controls="${id}"><se-icon name="${escapeIcon(icon)}"></se-icon>${this.hasAttribute('icon-only') ? '' : escapeHtml(label)}</button><div id="${id}" class="se-menu__items se-popover__panel" role="dialog" aria-label="${escapeHtml(label)}" popover="manual"></div>`;
+      this.querySelector('.se-popover__panel').append(...content);
+      this.querySelector('button').addEventListener('click', () => this._popup ? this.close() : this.open());
+    });
+  }
+  open() {
+    if (!this._ready || this._popup) return;
+    const trigger = this.querySelector('button');
+    trigger.setAttribute('aria-expanded', 'true');
+    this._popup = openPopup(trigger, this.querySelector('.se-popover__panel'), () => this.close());
+    this.querySelector('.se-popover__panel :is(input, button, select, textarea)')?.focus({ preventScroll: true });
+  }
+  close() {
+    this.querySelectorAll('se-select, se-menu, se-popover, se-date-picker').forEach(child => child.close());
+    this._popup?.(); this._popup = null;
+    this.querySelector('button')?.setAttribute('aria-expanded', 'false');
+  }
+  disconnectedCallback() { this.close(); }
+}
+
+define('se-popover', SePopover);
 
  globalThis.SimpleElements = { setBrandTheme, registerIcons };
 })();

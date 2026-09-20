@@ -59,6 +59,7 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 - [File card](file-card.md)
 - [Tooltip](tooltip.md)
 - [Menu](menu.md)
+- [Popover](popover.md)
 - [Profile](profile.md)
 - [Modal](modal.md)
 - [Drawer](drawer.md)

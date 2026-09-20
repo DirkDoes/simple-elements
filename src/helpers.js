@@ -79,7 +79,13 @@ export const openPopup = (trigger, popup, close, matchWidth = false) => {
   const escape = event => {
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); trigger.focus(); }
   };
-  const scroll = event => { if (!popup.contains(event.target)) close(); };
+  const scroll = event => {
+    if (popup.contains(event.target) || (event.target !== document && !event.target.contains?.(trigger))) return;
+    const rect = trigger.getBoundingClientRect();
+    const bounds = event.target === document ? { top: 0, left: 0, bottom: innerHeight, right: innerWidth } : event.target.getBoundingClientRect();
+    if (rect.bottom <= bounds.top || rect.top >= bounds.bottom || rect.right <= bounds.left || rect.left >= bounds.right) close();
+    else position();
+  };
   document.addEventListener('pointerdown', outside);
   popup.parentElement.addEventListener('keydown', escape);
   document.addEventListener('scroll', scroll, true);

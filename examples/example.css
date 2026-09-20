@@ -206,3 +206,6 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-component-preview[data-component="empty-illustration"] [data-component-preview] > se-empty-illustration { width: 100%; --se-illustration-width: 36rem; }
 
 .demo-component-preview[data-component="pagination"] [data-component-preview] > se-pagination { width: 100%; }
+
+.demo-file-toolbar { display: flex; align-items: flex-end; gap: .75rem; margin-bottom: 1rem; }
+.demo-file-toolbar > se-input { flex: 1; min-width: 0; }

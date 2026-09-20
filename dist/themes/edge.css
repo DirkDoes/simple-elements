@@ -74,3 +74,5 @@
 @media (prefers-reduced-motion: reduce) {
   :root[data-se-theme="edge"] .se-spinner--ring i::before { animation: none; }
 }
+
+:root[data-se-theme="edge"] .se-table .se-list__row[guides] > :first-child::before { border-radius: 0; }

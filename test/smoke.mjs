@@ -233,7 +233,7 @@ for (const { tag, attributes, custom } of componentCatalog) {
   if (custom) continue;
   const source = await readFile(`src/components/${tag}.js`, 'utf8');
   const documentation = await readFile(`docs/${tag}.md`, 'utf8');
-  const used = [...source.matchAll(/(?:get|has)Attribute\('([^']+)'\)/g)].map((match) => match[1]).filter((name) => name !== 'id' && !name.startsWith('data-'));
+  const used = [...source.matchAll(/this\.(?:get|has)Attribute\('([^']+)'\)/g)].map((match) => match[1]).filter((name) => name !== 'id' && !name.startsWith('data-'));
   const listed = new Set(attributes.map(({ name }) => name));
   used.forEach((name) => assert.ok(listed.has(name), `${tag} catalog is missing ${name}`));
   attributes.filter(({ name }) => !['content', 'child-content'].includes(name)).forEach(({ name }) => assert.ok(documentation.includes(`\`${name}`) || documentation.includes(` ${name}=`) || documentation.includes(` ${name} `), `${tag} docs are missing ${name}`));

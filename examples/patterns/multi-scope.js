@@ -44,7 +44,7 @@ function scopeDemo(variant) {
           <div class="mock-body">
             ${variant === 'sidebar' || secondary ? `<se-sidebar variant="secondary" class="mock-sidebar" layout-mode="desktop-only"><section>${current}</section></se-sidebar>` : ''}
             ${variant !== 'top' ? `<se-sidebar id="scope-navigation" class="mock-mobile" layout-mode="responsive"><section>${variant === 'rail' ? organization + (repo ? current : '') : current}</section></se-sidebar>` : ''}
-            <main class="mock-main">${variant !== 'sidebar' ? '<se-breadcrumbs></se-breadcrumbs>' : ''}<div class="mock-page-heading"><se-title level="page">${page === 'Overview' ? names[scope] : page}</se-title></div><se-nav-tabs variant="${variant === 'top' ? 'pill' : 'underline'}"></se-nav-tabs><div class="mock-content"></div></main>
+            <main class="mock-main">${variant !== 'sidebar' ? '<se-breadcrumbs></se-breadcrumbs>' : ''}<div class="mock-page-heading"><se-title level="page">${page === 'Overview' ? names[scope] : page}</se-title></div><se-nav-tabs variant="${variant === 'top' ? 'pill' : 'underline'}">${variant === 'rail' ? '<span data-actions><se-button variant="secondary" icon="plus" text="' + (repo ? 'New issue' : 'New repository') + '"></se-button></span>' : ''}</se-nav-tabs><div class="mock-content"></div></main>
           </div>
         </div>
       </div>`;
