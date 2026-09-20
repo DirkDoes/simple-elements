@@ -15,3 +15,5 @@ Sticky headers keep the collection’s rounded corners while pinned. Rows are cl
 Header cells may contain components such as `se-select` or `se-button`. Interactive cells allow focus effects to overflow, and popups escape the table through the top layer. Column dividers retain their spacing but omit the vertical stroke in the header. See Column controls in the File system pattern.
 
 While sticky, the entire collection—including its background and borders—is clipped at the header’s current top edge. The rounded clipping boundary moves with the header, so no portion of the table remains visible above it.
+
+Sticky headers use a content-level stacking order below responsive navigation overlays.

@@ -12,3 +12,5 @@ Methods: `open()` and `close()`. Attributes: `title`, `subtitle`, `icon`, `tone`
 Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
 
 Select lists (single and multiple) and action menus appear above modal footers and scrolling containers using the browser top layer. They flip upward when needed and stay within the viewport; long lists retain their own scrolling. Escape dismisses an open list before the modal.
+
+The visible modal title and accessible dialog name are retained without inheriting a native browser hover tooltip inside the overlay.

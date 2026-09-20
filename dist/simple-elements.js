@@ -826,6 +826,9 @@ define('se-thought-train', SeThoughtTrain);
 
 
 class SeSelect extends HTMLElement {
+  static observedAttributes = ['empty-text'];
+  attributeChangedCallback() { const empty = this.querySelector('.se-select__empty'); if (empty) empty.textContent = this.emptyText; }
+  get emptyText() { return this.getAttribute('empty-text') ?? ('No options ' + (this.hasAttribute('multiple') ? 'available' : 'found') + '.'); }
   set options(value) { this._options = value; if (this.isConnected) this.render(); }
   get options() { return this._options; }
   set value(value) { this._selected = new Set((Array.isArray(value) ? value : [value]).map(String).filter(Boolean)); if (this.isConnected) this.render(); }
@@ -846,10 +849,17 @@ class SeSelect extends HTMLElement {
   close() { this._popup?.(); this._popup = null; this.querySelector('.se-select')?.classList.remove('se-select--open'); this.querySelector('.se-select__trigger')?.setAttribute('aria-expanded', 'false'); }
 
   render() {
+    const wasOpen = Boolean(this._popup);
+    const search = this.querySelector('input[type="search"]');
+    const focused = search && document.activeElement === search;
     this.close();
     const options = parseOptions(this);
     const multiple = this.hasAttribute('multiple');
-    const selected = options.filter((option) => this._selected?.has(String(option.id)));
+    this._selectionLabels ||= new Map();
+    if (!this.hasAttribute('remote')) this._selectionLabels.clear();
+    for (const option of options) if (this._selected?.has(String(option.id))) this._selectionLabels.set(String(option.id), option);
+    for (const id of this._selectionLabels.keys()) if (!this._selected?.has(id)) this._selectionLabels.delete(id);
+    const selected = [...this._selectionLabels.values()];
     const value = selected.length ? (multiple
       ? `<span class="se-select__tags">${selected.map((option) => `<span class="se-select__tag">${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}${option.locked ? '<se-icon name="lock"></se-icon>' : this.hasAttribute('disabled') ? '' : `<button type="button" data-remove="${escapeHtml(option.id)}" aria-label="Remove ${escapeHtml(option.label)}"><se-icon name="x"></se-icon></button>`}</span>`).join('')}</span>`
       : `<span class="se-select__value">${selected[0].icon ? `<se-icon name="${escapeIcon(selected[0].icon)}"></se-icon>` : ''}<strong>${escapeHtml(selected[0].label)}</strong></span>`)
@@ -861,7 +871,7 @@ class SeSelect extends HTMLElement {
     const trigger = multiple
       ? `<div class="se-select__trigger" role="button" tabindex="${disabled ? '-1' : '0'}" aria-haspopup="listbox" aria-expanded="false" aria-disabled="${disabled}">${value}<span class="se-select__chevron"><se-icon name="chevron"></se-icon></span></div>`
       : `<button class="se-select__trigger" type="button" aria-haspopup="listbox" aria-expanded="false"${disabled ? ' disabled' : ''}>${value}<span class="se-select__chevron"><se-icon name="chevron"></se-icon></span></button>`;
-    this.innerHTML = `<div class="se-select${multiple ? ' se-select--multiple' : ''}${disabled ? ' se-select--disabled' : ''}${clearable ? ' se-select--clearable' : ''}${this.getAttribute('size') === 'small' ? ' se-select--small' : ''}"><label class="se-label">${escapeHtml(this.getAttribute('label') || '')}</label>${hidden}<div class="se-select__control">${trigger}${clearable ? `<button class="se-select__clear" type="button" aria-label="Clear ${multiple ? 'selections' : 'selection'}"><se-icon name="x"></se-icon></button>` : ''}</div><div class="se-select__menu">${this.hasAttribute('searchable') ? '<div class="se-select__search"><se-icon name="search"></se-icon><input class="se-control" type="search" placeholder="Search options..." aria-label="Search options"></div>' : ''}<div class="se-select__options" role="listbox"${multiple ? ' aria-multiselectable="true"' : ''}>${available.map((option) => `<button class="se-select__option" type="button" role="option" data-id="${escapeHtml(option.id)}" aria-selected="${this._selected.has(String(option.id))}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label)}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}<div class="se-select__empty"${available.length ? ' hidden' : ''}>No options ${multiple ? 'available' : 'found'}.</div></div></div></div>`;
+    this.innerHTML = `<div class="se-select${multiple ? ' se-select--multiple' : ''}${disabled ? ' se-select--disabled' : ''}${clearable ? ' se-select--clearable' : ''}${this.getAttribute('size') === 'small' ? ' se-select--small' : ''}"><label class="se-label">${escapeHtml(this.getAttribute('label') || '')}</label>${hidden}<div class="se-select__control">${trigger}${clearable ? `<button class="se-select__clear" type="button" aria-label="Clear ${multiple ? 'selections' : 'selection'}"><se-icon name="x"></se-icon></button>` : ''}</div><div class="se-select__menu">${this.hasAttribute('searchable') ? '<div class="se-select__search"><se-icon name="search"></se-icon><input class="se-control" type="search" placeholder="Search options..." aria-label="Search options"></div>' : ''}<div class="se-select__options" role="listbox"${multiple ? ' aria-multiselectable="true"' : ''}>${available.map((option) => `<button class="se-select__option" type="button" role="option" data-id="${escapeHtml(option.id)}" aria-selected="${this._selected.has(String(option.id))}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label)}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}<div class="se-select__empty"${available.length ? ' hidden' : ''}>${escapeHtml(this.emptyText)}</div></div></div></div>`;
     this.querySelector('.se-select__trigger').addEventListener('click', () => this.querySelector('.se-select').classList.contains('se-select--open') ? this.close() : this.open());
     if (multiple) this.querySelector('.se-select__trigger').addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.querySelector('.se-select__trigger').click(); }
@@ -869,13 +879,14 @@ class SeSelect extends HTMLElement {
     this.querySelectorAll('[data-id]').forEach((button) => button.addEventListener('click', () => {
       if (multiple) this._selected.has(button.dataset.id) ? this._selected.delete(button.dataset.id) : this._selected.add(button.dataset.id);
       else { this._selected.clear(); this._selected.add(button.dataset.id); }
+      if (!multiple) this.close();
       this.render();
       if (multiple) this.open();
       emit(this, 'change', { value: this.value, option: options.find((option) => String(option.id) === button.dataset.id) });
     }));
     this.querySelectorAll('[data-remove]').forEach((button) => button.addEventListener('click', (event) => {
       event.stopPropagation();
-      const option = options.find((item) => String(item.id) === button.dataset.remove);
+      const option = this._selectionLabels.get(button.dataset.remove);
       if (!option?.locked) { this._selected.delete(button.dataset.remove); this.render(); emit(this, 'change', { value: this.value }); }
     }));
     this.querySelector('.se-select__clear')?.addEventListener('click', () => {
@@ -883,16 +894,25 @@ class SeSelect extends HTMLElement {
       this.render();
       emit(this, 'change', { value: this.value });
     });
-    this.querySelector('input[type="search"]')?.addEventListener('input', (event) => {
-      const term = event.target.value.toLowerCase();
+    if (search) this.querySelector('input[type="search"]')?.replaceWith(search);
+    const input = this.querySelector('input[type="search"]');
+    const filter = () => {
+      const term = (input?.value || '').toLowerCase();
       let visible = 0;
-      this.querySelectorAll('[data-id]').forEach((button) => {
-        const option = options.find((item) => String(item.id) === button.dataset.id);
-        button.hidden = !`${option.label} ${option.description || ''}`.toLowerCase().includes(term);
-        if (!button.hidden) visible += 1;
+      this.querySelectorAll('[data-id]').forEach(button => {
+        const option = parseOptions(this).find(item => String(item.id) === button.dataset.id);
+        button.hidden = !this.hasAttribute('remote') && !((option.label + ' ' + (option.description || '')).toLowerCase().includes(term));
+        if (!button.hidden) visible++;
       });
       this.querySelector('.se-select__empty').hidden = visible > 0;
+    };
+    if (!search) input?.addEventListener('input', event => {
+      if (this.hasAttribute('remote')) emit(this, 'search', { query: event.target.value });
+      else filter();
     });
+    filter();
+    if (wasOpen) this.open();
+    if (focused) input?.focus({ preventScroll: true });
   }
 }
 
@@ -1173,7 +1193,7 @@ class SeModal extends HTMLElement {
     const body = expanded
       ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`
       : `<div class="se-modal__body"><se-empty-state tone="${tone}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
-    this.innerHTML = `<div class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
+    this.innerHTML = `<div title="" class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
     this.querySelector('[data-modal-content]').replaceWith(...children);
     this.querySelector('[data-cancel]').addEventListener('click', () => this.close());
     this.querySelector('[data-confirm]').addEventListener('click', () => { emit(this, 'confirm', {}); this.close(); });
@@ -1543,7 +1563,7 @@ class SeEmptyState extends HTMLElement {
     const content = this.innerHTML.trim();
     const tone = ['brand', 'gray', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'gray';
     const icon = this.getAttribute('icon') === 'none' ? '' : `<span class="se-empty-state__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'package')}"></se-icon></span>`;
-    this.innerHTML = `<div class="se-empty-state se-empty-state--${tone}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('text') ? `<se-text muted>${escapeHtml(this.getAttribute('text'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
+    this.innerHTML = `<div title="" class="se-empty-state se-empty-state--${tone}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('text') ? `<se-text muted>${escapeHtml(this.getAttribute('text'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
   }
 }
 

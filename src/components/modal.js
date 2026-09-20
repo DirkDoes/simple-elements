@@ -23,7 +23,7 @@ class SeModal extends HTMLElement {
     const body = expanded
       ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`
       : `<div class="se-modal__body"><se-empty-state tone="${tone}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
-    this.innerHTML = `<div class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
+    this.innerHTML = `<div title="" class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
     this.querySelector('[data-modal-content]').replaceWith(...children);
     this.querySelector('[data-cancel]').addEventListener('click', () => this.close());
     this.querySelector('[data-confirm]').addEventListener('click', () => { emit(this, 'confirm', {}); this.close(); });

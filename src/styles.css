@@ -1110,7 +1110,7 @@ se-list-row[data-tree-hidden] { display: none !important; }
 .se-list__toggle se-icon, .se-button--mini se-icon { width: .875rem; height: .875rem; transition: transform .15s; }
 se-list-row[collapsed] .se-list__toggle se-icon { transform: rotate(-90deg); }
 .se-list:has(> se-list-header[sticky]) { overflow: visible; }
-se-list-header[sticky] { position: sticky; top: var(--se-list-header-top, 0px); z-index: 5; border-radius: .75rem .75rem 0 0; }
+se-list-header[sticky] { position: sticky; top: var(--se-list-header-top, 0px); z-index: 1; border-radius: .75rem .75rem 0 0; }
 
 .se-list[dividers] > :is(.se-list__header, .se-list__row) { padding-top: 0; padding-bottom: 0; align-items: stretch; }
 .se-list[dividers] > :is(.se-list__header, .se-list__row) > * { padding-top: .875rem; padding-bottom: .875rem; align-content: center; }
