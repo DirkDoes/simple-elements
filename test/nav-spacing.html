@@ -1,0 +1,21 @@
+<!doctype html><link rel="stylesheet" href="../dist/styles.css"><script src="../dist/simple-elements.js"></script>
+<se-nav-tabs value="a" options='[{"id":"a","label":"Overview"}]'><span data-actions><se-button text="New issue" icon="plus"></se-button></span></se-nav-tabs><pre id="result"></pre>
+<script type="module">
+const assert=(ok,message)=>{if(!ok)throw Error(message)};
+try {
+await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+const tabs=document.querySelector('se-nav-tabs'),action=tabs.querySelector('[data-actions]');
+const item=tabs.querySelector('.se-nav-tabs__item'), nav=tabs.querySelector('nav');
+const height=item.getBoundingClientRect().height;
+assert(Math.abs(nav.getBoundingClientRect().bottom-item.getBoundingClientRect().bottom-1)<1,'Tab underline meets divider with actions');
+action.style.height='80px';
+assert(Math.abs(item.getBoundingClientRect().height-height)<1,'Tall action does not stretch tabs');
+assert(Math.abs(nav.getBoundingClientRect().bottom-item.getBoundingClientRect().bottom-1)<1,'Tall action keeps tab against divider');
+action.style.height='';
+
+action.remove();
+assert(Math.abs(item.getBoundingClientRect().height-height)<1,'Same tab height without actions');
+assert(Math.abs(nav.getBoundingClientRect().bottom-item.getBoundingClientRect().bottom-1)<1,'Same divider spacing without actions');
+document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Passed: tab height and divider spacing with normal, tall, and no actions';
+}catch(e){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=e.stack}
+</script>

@@ -1119,7 +1119,8 @@ se-list-header[sticky] { position: sticky; top: var(--se-list-header-top, 0px); 
 .se-table:has(> se-list-row[collapsible]) .se-list__toggle { margin-left: -1.875rem; }
 
 /* Preserve breathing room for action-button focus rings inside the tab scroller. */
-.se-nav-tabs:has(.se-nav-tabs__actions) { padding: 5px; margin: -5px; }
+.se-nav-tabs:has(.se-nav-tabs__actions) { padding: 5px 5px 0; margin: -5px -5px 0; }
+.se-nav-tabs:not(.se-nav-tabs--pill) .se-nav-tabs__item { align-self: flex-end; }
 se-list-header[sticky] { border-start-start-radius: inherit; border-start-end-radius: inherit; }
 
 .se-table .se-list__row[guides]:not([guides="simple"])[data-tree-continues]:not([level="0"])[level] > :first-child::before { border-radius: 0; }

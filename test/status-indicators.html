@@ -25,8 +25,8 @@ try {
   assert(document.activeElement === meter && tooltip.textContent === 'Confidence: 94.5%', 'Live update retains focus and updates tooltip');
   assert(ring.querySelector('.se-progress-ring__text').textContent === '94.5%', 'Visible value');
   ring.removeAttribute('show-value'); assert(ring.querySelector('.se-progress-ring__text').hidden, 'Value label optional');
-  ring.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true})); assert(tooltip.hidden, 'Escape dismisses tooltip');
-  ring.dispatchEvent(new Event('pointerenter')); assert(!tooltip.hidden, 'Tooltip can reopen');
+  ring.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true})); assert(!tooltip.matches(':popover-open'), 'Escape dismisses tooltip');
+  ring.dispatchEvent(new Event('pointerenter')); assert(tooltip.matches(':popover-open'), 'Tooltip can reopen');
   for (const [input, expected] of [[-5,0],[150,100],['bad',0],['Infinity',0],[42.75,42.75]]) { ring.value=input; assert(ring.value===expected && Number(meter.getAttribute('aria-valuenow'))===expected, 'Value normalization'); }
   ring.setAttribute('label','<Confidence> & completion'); assert(tooltip.textContent.startsWith('<Confidence> & completion:'), 'Safe live label');
   const color = () => getComputedStyle(ring.querySelector('.se-progress-ring__value')).stroke;
@@ -40,6 +40,25 @@ try {
   ring.value=0; assert(meter.hasAttribute('data-empty'), 'Zero hides colored stroke');
   ring.value=100; assert(!meter.hasAttribute('data-empty') && meter.style.getPropertyValue('--se-progress-value')==='100', 'Complete outline');
   for (const size of ['small','medium','large']) {ring.setAttribute('size',size);spinner.setAttribute('size',size);assert(ring.querySelector('.se-progress-ring--'+size) && spinner.querySelector('.se-spinner--'+size),'Sizes');}
+  meter.blur();
+  fixtures.style.cssText='position:fixed;top:150px;left:80px;width:180px;height:45px;overflow:hidden';
+  fixtures.insertAdjacentHTML('beforeend', '<se-tooltip content="Fallback"><button>Help</button><span data-content><strong>Table help</strong><br>Details</span></se-tooltip>');
+  await new Promise(resolve => requestAnimationFrame(resolve));
+  const rich = fixtures.querySelector('se-tooltip [role="tooltip"]');
+  assert(rich.querySelector('strong')?.textContent === 'Table help' && !rich.textContent.includes('Fallback'), 'Structured content wins and retains markup');
+  for (const host of [ring, fixtures.querySelector('se-tooltip')]) {
+    const trigger = host.querySelector('[tabindex], button');
+    trigger.focus();
+    const tip = host.querySelector('[role="tooltip"]');
+    assert(tip.matches(':popover-open'), 'Tooltip uses top layer');
+    const bounds = tip.getBoundingClientRect();
+    assert(bounds.bottom <= trigger.getBoundingClientRect().top, 'Tooltip above trigger');
+    assert(bounds.top < fixtures.getBoundingClientRect().top, 'Tooltip escapes container');
+    assert(tip.contains(document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)), 'Tooltip paints outside clipped list');
+    trigger.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true}));
+    assert(!tip.matches(':popover-open'), 'Top-layer tooltip dismisses');
+    trigger.blur();
+  }
   document.getElementById('result').textContent='Passed: spinner variants, live ring values, bounds, labels, tooltip/focus behavior, sizes, and theme geometry.';
   document.documentElement.dataset.test='passed';
 } catch(error) { document.getElementById('result').textContent=error.stack; document.documentElement.dataset.test='failed'; }

@@ -60,7 +60,7 @@ const sidebarTooltip = (host, trigger, label) => {
 };
 
 // Keep popup content in its component for inherited themes, but paint above clipping containers.
-const openPopup = (trigger, popup, close, matchWidth = false) => {
+const openPopup = (trigger, popup, close, matchWidth = false, aboveCenter = false) => {
   popup.setAttribute('popover', 'manual');
   popup.classList.add('se-popup');
   const position = () => {
@@ -71,9 +71,9 @@ const openPopup = (trigger, popup, close, matchWidth = false) => {
     const height = popup.offsetHeight;
     const below = innerHeight - rect.bottom - 8;
     const above = rect.top - 8;
-    const down = below >= height || below >= above;
+    const down = aboveCenter ? above < height && below > above : below >= height || below >= above;
     popup.style.maxHeight = Math.max(0, down ? below - 8 : above - 8) + 'px';
-    popup.style.left = Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8)) + 'px';
+    popup.style.left = Math.max(8, Math.min(aboveCenter ? rect.left + (rect.width - popup.offsetWidth) / 2 : rect.left, innerWidth - popup.offsetWidth - 8)) + 'px';
     popup.style.top = Math.max(8, down ? rect.bottom + 8 : rect.top - 8 - popup.offsetHeight) + 'px';
   };
   popup.showPopover();
@@ -100,6 +100,19 @@ const openPopup = (trigger, popup, close, matchWidth = false) => {
     document.removeEventListener('scroll', scroll, true);
     window.removeEventListener('resize', position);
   };
+};
+
+// Shared hover/focus lifecycle for tooltips that must escape overflow containers.
+const bindTooltip = (root, bubble) => {
+  let popup;
+  const hide = () => { popup?.(); popup = null; };
+  const show = () => { if (!popup) popup = openPopup(root, bubble, hide, false, true); };
+  root.addEventListener('pointerenter', show);
+  root.addEventListener('pointerleave', () => { if (!root.contains(document.activeElement)) hide(); });
+  root.addEventListener('focusin', show);
+  root.addEventListener('focusout', event => { if (!root.contains(event.relatedTarget)) hide(); });
+  root.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); hide(); } });
+  return hide;
 };
 
 const DEFAULT_PRIMARY = '#2563eb';
@@ -1114,28 +1127,22 @@ class SeTooltip extends HTMLElement {
   render() {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
+    const content = this.querySelector(':scope > [data-content]');
+    content?.remove();
     const children = [...this.childNodes];
     children.forEach(node => node.remove());
     const id = `se-tooltip-${crypto.randomUUID()}`;
     this.innerHTML = `<span class="se-tooltip"><span class="se-tooltip__bubble se-tooltip__layer" id="${id}" role="tooltip" popover="manual">${escapeHtml(this.getAttribute('content') || '')}</span></span>`;
     const root = this.querySelector('.se-tooltip');
     const bubble = this.querySelector('[role="tooltip"]');
+    if (content) bubble.replaceChildren(...content.childNodes);
     root.prepend(...children);
-    const hide = () => { this._popup?.(); this._popup = null; };
-    const show = () => {
-      if (this._popup) return;
-      const trigger = root.querySelector('button, a, input, [tabindex]') || root;
-      const ids = new Set((trigger.getAttribute('aria-describedby') || '').split(' ').filter(Boolean));
-      ids.add(id); trigger.setAttribute('aria-describedby', [...ids].join(' '));
-      this._popup = openPopup(root, bubble, hide);
-    };
-    root.addEventListener('pointerenter', show);
-    root.addEventListener('pointerleave', () => { if (!root.contains(document.activeElement)) hide(); });
-    root.addEventListener('focusin', show);
-    root.addEventListener('focusout', event => { if (!root.contains(event.relatedTarget)) hide(); });
-    root.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); hide(); } });
+    const trigger = root.querySelector('button, a, input, [tabindex]') || root;
+    const ids = new Set((trigger.getAttribute('aria-describedby') || '').split(' ').filter(Boolean));
+    ids.add(id); trigger.setAttribute('aria-describedby', [...ids].join(' '));
+    this._popup = bindTooltip(root, bubble);
   }
-  disconnectedCallback() { this._popup?.(); this._popup = null; }
+  disconnectedCallback() { this._popup?.(); }
 }
 
 define('se-tooltip', SeTooltip);
@@ -2539,15 +2546,14 @@ class SeProgressRing extends HTMLElement {
   }
   set value(value) { this.setAttribute('value', value); }
   connectedCallback() { this.render(); }
+  disconnectedCallback() { this._hideTooltip?.(); }
   attributeChangedCallback() { if (this.isConnected) this.render(); }
   render() {
     if (!this.querySelector('.se-progress-ring')) {
       const id = `se-progress-ring-${crypto.randomUUID()}`;
-      this.innerHTML = `<span class="se-tooltip"><span class="se-progress-ring" role="meter" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-describedby="${id}"><svg viewBox="0 0 24 24" aria-hidden="true"><g class="se-progress-ring__round"><circle cx="12" cy="12" r="9" pathLength="100"></circle><circle class="se-progress-ring__value" cx="12" cy="12" r="9" pathLength="100"></circle></g><g class="se-progress-ring__square"><path d="M12 3H21V21H3V3H12" pathLength="100"></path><path class="se-progress-ring__value" d="M12 3H21V21H3V3H12" pathLength="100"></path></g></svg><span class="se-progress-ring__text" aria-hidden="true"></span></span><span class="se-tooltip__bubble" role="tooltip" id="${id}"></span></span>`;
+      this.innerHTML = `<span class="se-tooltip"><span class="se-progress-ring" role="meter" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-describedby="${id}"><svg viewBox="0 0 24 24" aria-hidden="true"><g class="se-progress-ring__round"><circle cx="12" cy="12" r="9" pathLength="100"></circle><circle class="se-progress-ring__value" cx="12" cy="12" r="9" pathLength="100"></circle></g><g class="se-progress-ring__square"><path d="M12 3H21V21H3V3H12" pathLength="100"></path><path class="se-progress-ring__value" d="M12 3H21V21H3V3H12" pathLength="100"></path></g></svg><span class="se-progress-ring__text" aria-hidden="true"></span></span><span class="se-tooltip__bubble se-tooltip__layer" popover="manual" role="tooltip" id="${id}"></span></span>`;
       const tooltip = this.querySelector('[role="tooltip"]');
-      this.addEventListener('keydown', event => { if (event.key === 'Escape') tooltip.hidden = true; });
-      this.addEventListener('pointerenter', () => { tooltip.hidden = false; });
-      this.addEventListener('focusin', () => { tooltip.hidden = false; });
+      this._hideTooltip = bindTooltip(this, tooltip);
     }
     const value = this.value;
     const label = this.getAttribute('label') || 'Progress';

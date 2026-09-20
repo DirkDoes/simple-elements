@@ -57,7 +57,7 @@ export const sidebarTooltip = (host, trigger, label) => {
 };
 
 // Keep popup content in its component for inherited themes, but paint above clipping containers.
-export const openPopup = (trigger, popup, close, matchWidth = false) => {
+export const openPopup = (trigger, popup, close, matchWidth = false, aboveCenter = false) => {
   popup.setAttribute('popover', 'manual');
   popup.classList.add('se-popup');
   const position = () => {
@@ -68,9 +68,9 @@ export const openPopup = (trigger, popup, close, matchWidth = false) => {
     const height = popup.offsetHeight;
     const below = innerHeight - rect.bottom - 8;
     const above = rect.top - 8;
-    const down = below >= height || below >= above;
+    const down = aboveCenter ? above < height && below > above : below >= height || below >= above;
     popup.style.maxHeight = Math.max(0, down ? below - 8 : above - 8) + 'px';
-    popup.style.left = Math.max(8, Math.min(rect.left, innerWidth - popup.offsetWidth - 8)) + 'px';
+    popup.style.left = Math.max(8, Math.min(aboveCenter ? rect.left + (rect.width - popup.offsetWidth) / 2 : rect.left, innerWidth - popup.offsetWidth - 8)) + 'px';
     popup.style.top = Math.max(8, down ? rect.bottom + 8 : rect.top - 8 - popup.offsetHeight) + 'px';
   };
   popup.showPopover();
@@ -97,4 +97,17 @@ export const openPopup = (trigger, popup, close, matchWidth = false) => {
     document.removeEventListener('scroll', scroll, true);
     window.removeEventListener('resize', position);
   };
+};
+
+// Shared hover/focus lifecycle for tooltips that must escape overflow containers.
+export const bindTooltip = (root, bubble) => {
+  let popup;
+  const hide = () => { popup?.(); popup = null; };
+  const show = () => { if (!popup) popup = openPopup(root, bubble, hide, false, true); };
+  root.addEventListener('pointerenter', show);
+  root.addEventListener('pointerleave', () => { if (!root.contains(document.activeElement)) hide(); });
+  root.addEventListener('focusin', show);
+  root.addEventListener('focusout', event => { if (!root.contains(event.relatedTarget)) hide(); });
+  root.addEventListener('keydown', event => { if (event.key === 'Escape') { event.stopPropagation(); hide(); } });
+  return hide;
 };
