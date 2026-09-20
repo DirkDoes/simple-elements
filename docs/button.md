@@ -20,3 +20,9 @@ Open a modal without application JavaScript using `command="show-modal"` and `co
   <se-input label="Name"></se-input>
 </se-modal>
 ```
+
+Use `variant="mini"` for the compact, transparent style shared with row disclosure buttons. Icon-only buttons are 24 × 24px; provide an `aria-label`. Text is also supported.
+
+```html
+<se-button variant="mini" icon="more" aria-label="More actions"></se-button>
+```

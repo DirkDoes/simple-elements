@@ -24,4 +24,6 @@ Use one wrapper for lists, tables, and disclosure trees:
 
 ## Column dividers
 
-Use `dividers="1,4"` for vertical lines after columns 1 and 4 (one-based). Omit it for no dividers. It applies to header and row cells; the final column never gets an extra line. For hierarchies use `type="table"` and row `level` values. `type="tree"` retains the existing nested tree-item API.
+Use `dividers="1,4"` for vertical lines after columns 1 and 4 (one-based). Omit it for no dividers. It applies to row cells; headers keep the spacing without the stroke; the final column never gets an extra line. For hierarchies use `type="table"` and row `level` values. `type="tree"` retains the existing nested tree-item API.
+
+The last visible row inherits the collection’s bottom corners, including its hover background. Interactive cells allow focus effects to overflow without changing row dimensions; plain text cells retain ellipsis truncation.
