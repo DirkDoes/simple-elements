@@ -1192,3 +1192,10 @@ se-tree-item > details[open]::details-content { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   se-tree-item > details::details-content { transition: none; }
 }
+
+.se-tooltip__bubble.se-tooltip__layer { transform: none; white-space: normal; text-align: left; }
+.se-tooltip__bubble.se-tooltip__layer.se-popup { color: white; border: 0; }
+[data-theme="dark"] .se-tooltip__bubble.se-tooltip__layer.se-popup { color: var(--se-text); }
+.se-tooltip__layer::after { display: none; }
+
+.se-tooltip__bubble.se-tooltip__layer { max-width: min(16rem, calc(100vw - 16px)) !important; }
