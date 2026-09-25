@@ -94,6 +94,7 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 ## Data display
 
 - [Collection](collection.md)
+- [Collapsible](collapsible.md)
 - [List header](list-header.md)
 - [List row](list-row.md)
 - [Tree item](tree-item.md)

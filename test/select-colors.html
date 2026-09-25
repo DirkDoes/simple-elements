@@ -1,0 +1,25 @@
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<se-select id="single" value="alpha" options='[{"id":"alpha","label":"Alpha","icon":"star"}]'></se-select>
+<se-select id="multiple" multiple value="alpha,beta" options='[{"id":"alpha","label":"Alpha","icon":"star"},{"id":"beta","label":"Beta","icon":"lock","locked":true}]'></se-select>
+<pre id="result"></pre>
+<script type="module">
+const assert=(condition,message)=>{if(!condition)throw Error(message)};
+try {
+  await customElements.whenDefined('se-select');
+  const single=document.querySelector('#single'),multiple=document.querySelector('#multiple');
+  const probe=document.createElement('span');document.body.append(probe);
+  const color=(value)=>{probe.style.color=`var(${value})`;return getComputedStyle(probe).color};
+  const background=(value)=>{probe.style.backgroundColor=`var(${value})`;return getComputedStyle(probe).backgroundColor};
+  for(const theme of ['flat','clean','studio','edge'])for(const mode of ['light','dark']){
+    document.documentElement.dataset.seTheme=theme;document.documentElement.dataset.theme=mode;
+    const brand=multiple.querySelector('.se-select__tag:not(:has(se-icon[name="lock"]))');
+    const locked=multiple.querySelector('.se-select__tag:has(se-icon[name="lock"])');
+    assert(getComputedStyle(brand).color===color('--se-primary-text'),`${theme}/${mode}: selected tag uses brand text`);
+    assert(getComputedStyle(brand).backgroundColor===background('--se-primary-soft'),`${theme}/${mode}: selected tag uses brand background`);
+    assert(getComputedStyle(locked).color===color('--se-text'),`${theme}/${mode}: locked tag uses neutral text`);
+    assert(getComputedStyle(locked).backgroundColor===background('--se-surface-soft'),`${theme}/${mode}: locked tag uses neutral background`);
+    assert(getComputedStyle(single.querySelector('.se-select__value se-icon')).color===color('--se-primary'),`${theme}/${mode}: single icon uses brand`);
+  }
+  document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Selected brand and locked neutral colors passed in all themes and modes';
+}catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack}
+</script></body></html>

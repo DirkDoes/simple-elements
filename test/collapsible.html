@@ -1,0 +1,28 @@
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<se-collection type="table" columns="1fr 1fr" dividers="1" divider-style="dashed"><se-list-header><span>Name</span><span>Value</span></se-list-header><se-list-row><span>Item</span><span>One</span></se-list-row></se-collection>
+<se-collapsible title="Details" icon="info"><se-badge tone="success" icon="check" text="Ready"></se-badge><se-input label="Notes" value="Keep me"></se-input></se-collapsible><pre id="result"></pre>
+<script type="module">
+const assert=(condition,message)=>{if(!condition)throw Error(message)};
+try {
+  await customElements.whenDefined('se-collapsible');
+  const section=document.querySelector('se-collapsible'), details=section.querySelector('details'), summary=details.querySelector('summary'), field=details.querySelector('input');
+  const cell=document.querySelector('se-list-row [data-column-divider]');
+  assert(getComputedStyle(cell).borderRightStyle==='dashed','Row divider is dashed');
+  assert(getComputedStyle(document.querySelector('se-list-header [data-column-divider]')).borderRightColor==='rgba(0, 0, 0, 0)','Header divider stays hidden');
+  const badge=summary.querySelector('se-badge');
+  assert(badge?.parentElement.classList.contains('se-collapsible__heading'),'Leading badge sits beside title');
+  assert(badge.getAttribute('tone')==='success' && badge.getAttribute('icon')==='check' && badge.getAttribute('text')==='Ready','Badge keeps tone, icon, and text');
+  assert(summary.querySelector('.se-collapsible__heading > se-icon[name="info"]'),'Optional heading icon renders');
+  badge.setAttribute('tone','warning');badge.setAttribute('text','Pending');
+  assert(badge.classList.contains('se-badge--warning') && badge.textContent.includes('Pending'),'Header badge remains live');
+  assert(!section.open,'Section starts closed');
+  summary.click();
+  await new Promise(resolve=>setTimeout(resolve,30));
+  assert(section.open && section.hasAttribute('open'),'User opening updates host');
+  section.open=false;
+  assert(!details.open,'Host property closes native details');
+  section.open=true;
+  assert(details.open && field.value==='Keep me','Opening preserves live content');
+  document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Passed';
+} catch(error) {document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack}
+</script></body></html>

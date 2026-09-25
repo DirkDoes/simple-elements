@@ -46,6 +46,7 @@ import './components/badge.js';
 import './components/list-header.js';
 import './components/list-row.js';
 import './components/collection.js';
+import './components/collapsible.js';
 import './components/tree-item.js';
 import './components/color-picker.js';
 import './components/date-picker.js';
