@@ -46,7 +46,7 @@ Supply `aria-label` on icon-only buttons. Icons are decorative; their source pat
 
 Existing Lucide names and aliases continue to work, with size and color controlled by CSS. Unknown names and malformed configurations fall back to the alert icon. URLs resolve relative to the document, not the component source file. The dashboard uses the supplied GitHub assets: the file named `GitHub_dark.svg` contains white artwork, so it is mapped to `light` foreground.
 
-Run the build/smoke checks with `npm test`, and open `test/icons.html` for browser coverage of assets, recoloring, foreground selection, option objects, and legacy Layout Brand assets.
+Run the build/smoke checks with `npm test`, and open `test/icons.html` for browser coverage of assets, recoloring, foreground selection, option objects, and Layout Brand icon objects and asset paths.
 
 Built-in icon data comes from [Lucide](https://lucide.dev/) (ISC); the browser bundle includes the library's curated icon names.
 
