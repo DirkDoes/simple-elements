@@ -28,3 +28,6 @@
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(.se-select__menu, .se-phone__menu, .se-split__menu, .se-menu__items, .se-profile-menu__items, .se-modal__panel, .se-drawer__panel, .se-date__popover, .se-time__popover, .se-color-picker__popover, .se-datetime-single__popover, .se-tooltip__bubble, .se-toast) { box-shadow: none; }
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) :is(button, a, input, textarea, [tabindex], [contenteditable="true"]):focus-visible { outline: 2px solid var(--se-primary); outline-offset: 2px; }
 :root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) .se-choice input:focus-visible + .se-choice__control { outline: 2px solid var(--se-primary); outline-offset: 3px; }
+
+:root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) se-file-card .se-file { border-color: var(--se-border); }
+:root:not([data-se-theme="clean"], [data-se-theme="studio"], [data-se-theme="edge"]) se-file-card:not([error]) .se-file:has(button.se-file__main):hover { border-color: var(--se-primary-border); }

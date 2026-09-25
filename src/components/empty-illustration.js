@@ -29,8 +29,8 @@ class SeEmptyIllustration extends HTMLElement {
     const prefix = 'se-illustration-' + ++emptyIllustrationId + '-';
     const svg = artwork.replace(/id="([^"]+)"/g, 'id="' + prefix + '$1"').replace(/url\(#([^)]+)\)/g, 'url(#' + prefix + '$1)');
     const title = this.getAttribute('title');
-    const text = this.getAttribute('text');
-    this.innerHTML = `<div class="se-empty-state se-empty-illustration" title=""><div class="se-empty-illustration__art">${svg}</div>${title ? `<se-title level="card">${escapeHtml(title)}</se-title>` : ''}${text ? `<se-text muted>${escapeHtml(text)}</se-text>` : ''}</div>`;
+    const subtitle = this.getAttribute('subtitle');
+    this.innerHTML = `<div class="se-empty-state se-empty-illustration" title=""><div class="se-empty-illustration__art">${svg}</div>${title ? `<se-title level="card">${escapeHtml(title)}</se-title>` : ''}${subtitle ? `<se-text muted>${escapeHtml(subtitle)}</se-text>` : ''}</div>`;
     if (content.some(node => node.nodeType !== 3 || node.textContent.trim())) {
       const actions = document.createElement('div');
       actions.className = 'se-empty-state__actions';

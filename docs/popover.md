@@ -25,3 +25,12 @@ Children are the content, preserved as live DOM elements. Native fieldset/legend
 Filtering data is application behavior; this component only presents the controls. Keep a search input beside an icon-only popover for additional filters, as shown in the File system pattern.
 
 For collapsible chapters, wrap groups in native `details` elements with a `summary` heading. Add `open` to expand a chapter initially. These receive matching chevrons, separators, and keyboard focus styling without JavaScript. See Folder and file cards in the File system pattern; Hierarchical table shows a simpler checkbox-only filter.
+
+Provide a child with `data-se-region="trigger"` to replace the generated button. All other children stay in the panel.
+
+```html
+<se-popover label="Filters">
+  <se-button data-se-region="trigger" variant="secondary" icon="funnel" text="Filters"></se-button>
+  <se-checkbox label="Documents"></se-checkbox>
+</se-popover>
+```

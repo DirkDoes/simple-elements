@@ -1,0 +1,71 @@
+<!doctype html><html data-theme="light"><head><link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/flat.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<se-modal id="dialog" size="medium" title="Save" subtitle="A short summary">
+  <se-input label="Name"></se-input>
+  <se-badge data-se-region="header-end" text="Draft"></se-badge>
+  <se-button data-se-region="footer" data-modal-action="cancel" text="Cancel"></se-button>
+  <se-button data-se-region="footer" data-modal-action="confirm" text="Save"></se-button>
+</se-modal>
+<se-modal id="small" title="Small"><se-badge data-se-region="header-end" text="Top"></se-badge><se-text>Body</se-text></se-modal>
+<se-comment author="Alex"><p>Body</p><se-reactions data-se-region="reactions"></se-reactions><se-comment author="Sam"><p>Reply</p></se-comment></se-comment>
+<se-collapsible title="Options"><se-badge data-se-region="heading-end" text="2"></se-badge><se-input label="Body field"></se-input></se-collapsible>
+<se-tooltip><button data-se-region="trigger" id="tip-trigger">Help</button><strong>Structured help</strong></se-tooltip>
+<se-menu options='[{"label":"Edit"}]'><se-button data-se-region="trigger" text="Menu"></se-button></se-menu>
+<se-popover label="Filters"><se-button data-se-region="trigger" text="Filters"></se-button><se-checkbox label="Files"></se-checkbox></se-popover>
+<se-file-card title="report.pdf" subtitle="2 MB" tone="success" error="Upload failed"><se-button data-se-region="details-end" variant="mini" icon="more" aria-label="File actions"></se-button></se-file-card>
+<se-folder-card title="Assets" subtitle="24 items"><se-button data-se-region="details-end" variant="mini" icon="more" aria-label="Folder actions"></se-button></se-folder-card>
+<se-project-card title="Northstar" subtitle="Project summary" metadata="Updated today"><se-badge data-se-region="banner-start" text="Featured"></se-badge><se-badge data-se-region="banner-end" text="Active"></se-badge><se-button data-se-region="details-end" variant="mini" icon="more" aria-label="Project actions"></se-button></se-project-card>
+<se-workspace-card title="Acme" subtitle="Workspace summary" metadata="12 members"></se-workspace-card>
+<se-profile title="Sarah" subtitle="Designer" initials="SJ"></se-profile>
+<se-empty-state title="Empty" subtitle="No items"></se-empty-state>
+<se-empty-illustration title="Empty" subtitle="No illustrations"></se-empty-illustration>
+<se-layout-brand icon="dashboard" compact-icon="package" label="Acme"></se-layout-brand>
+<pre id="result">Running</pre>
+<script type="module">
+const assert = (okay, message) => { if (!okay) throw Error(message); };
+const tick = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+try {
+  await customElements.whenDefined('se-modal'); await tick(); await new Promise(resolve => setTimeout(resolve, 10));
+  const modal = document.querySelector('#dialog');
+  assert(modal.querySelector('.se-modal__header-end se-badge'), 'modal header region');
+  assert(modal.querySelectorAll('.se-modal__actions [data-modal-action]').length === 2, 'modal footer region');
+  assert(modal.querySelector('.se-modal__content se-input'), 'modal default content');
+  assert(document.querySelector('#small .se-modal__header-end--small se-badge'), 'small modal header region');
+  let confirms = 0; modal.addEventListener('confirm', event => { confirms++; event.preventDefault(); });
+  modal.open(); modal.querySelector('[data-modal-action="confirm"] button').click();
+  assert(confirms === 1 && modal.opened, 'cancelable confirm');
+  modal.querySelector('[data-modal-action="cancel"] button').click();
+  assert(!modal.opened, 'cancel closes');
+  const comment = document.querySelector('se-comment');
+  assert(comment.querySelector('.se-comment__actions se-reactions'), 'comment reactions region');
+  assert(comment.replies.querySelector('se-comment'), 'nested reply');
+  assert(document.querySelector('se-collapsible summary se-badge'), 'collapsible heading region');
+  const tooltip = document.querySelector('se-tooltip');
+  assert(tooltip.querySelector('[role="tooltip"]').textContent.includes('Structured help'), 'tooltip body');
+  assert(tooltip.querySelector('[data-se-region="trigger"]').getAttribute('aria-describedby'), 'tooltip trigger description');
+  const menu = document.querySelector('se-menu'); menu.querySelector('[data-se-region="trigger"] button').click();
+  assert(menu.querySelector('.se-menu__items').matches(':popover-open'), 'custom menu trigger');
+  menu.close();
+  menu.options = [{label: 'Rename'}];
+  menu.querySelector('[data-se-region="trigger"] button').click();
+  assert(menu.querySelector('.se-menu__items').matches(':popover-open'), 'custom menu trigger survives options update');
+  menu.close();
+  const popover = document.querySelector('se-popover'); popover.querySelector('[data-se-region="trigger"] button').click();
+  assert(popover.querySelector('.se-popover__panel').matches(':popover-open'), 'custom popover trigger');
+  popover.close();
+  const file = document.querySelector('se-file-card');
+  assert(file.querySelector('.se-file__region se-button'), 'file details region');
+  assert(file.querySelector('.se-file__content small').textContent === 'Upload failed', 'error overrides subtitle');
+  assert(file.querySelector('.se-file--error'), 'error overrides tone');
+  assert(getComputedStyle(file.querySelector('.se-file')).borderColor !== 'rgba(0, 0, 0, 0)', 'file outline visible');
+  file.removeAttribute('error');
+  assert(file.querySelector('.se-file__content small').textContent === '2 MB' && file.querySelector('.se-file--success'), 'error removal restores subtitle/tone');
+  assert(document.querySelector('se-folder-card .se-folder-card__region [data-se-region="details-end"]'), 'folder details region');
+  assert(document.querySelectorAll('se-project-card .se-project-card__region [data-se-region]').length === 3, 'project regions');
+  assert(document.querySelector('se-workspace-card .se-workspace-card__subtitle'), 'workspace subtitle');
+  assert(document.querySelector('body > se-profile strong').textContent === 'Sarah', 'profile title alias');
+  assert(document.querySelector('body > se-empty-state se-text').textContent === 'No items', 'empty state subtitle');
+  assert(document.querySelector('se-empty-illustration se-text').textContent === 'No illustrations', 'illustration subtitle');
+  assert(document.querySelectorAll('se-layout-brand .se-layout-brand__asset').length === 2, 'brand has two icon inputs');
+  document.documentElement.dataset.test = 'passed'; document.querySelector('#result').textContent = 'Regions and labels passed';
+} catch(error) { document.documentElement.dataset.test = 'failed'; document.querySelector('#result').textContent = error.stack; }
+</script></body></html>

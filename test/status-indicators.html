@@ -42,7 +42,7 @@ try {
   for (const size of ['small','medium','large']) {ring.setAttribute('size',size);spinner.setAttribute('size',size);assert(ring.querySelector('.se-progress-ring--'+size) && spinner.querySelector('.se-spinner--'+size),'Sizes');}
   meter.blur();
   fixtures.style.cssText='position:fixed;top:150px;left:80px;width:180px;height:45px;overflow:hidden';
-  fixtures.insertAdjacentHTML('beforeend', '<se-tooltip content="Fallback"><button>Help</button><span data-content><strong>Table help</strong><br>Details</span></se-tooltip>');
+  fixtures.insertAdjacentHTML('beforeend', '<se-tooltip><button data-se-region="trigger">Help</button><strong>Table help</strong><br>Details</se-tooltip>');
   await new Promise(resolve => requestAnimationFrame(resolve));
   const rich = fixtures.querySelector('se-tooltip [role="tooltip"]');
   assert(rich.querySelector('strong')?.textContent === 'Table help' && !rich.textContent.includes('Fallback'), 'Structured content wins and retains markup');

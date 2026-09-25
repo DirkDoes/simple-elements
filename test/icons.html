@@ -43,9 +43,7 @@ addEventListener('DOMContentLoaded', async () => {
     const brand = document.createElement('se-layout-brand');
     brand.setAttribute('icon', JSON.stringify(config)); brand.setAttribute('compact-icon', JSON.stringify(config));
     fixture.append(brand); await settle(); assert(brand.querySelector('se-icon img'), 'Brand accepts object');
-    const legacy = document.createElement('se-layout-brand');
-    legacy.setAttribute('icon', black); legacy.setAttribute('dark-icon', white); fixture.append(legacy);
-    assert(legacy.querySelectorAll('.se-layout-brand__asset > img').length >= 2, 'Legacy branding assets preserved');
+    assert(brand.querySelectorAll('.se-layout-brand__asset se-icon img').length === 2, 'Full and compact brand icons use object sources');
     const late = document.createElement('se-icon'); late.setAttribute('name', 'alarm-clock'); fixture.append(late);
     const before = late.innerHTML;
     const trashBefore = document.createElement('se-icon'); trashBefore.setAttribute('name', 'trash'); fixture.append(trashBefore); const trashMarkup = trashBefore.innerHTML;
@@ -53,7 +51,7 @@ addEventListener('DOMContentLoaded', async () => {
     assert(customElements.get('se-icon').names.length > 2000, 'Full pack registers all names');
     assert(late.innerHTML !== before, 'Previously unknown icons update after registration');
     assert(trashBefore.innerHTML === trashMarkup, 'Full pack preserves existing aliases');
-    document.documentElement.dataset.test = 'passed'; document.querySelector('#result').textContent = 'PASS: icon sources, foreground selection, masks, options, and legacy branding';
+    document.documentElement.dataset.test = 'passed'; document.querySelector('#result').textContent = 'PASS: icon sources, foreground selection, masks, options, and object branding';
   } catch (error) { document.documentElement.dataset.test = 'failed'; document.querySelector('#result').textContent = error.stack; throw error; }
 });
 </script></body></html>

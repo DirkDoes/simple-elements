@@ -1,0 +1,21 @@
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<se-modal title="Save changes" size="medium"><se-input label="Name"></se-input><se-button data-se-region="footer" data-modal-action="cancel" variant="secondary" text="Cancel"></se-button><se-button data-se-region="footer" data-modal-action="confirm" variant="brand" text="Save"></se-button></se-modal><pre id="result"></pre>
+<script type="module">
+const assert=(value,message)=>{if(!value)throw Error(message)};
+try {
+  await customElements.whenDefined('se-modal');
+  await new Promise(resolve=>requestAnimationFrame(resolve));
+  const modal=document.querySelector('se-modal'),backdrop=modal.querySelector('.se-overlay'),panel=modal.querySelector('.se-modal__panel');
+  const confirm=modal.querySelector('[data-modal-action="confirm"] button'),cancel=modal.querySelector('[data-modal-action="cancel"] button');
+  let closes=0;modal.addEventListener('close',()=>closes++);
+  modal.open();backdrop.click();assert(modal.opened && closes===0,'Backdrop does not close by default');
+  modal.setAttribute('dismissible','');panel.click();assert(modal.opened,'Panel click is not backdrop dismiss');
+  backdrop.click();assert(!modal.opened && closes===1,'Dismissible backdrop closes');
+  modal.open();
+  const stop=event=>{assert(event.cancelable && event.bubbles,'Confirm event is cancelable and bubbling');event.preventDefault()};
+  modal.addEventListener('confirm',stop);confirm.click();assert(modal.opened && closes===1,'Prevented confirmation stays open');
+  modal.removeEventListener('confirm',stop);confirm.click();assert(!modal.opened && closes===2,'Default confirmation closes');
+  modal.open();cancel.click();assert(!modal.opened && closes===3,'Cancel still closes');
+  document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Modal confirmation and backdrop behavior passed';
+}catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack}
+</script></body></html>

@@ -29,7 +29,7 @@ for (const [variant, svg] of Object.entries(emptyIllustrations)) {
   assert.equal(element.innerHTML, markup);
 }
 assert.equal(render({variant: '__proto__'}).innerHTML, render({}).innerHTML);
-assert.match(render({title: '<Hello>', text: 'A & B'}).innerHTML, /&lt;Hello&gt;.*A &amp; B/);
+assert.match(render({title: '<Hello>', subtitle: 'A & B'}).innerHTML, /&lt;Hello&gt;.*A &amp; B/);
 const first = render({variant: 'translation-2'}).innerHTML;
 const second = render({variant: 'translation-2'}).innerHTML;
 const id = first.match(/id="([^"]+)"/)[1];

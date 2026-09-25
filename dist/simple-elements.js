@@ -575,15 +575,30 @@ define('se-card', SeCard);
 
 class SeProjectCard extends HTMLElement {
   connectedCallback() {
+    if (this.dataset.ready || this._scheduled) return;
+    this._scheduled = true;
+    queueMicrotask(() => { if (this.isConnected) this.render(); });
+  }
+  render() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
+    const regions = [...this.querySelectorAll(':scope > [data-se-region]')].filter(node => ['banner-start', 'banner-end', 'details-end'].includes(node.getAttribute('data-se-region')));
     const disabled = this.hasAttribute('disabled');
     const href = this.getAttribute('href');
     const tag = href && !disabled ? 'a' : 'button';
     const image = this.getAttribute('banner-image');
     const banner = image ? `<img src="${escapeHtml(image)}" alt="">` : `<se-icon name="${escapeIcon(this.getAttribute('icon') || 'package')}"></se-icon>`;
     const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
-    this.innerHTML = `<${tag} class="se-project-card"${attributes}><span class="se-project-card__banner">${banner}</span><span class="se-project-card__body"><strong>${escapeHtml(this.getAttribute('title') || 'Project')}</strong>${this.getAttribute('description') ? `<span>${escapeHtml(this.getAttribute('description'))}</span>` : ''}${this.getAttribute('metadata') ? `<small>${escapeHtml(this.getAttribute('metadata'))}</small>` : ''}</span></${tag}>`;
+    this.innerHTML = `<${tag} title="" class="se-project-card"${attributes}><span class="se-project-card__banner">${banner}</span><span class="se-project-card__body"><strong>${escapeHtml(this.getAttribute('title') || 'Project')}</strong>${this.getAttribute('subtitle') ? `<span>${escapeHtml(this.getAttribute('subtitle'))}</span>` : ''}${this.getAttribute('metadata') ? `<small>${escapeHtml(this.getAttribute('metadata'))}</small>` : ''}</span></${tag}>`;
+    for (const name of ['banner-start', 'banner-end', 'details-end']) {
+      const nodes = regions.filter(node => node.getAttribute('data-se-region') === name);
+      if (!nodes.length) continue;
+      const container = document.createElement('span');
+      container.className = 'se-project-card__region';
+      container.dataset.region = name;
+      container.append(...nodes);
+      this.append(container);
+    }
     const color = this.getAttribute('banner-color');
     if (!image && color && CSS.supports('color', color)) this.querySelector('.se-project-card__banner').style.background = color;
   }
@@ -604,7 +619,7 @@ class SeWorkspaceCard extends HTMLElement {
     const initials = this.getAttribute('initials') || title.slice(0, 2).toUpperCase();
     const image = this.getAttribute('image');
     const avatar = image ? `<img src="${escapeHtml(image)}" alt="" draggable="false">` : escapeHtml(initials);
-    this.innerHTML = `<${tag} class="se-workspace-card"${attributes}><span class="se-workspace-card__identity${image ? ' se-workspace-card__identity--image' : ''}" aria-hidden="true">${avatar}</span><span class="se-workspace-card__body"><strong>${escapeHtml(title)}</strong>${this.getAttribute('description') ? `<span class="se-workspace-card__description">${escapeHtml(this.getAttribute('description'))}</span>` : ''}${this.getAttribute('metadata') ? `<small class="se-workspace-card__metadata">${escapeHtml(this.getAttribute('metadata'))}</small>` : ''}</span><se-icon class="se-workspace-card__arrow" name="arrow-right" aria-hidden="true"></se-icon></${tag}>`;
+    this.innerHTML = `<${tag} title="" class="se-workspace-card"${attributes}><span class="se-workspace-card__identity${image ? ' se-workspace-card__identity--image' : ''}" aria-hidden="true">${avatar}</span><span class="se-workspace-card__body"><strong>${escapeHtml(title)}</strong>${this.getAttribute('subtitle') ? `<span class="se-workspace-card__subtitle">${escapeHtml(this.getAttribute('subtitle'))}</span>` : ''}${this.getAttribute('metadata') ? `<small class="se-workspace-card__metadata">${escapeHtml(this.getAttribute('metadata'))}</small>` : ''}</span><se-icon class="se-workspace-card__arrow" name="arrow-right" aria-hidden="true"></se-icon></${tag}>`;
   }
 }
 
@@ -613,16 +628,27 @@ define('se-workspace-card', SeWorkspaceCard);
 
 class SeFolderCard extends HTMLElement {
   connectedCallback() {
+    if (this.dataset.ready || this._scheduled) return;
+    this._scheduled = true;
+    queueMicrotask(() => { if (this.isConnected) this.render(); });
+  }
+  render() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
+    const regions = [...this.querySelectorAll(':scope > [data-se-region="details-end"]')];
     const disabled = this.hasAttribute('disabled');
     const href = this.getAttribute('href');
     const tag = href && !disabled ? 'a' : 'button';
-    const count = Math.max(0, Number.parseInt(this.getAttribute('items') || '0', 10) || 0);
     const requestedTone = this.getAttribute('tone') || 'brand';
     const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'brand';
     const attributes = tag === 'a' ? ` href="${escapeHtml(href)}"` : ` type="button"${disabled ? ' disabled' : ''}`;
-    this.innerHTML = `<${tag} class="se-folder-card se-folder-card--${tone}"${attributes}><span class="se-folder-card__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'folder')}"></se-icon></span><span><strong>${escapeHtml(this.getAttribute('title') || 'Folder')}</strong><small>${count} ${count === 1 ? 'item' : 'items'}</small></span></${tag}>`;
+    this.innerHTML = `<${tag} title="" class="se-folder-card se-folder-card--${tone}"${attributes}><span class="se-folder-card__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'folder')}"></se-icon></span><span><strong>${escapeHtml(this.getAttribute('title') || 'Folder')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span></${tag}>`;
+    if (regions.length) {
+      const container = document.createElement('span');
+      container.className = 'se-folder-card__region';
+      container.append(...regions);
+      this.append(container);
+    }
   }
 }
 
@@ -1102,16 +1128,36 @@ define('se-file-upload', SeFileUpload);
 
 
 class SeFileCard extends HTMLElement {
+  static observedAttributes = ['error', 'tone', 'subtitle'];
+  attributeChangedCallback() { if (this.dataset.ready) this.sync(); }
+  sync() {
+    const file = this.querySelector('.se-file');
+    if (!file) return;
+    const requested = this.hasAttribute('error') ? 'error' : this.getAttribute('tone') || 'brand';
+    const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requested) ? requested : 'brand';
+    file.className = `se-file se-file--${tone}`;
+    const subtitle = this.querySelector('.se-file__content small');
+    subtitle.textContent = this.hasAttribute('error') ? this.getAttribute('error') || '' : this.getAttribute('subtitle') || '';
+    subtitle.hidden = !subtitle.textContent;
+  }
   connectedCallback() {
+    if (this.dataset.ready || this._scheduled) return;
+    this._scheduled = true;
+    queueMicrotask(() => { if (this.isConnected) this.render(); });
+  }
+  render() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
+    const regions = [...this.querySelectorAll(':scope > [data-se-region="details-end"]')];
     const clickable = this.hasAttribute('clickable');
     const action = this.getAttribute('action');
-    const requestedTone = this.getAttribute('tone') || 'brand';
+    const requestedTone = this.hasAttribute('error') ? 'error' : this.getAttribute('tone') || 'brand';
     const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'brand';
-    const content = `<span class="se-file__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'file')}"></se-icon></span><span class="se-file__content"><strong>${escapeHtml(this.getAttribute('filename') || '')}</strong><small>${escapeHtml(this.getAttribute('subtext') || '')}</small></span>`;
-    this.innerHTML = `<div class="se-file se-file--${tone}">${clickable ? `<button class="se-file__main" type="button">${content}</button>` : `<span class="se-file__main">${content}</span>`}${action ? `<button class="se-file__remove" type="button" aria-label="Remove ${escapeHtml(this.getAttribute('filename') || 'file')}"><se-icon name="${action === 'trash' ? 'trash' : 'x'}"></se-icon></button>` : ''}<svg class="se-file__fold" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24"/><path d="M1 1v20a3 3 0 0 0 3 3h20Z"/></svg></div>`;
-    this.querySelector('.se-file__remove')?.addEventListener('click', (event) => { event.stopPropagation(); emit(this, 'remove', { filename: this.getAttribute('filename') }); });
+    const content = `<span class="se-file__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'file')}"></se-icon></span><span class="se-file__content"><strong>${escapeHtml(this.getAttribute('title') || '')}</strong><small>${escapeHtml(this.getAttribute('subtitle') || '')}</small></span>`;
+    this.innerHTML = `<div title="" class="se-file se-file--${tone}">${clickable ? `<button class="se-file__main" type="button">${content}</button>` : `<span class="se-file__main">${content}</span>`}${regions.length ? '<span class="se-file__region"></span>' : ''}${action ? `<button class="se-file__remove" type="button" aria-label="Remove ${escapeHtml(this.getAttribute('title') || 'file')}"><se-icon name="${action === 'trash' ? 'trash' : 'x'}"></se-icon></button>` : ''}<svg class="se-file__fold" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24"/><path d="M1 1v20a3 3 0 0 0 3 3h20Z"/></svg></div>`;
+    if (regions.length) this.querySelector('.se-file__region').append(...regions);
+    this.sync();
+    this.querySelector('.se-file__remove')?.addEventListener('click', (event) => { event.stopPropagation(); emit(this, 'remove', { filename: this.getAttribute('title') }); });
   }
 }
 
@@ -1127,17 +1173,14 @@ class SeTooltip extends HTMLElement {
   render() {
     if (!this.isConnected || this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.querySelector(':scope > [data-content]');
-    content?.remove();
     const children = [...this.childNodes];
     children.forEach(node => node.remove());
     const id = `se-tooltip-${crypto.randomUUID()}`;
-    this.innerHTML = `<span class="se-tooltip"><span class="se-tooltip__bubble se-tooltip__layer" id="${id}" role="tooltip" popover="manual">${escapeHtml(this.getAttribute('content') || '')}</span></span>`;
+    this.innerHTML = `<span class="se-tooltip"><div class="se-tooltip__bubble se-tooltip__layer" id="${id}" role="tooltip" popover="manual"></div></span>`;
     const root = this.querySelector('.se-tooltip');
     const bubble = this.querySelector('[role="tooltip"]');
-    if (content) bubble.replaceChildren(...content.childNodes);
-    root.prepend(...children);
-    const trigger = root.querySelector('button, a, input, [tabindex]') || root;
+    for (const node of children) (node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger' ? root : bubble).append(node);
+    const trigger = root.querySelector('button, a, input, [tabindex]') || root.querySelector('[data-se-region="trigger"]') || root;
     const ids = new Set((trigger.getAttribute('aria-describedby') || '').split(' ').filter(Boolean));
     ids.add(id); trigger.setAttribute('aria-describedby', [...ids].join(' '));
     this._popup = bindTooltip(root, bubble);
@@ -1149,23 +1192,31 @@ define('se-tooltip', SeTooltip);
 
 
 class SeMenu extends HTMLElement {
-  set options(value) { this._options = value; if (this.isConnected) this.render(); }
+  set options(value) { this._options = value; if (this.dataset.ready) this.render(); }
   get options() { return this._options; }
-  connectedCallback() { if (!this.dataset.ready) { this.dataset.ready = 'true'; this.render(); } }
+  connectedCallback() { if (!this.dataset.ready) queueMicrotask(() => { if (!this.isConnected || this.dataset.ready) return; this.dataset.ready = 'true'; this.render(); }); }
   disconnectedCallback() { this.close(); }
-  close() { this._popup?.(); this._popup = null; this.querySelector('.se-menu')?.classList.remove('se-menu--open'); this.querySelector('.se-button')?.setAttribute('aria-expanded', 'false'); }
+  close() { this._popup?.(); this._popup = null; this.querySelector('.se-menu')?.classList.remove('se-menu--open'); this._trigger?.setAttribute('aria-expanded', 'false'); }
   render() {
     this.close();
+    this._trigger?.removeEventListener('click', this._triggerHandler);
     const options = parseOptions(this);
+    const customTrigger = this.querySelector(':scope > [data-se-region="trigger"], :scope > .se-menu > [data-se-region="trigger"]');
+    customTrigger?.remove();
     this.innerHTML = `<div class="se-menu"><button class="se-button se-button--${this.getAttribute('variant') === 'mini' ? 'mini' : 'secondary'}${this.hasAttribute('icon-only') ? ' se-button--icon' : ''}" aria-label="${escapeHtml(this.getAttribute('label') || 'More')}" type="button" aria-expanded="false">${this.hasAttribute('icon-only') ? '' : escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => option.heading ? `<div class="se-menu__heading${option.separator ? ' se-menu-item--separated' : ''}">${escapeHtml(option.heading)}</div>` : `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-menu');
-    const trigger = this.querySelector('.se-button');
-    trigger.addEventListener('click', () => {
+    if (customTrigger) this.querySelector('.se-button').replaceWith(customTrigger);
+    const trigger = customTrigger?.querySelector('button, a, input, [tabindex]') || customTrigger || this.querySelector('.se-button');
+    this._trigger = trigger;
+    trigger.setAttribute('aria-haspopup', 'menu');
+    trigger.setAttribute('aria-expanded', 'false');
+    this._triggerHandler = () => {
       if (this._popup) return this.close();
       root.classList.add('se-menu--open');
       trigger.setAttribute('aria-expanded', 'true');
       this._popup = openPopup(trigger, this.querySelector('.se-menu__items'), () => this.close());
-    });
+    };
+    trigger.addEventListener('click', this._triggerHandler);
     this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { this.close(); emit(this, 'select', options[Number(button.dataset.index)]); }));
   }
 }
@@ -1183,9 +1234,9 @@ class SeProfile extends HTMLElement {
     const tone = variants.includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'brand';
     const image = this.getAttribute('image');
     const avatar = image ? `<img src="${escapeHtml(image)}" alt="" draggable="false">` : escapeHtml(this.getAttribute('initials') || '');
-    const identity = `<span class="se-profile__avatar${image ? ' se-profile__avatar--image' : ''}">${avatar}</span><span><strong>${escapeHtml(this.getAttribute('name') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span>`;
-    if (!options.length) { this.innerHTML = `<${tag} class="se-profile se-profile--${tone}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
-    this.innerHTML = `<div class="se-profile-menu"><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
+    const identity = `<span class="se-profile__avatar${image ? ' se-profile__avatar--image' : ''}">${avatar}</span><span><strong>${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span>`;
+    if (!options.length) { this.innerHTML = `<${tag} title="" class="se-profile se-profile--${tone}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
+    this.innerHTML = `<div class="se-profile-menu" title=""><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
     const menu = this.querySelector('.se-profile-menu');
     const trigger = this.querySelector('.se-profile');
     trigger.addEventListener('click', () => { const open = menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(open)); if (open) placePopover(trigger, this.querySelector('.se-profile-menu__items')); });
@@ -1215,23 +1266,34 @@ class SeModal extends HTMLElement {
     const tone = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(requestedTone) ? requestedTone : 'error';
     const title = escapeHtml(this.getAttribute('title') || '');
     const icon = this.getAttribute('icon') ? `<span class="se-modal__icon se-modal__icon--${tone}"><se-icon name="${escapeIcon(this.getAttribute('icon'))}"></se-icon></span>` : '';
-    const actions = `<div class="se-modal__actions"><se-button variant="${expanded ? 'secondary' : 'ghost'}" text="${escapeHtml(this.getAttribute('cancel-label') || (expanded ? 'Close' : 'Cancel'))}" data-cancel></se-button><se-button variant="${escapeHtml(this.getAttribute('confirm-variant') || 'brand')}" text="${escapeHtml(this.getAttribute('confirm-label') || 'Confirm')}" data-confirm></se-button></div>`;
+    const footer = '<div class="se-modal__actions" data-modal-footer hidden></div>';
     const body = expanded
-      ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${actions}`
-      : `<div class="se-modal__body"><se-empty-state tone="${tone}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` text="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${actions}`;
-    this.innerHTML = `<div title="" class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel">${body}</div></div>`;
-    this.querySelector('[data-modal-content]').replaceWith(...children);
-    this.querySelector('[data-cancel]').addEventListener('click', () => this.close());
-    this.querySelector('[data-confirm]').addEventListener('click', () => { emit(this, 'confirm', {}); this.close(); });
+      ? `<header class="se-modal__header"><div class="se-modal__heading">${icon}<span><se-title level="section">${title}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}</span></div><div class="se-modal__header-end" data-modal-header-end></div><button class="se-close" type="button" aria-label="Close"><se-icon name="x"></se-icon></button></header><div class="se-modal__content">${content}</div>${footer}`
+      : `<div class="se-modal__header-end se-modal__header-end--small" data-modal-header-end></div><div class="se-modal__body"><se-empty-state tone="${tone}" icon="${this.getAttribute('icon') ? escapeHtml(this.getAttribute('icon')) : 'none'}" title="${title}"${this.getAttribute('subtitle') ? ` subtitle="${escapeHtml(this.getAttribute('subtitle'))}"` : ''}>${content}</se-empty-state></div>${footer}`;
+    this.innerHTML = `<div title="" class="se-overlay se-modal se-modal--${size}" role="dialog" aria-modal="true" aria-label="${escapeHtml(this.getAttribute('title') || 'Dialog')}"><div class="se-modal__panel" tabindex="-1">${body}</div></div>`;
+    for (const node of children) {
+      const region = node.nodeType === 1 ? node.getAttribute('data-se-region') : null;
+      const target = region === 'footer' ? this.querySelector('[data-modal-footer]') : region === 'header-end' ? this.querySelector('[data-modal-header-end]') : this.querySelector('[data-modal-content]');
+      target.append(node);
+      if (region === 'footer') target.hidden = false;
+    }
+    const bodyTarget = this.querySelector('[data-modal-content]');
+    bodyTarget.replaceWith(...bodyTarget.childNodes);
+    this.addEventListener('click', (event) => {
+      const action = event.target.closest('[data-modal-action]');
+      if (!action || !this.querySelector('[data-modal-footer]')?.contains(action)) return;
+      if (action.dataset.modalAction === 'cancel') this.close();
+      if (action.dataset.modalAction === 'confirm' && this.dispatchEvent(new CustomEvent('confirm', { bubbles: true, cancelable: true, detail: {} }))) this.close();
+    });
     this.querySelector('.se-close')?.addEventListener('click', () => this.close());
-    this.querySelector('.se-overlay').addEventListener('click', (event) => { if (event.target === event.currentTarget) this.close(); });
+    this.querySelector('.se-overlay').addEventListener('click', (event) => { if (this.hasAttribute('dismissible') && event.target === event.currentTarget) this.close(); });
     this._escape = (event) => { if (event.key === 'Escape' && this.opened) this.close(); };
     document.addEventListener('keydown', this._escape);
     if (this.hasAttribute('open')) this.open();
   }
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
-  open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); this.querySelector('.se-button')?.focus(); }
+  open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); (this.querySelector('.se-modal__panel :is([autofocus], input, button)') || this.querySelector('.se-modal__panel'))?.focus(); }
   close() { this.querySelectorAll('se-select, se-menu, se-popover').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
 }
 
@@ -1444,18 +1506,14 @@ class SeLayoutBrand extends HTMLElement {
     this.dataset.ready = 'true';
     const icon = this.getAttribute('icon') || 'dashboard';
     const compactIcon = this.getAttribute('compact-icon') || icon;
-    const darkIcon = this.getAttribute('dark-icon');
-    const compactDarkIcon = this.getAttribute('compact-dark-icon');
     const href = this.getAttribute('href');
-    this.toggleAttribute('data-has-dark-icon', Boolean(darkIcon));
-    this.toggleAttribute('data-has-compact-dark-icon', Boolean(compactDarkIcon));
     const isAsset = (source) => /^(?:data:|https?:|[./\\])|\.svg(?:$|[?#])/i.test(source);
     const renderIcon = (source) => isAsset(source) && !source.trim().startsWith('{') ? `<img src="${escapeHtml(source)}" alt="">` : `<se-icon name="${escapeIcon(source)}"></se-icon>`;
     this.toggleAttribute('data-wide-icon', isAsset(icon));
     const asset = (source, mode) => source ? `<span class="se-layout-brand__asset se-layout-brand__asset--${mode}">${renderIcon(source)}</span>` : '';
     const identity = href ? 'a' : 'span';
     const identityAttributes = href ? ` href="${escapeHtml(href)}"${this.hasAttribute('label') ? '' : ' aria-label="Home"'}` : '';
-    this.innerHTML = `<${identity} class="se-layout-brand__identity"${identityAttributes}><span class="se-layout-brand__logo">${asset(icon, 'full-light')}${asset(darkIcon, 'full-dark')}${asset(compactIcon, 'compact-light')}${asset(compactDarkIcon, 'compact-dark')}</span>${this.hasAttribute('label') ? `<strong>${escapeHtml(this.getAttribute('label'))}</strong>` : ''}</${identity}>${this.hasAttribute('collapsible') ? '<button class="se-close se-layout-brand__collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button>' : ''}`;
+    this.innerHTML = `<${identity} class="se-layout-brand__identity"${identityAttributes}><span class="se-layout-brand__logo">${asset(icon, 'full-light')}${asset(compactIcon, 'compact-light')}</span>${this.hasAttribute('label') ? `<strong>${escapeHtml(this.getAttribute('label'))}</strong>` : ''}</${identity}>${this.hasAttribute('collapsible') ? '<button class="se-close se-layout-brand__collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button>' : ''}`;
   }
 }
 
@@ -1589,7 +1647,7 @@ class SeEmptyState extends HTMLElement {
     const content = this.innerHTML.trim();
     const tone = ['brand', 'gray', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'gray';
     const icon = this.getAttribute('icon') === 'none' ? '' : `<span class="se-empty-state__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'package')}"></se-icon></span>`;
-    this.innerHTML = `<div title="" class="se-empty-state se-empty-state--${tone}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('text') ? `<se-text muted>${escapeHtml(this.getAttribute('text'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
+    this.innerHTML = `<div title="" class="se-empty-state se-empty-state--${tone}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
   }
 }
 
@@ -1624,8 +1682,8 @@ class SeEmptyIllustration extends HTMLElement {
     const prefix = 'se-illustration-' + ++emptyIllustrationId + '-';
     const svg = artwork.replace(/id="([^"]+)"/g, 'id="' + prefix + '$1"').replace(/url\(#([^)]+)\)/g, 'url(#' + prefix + '$1)');
     const title = this.getAttribute('title');
-    const text = this.getAttribute('text');
-    this.innerHTML = `<div class="se-empty-state se-empty-illustration" title=""><div class="se-empty-illustration__art">${svg}</div>${title ? `<se-title level="card">${escapeHtml(title)}</se-title>` : ''}${text ? `<se-text muted>${escapeHtml(text)}</se-text>` : ''}</div>`;
+    const subtitle = this.getAttribute('subtitle');
+    this.innerHTML = `<div class="se-empty-state se-empty-illustration" title=""><div class="se-empty-illustration__art">${svg}</div>${title ? `<se-title level="card">${escapeHtml(title)}</se-title>` : ''}${subtitle ? `<se-text muted>${escapeHtml(subtitle)}</se-text>` : ''}</div>`;
     if (content.some(node => node.nodeType !== 3 || node.textContent.trim())) {
       const actions = document.createElement('div');
       actions.className = 'se-empty-state__actions';
@@ -2018,13 +2076,16 @@ class SeCollapsible extends HTMLElement {
   static observedAttributes = ['open'];
 
   connectedCallback() {
+    if (this._details || this._scheduled) return;
+    this._scheduled = true;
+    queueMicrotask(() => { if (this.isConnected) this.render(); });
+  }
+  render() {
     if (this._details) return;
     const children = [...this.childNodes];
-    const badge = this.firstElementChild?.matches('se-badge') ? this.firstElementChild : null;
     this.innerHTML = `<details class="se-collapsible"${this.hasAttribute('open') ? ' open' : ''}><summary><span class="se-collapsible__heading">${this.hasAttribute('icon') ? `<se-icon name="${escapeIcon(this.getAttribute('icon'))}"></se-icon>` : ''}<span>${escapeHtml(this.getAttribute('title') || 'Details')}</span></span><se-icon class="se-collapsible__chevron" name="chevron"></se-icon></summary><div class="se-collapsible__content"></div></details>`;
     this._details = this.querySelector('details');
-    if (badge) this.querySelector('.se-collapsible__heading').append(badge);
-    this.querySelector('.se-collapsible__content').append(...children.filter(node => node !== badge));
+    for (const node of children) this.querySelector(node.nodeType === 1 && node.getAttribute('data-se-region') === 'heading-end' ? '.se-collapsible__heading' : '.se-collapsible__content').append(node);
     this._details.addEventListener('toggle', () => this.toggleAttribute('open', this._details.open));
   }
 
@@ -2541,7 +2602,7 @@ class SeComment extends HTMLElement {
     const children = [...this.childNodes];
     const author = this.getAttribute('author') || 'Anonymous';
     this.innerHTML = `<article class="se-comment" aria-label="Comment by ${escapeHtml(author)}"><header><se-profile name="${escapeHtml(author)}" initials="${escapeHtml(this.getAttribute('initials') || author.slice(0, 2))}" ${this.hasAttribute('image') ? `image="${escapeHtml(this.getAttribute('image'))}"` : ''} tone="${escapeHtml(this.getAttribute('tone') || 'gray')}"></se-profile><time>${escapeHtml(this.getAttribute('timestamp') || '')}</time></header><div class="se-comment__body"></div><div class="se-comment__actions"><button type="button" class="se-comment__reply">Reply</button></div><div class="se-comment__replies" role="group" aria-label="Replies to ${escapeHtml(author)}"></div></article>`;
-    for (const node of children) this.querySelector(node.nodeType === 1 && node.matches('se-comment') ? '.se-comment__replies' : node.nodeType === 1 && node.matches('se-reactions') ? '.se-comment__actions' : '.se-comment__body').append(node);
+    for (const node of children) this.querySelector(node.nodeType === 1 && node.matches('se-comment') ? '.se-comment__replies' : node.nodeType === 1 && node.getAttribute('data-se-region') === 'reactions' ? '.se-comment__actions' : '.se-comment__body').append(node);
     this.querySelector('.se-comment__reply').onclick = () => emit(this, 'reply', { author });
   }
   get replies() { return this.querySelector(':scope > article > .se-comment__replies'); }
@@ -2611,18 +2672,24 @@ class SePopover extends HTMLElement {
       if (!this.isConnected || this._ready) return;
       this._ready = true;
       const content = [...this.childNodes];
+      const triggerNode = content.find(node => node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger');
       content.forEach(node => node.remove());
       const label = this.getAttribute('label') || 'Options';
       const icon = this.getAttribute('icon') || 'more';
       const id = 'se-popover-' + crypto.randomUUID();
       this.innerHTML = `<button type="button" class="se-button se-button--secondary${this.hasAttribute('icon-only') ? ' se-button--icon' : ''}" aria-label="${escapeHtml(label)}" aria-haspopup="dialog" aria-expanded="false" aria-controls="${id}"><se-icon name="${escapeIcon(icon)}"></se-icon>${this.hasAttribute('icon-only') ? '' : escapeHtml(label)}</button><div id="${id}" class="se-menu__items se-popover__panel" role="dialog" aria-label="${escapeHtml(label)}" popover="manual"></div>`;
-      this.querySelector('.se-popover__panel').append(...content);
-      this.querySelector('button').addEventListener('click', () => this._popup ? this.close() : this.open());
+      if (triggerNode) this.querySelector('button').replaceWith(triggerNode);
+      this._trigger = triggerNode?.querySelector('button, a, input, [tabindex]') || triggerNode || this.querySelector('button');
+      this._trigger.setAttribute('aria-haspopup', 'dialog');
+      this._trigger.setAttribute('aria-expanded', 'false');
+      this._trigger.setAttribute('aria-controls', id);
+      this.querySelector('.se-popover__panel').append(...content.filter(node => node !== triggerNode));
+      this._trigger.addEventListener('click', () => this._popup ? this.close() : this.open());
     });
   }
   open() {
     if (!this._ready || this._popup) return;
-    const trigger = this.querySelector('button');
+    const trigger = this._trigger;
     trigger.setAttribute('aria-expanded', 'true');
     this._popup = openPopup(trigger, this.querySelector('.se-popover__panel'), () => this.close());
     this.querySelector('.se-popover__panel :is(input, button, select, textarea)')?.focus({ preventScroll: true });
@@ -2630,7 +2697,7 @@ class SePopover extends HTMLElement {
   close() {
     this.querySelectorAll('se-select, se-menu, se-popover, se-date-picker').forEach(child => child.close());
     this._popup?.(); this._popup = null;
-    this.querySelector('button')?.setAttribute('aria-expanded', 'false');
+    this._trigger?.setAttribute('aria-expanded', 'false');
   }
   disconnectedCallback() { this.close(); }
 }

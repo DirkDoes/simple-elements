@@ -7,7 +7,7 @@ class SeEmptyState extends HTMLElement {
     const content = this.innerHTML.trim();
     const tone = ['brand', 'gray', 'success', 'warning', 'error', 'info', 'important'].includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'gray';
     const icon = this.getAttribute('icon') === 'none' ? '' : `<span class="se-empty-state__icon"><se-icon name="${escapeIcon(this.getAttribute('icon') || 'package')}"></se-icon></span>`;
-    this.innerHTML = `<div title="" class="se-empty-state se-empty-state--${tone}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('text') ? `<se-text muted>${escapeHtml(this.getAttribute('text'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
+    this.innerHTML = `<div title="" class="se-empty-state se-empty-state--${tone}">${icon}<se-title level="card">${escapeHtml(this.getAttribute('title') || 'Nothing here yet')}</se-title>${this.getAttribute('subtitle') ? `<se-text muted>${escapeHtml(this.getAttribute('subtitle'))}</se-text>` : ''}${content ? `<div class="se-empty-state__actions">${content}</div>` : ''}</div>`;
   }
 }
 

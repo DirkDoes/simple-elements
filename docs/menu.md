@@ -17,3 +17,11 @@ Use `icon-only` to hide the visible trigger label, retaining `label` as its acce
 For custom content such as grouped filters, use [Popover](popover.md). Menu remains the compact shortcut for an array of actions.
 
 Use `variant="mini"` with `icon-only` for a compact row action trigger (default variant: `secondary`). An option `{ "heading": "Manage", "separator": true }` renders a noninteractive section title with a divider above it. Ordinary action options below it still emit `select`; headings do not.
+
+Provide a child with `data-se-region="trigger"` to replace the generated More button with your own control. The `options` array and `select` event work the same way.
+
+```html
+<se-menu options='[{"label":"Edit"}]'>
+  <se-button data-se-region="trigger" variant="mini" icon="more" aria-label="Actions"></se-button>
+</se-menu>
+```

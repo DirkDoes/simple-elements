@@ -1,16 +1,30 @@
 # Modal
 
 ```html
-<se-modal id="confirm" title="Delete project?" subtitle="This cannot be undone." icon="alert" tone="error" size="small" confirm-label="Delete" confirm-variant="danger">
+<se-modal id="confirm" title="Delete project?" subtitle="This cannot be undone."
+  icon="alert" tone="error" size="small">
   <se-text muted>This cannot be undone.</se-text>
+  <se-button data-se-region="footer" data-modal-action="cancel"
+    variant="secondary" text="Cancel"></se-button>
+  <se-button data-se-region="footer" data-modal-action="confirm"
+    variant="danger" text="Delete"></se-button>
 </se-modal>
 <script>document.querySelector('#confirm').open()</script>
 ```
 
-Methods: `open()` and `close()`. Attributes: `title`, `subtitle`, `icon`, `tone`, `size` (`small`, `medium`, or `large`), `confirm-label`, `confirm-variant`, and `cancel-label`. Small modals always use the centered empty-state composition. Medium and large modals place the optional icon beside the title. Events: `confirm` and `close`. Escape and backdrop clicks close it.
+Methods: `open()` and `close()`. Attributes: `title`, `subtitle`, `icon`, `tone`, `size` (`small`, `medium`, or `large`), and optional `dismissible`. Ordinary children form the body. `data-se-region="footer"` places any number of controls in the footer; without one there is no footer. `data-se-region="header-end"` places content to the right of the medium/large heading or at the top-left of a small dialog. The medium/large heading stays compact with a subtitle.
 
-Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
+Footer controls with `data-modal-action="cancel"` close the dialog. A footer control with `data-modal-action="confirm"` dispatches a bubbling, cancelable `confirm` event and closes only if it was not prevented. `close()` emits `close`. Escape and the close button dismiss it; backdrop clicks require `dismissible`, which is off by default.
 
-Select lists (single and multiple) and action menus appear above modal footers and scrolling containers using the browser top layer. They flip upward when needed and stay within the viewport; long lists retain their own scrolling. Escape dismisses an open list before the modal.
+For an asynchronous action, prevent the automatic close synchronously and call `close()` after success:
 
-The visible modal title and accessible dialog name are retained without inheriting a native browser hover tooltip inside the overlay.
+```js
+const modal = document.querySelector('#confirm');
+modal.addEventListener('confirm', async (event) => {
+  event.preventDefault();
+  await saveChanges();
+  modal.close();
+});
+```
+
+Icon inputs accept Lucide names, asset URLs, and the shared [icon configuration object](icon.md). Select and menu popups appear above the modal footer and scroll area. The visible title does not create a native browser hover tooltip.

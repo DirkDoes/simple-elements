@@ -7,7 +7,7 @@ Original SVG illustrations with one asset per variant. The artwork inherits the 
   variant="folders-2"
   illustration-label="Projects"
   title="No projects yet"
-  text="Create your first project to get started.">
+  subtitle="Create your first project to get started.">
   <se-button variant="brand" icon="plus" text="Create project"></se-button>
 </se-empty-illustration>
 ```
@@ -19,11 +19,11 @@ Original SVG illustrations with one asset per variant. The artwork inherits the 
 | `variant` | `start` | Selects one of the illustrations below. Unknown values fall back to `start`. |
 | `illustration-label` | Variant-specific | Overrides the text inside the SVG. Omit for its default; an empty string hides it. |
 | `title` | Omitted | Optional heading below the illustration. |
-| `text` | Omitted | Optional supporting text below the heading. |
+| `subtitle` | Omitted | Optional supporting text below the heading. |
 
-Child content appears below the text, using the same centered, wrapping action layout as `se-empty-state`. Existing child elements and their event listeners are preserved. Without title, text, or children, only the illustration is shown. Like `se-empty-state`, set attributes before inserting the element; recreate it to change the variant or copy afterward.
+Child content appears below the subtitle, using the same centered, wrapping action layout as `se-empty-state`. Existing child elements and their event listeners are preserved. Without title, subtitle, or children, only the illustration is shown. Like `se-empty-state`, set attributes before inserting the element; recreate it to change the variant or copy afterward.
 
-The illustration is decorative (hidden from assistive technology); put meaningful information in the title/text or surrounding content. Labels drawn inside the supplied artwork remain part of the illustration.
+The illustration is decorative (hidden from assistive technology); put meaningful information in the title/subtitle or surrounding content. Labels drawn inside the supplied artwork remain part of the illustration.
 
 ## Variants
 
@@ -31,7 +31,7 @@ Variants: `analytics`, `files`, `files-2`, `folders`, `folders-2`, `inbox`, `inv
 
 ### Labels inside the illustration
 
-Use short labels that fit the artwork. This is separate from the optional title and supporting text below it. Other variants ignore this attribute.
+Use short labels that fit the artwork. This is separate from the optional title and supporting subtitle below it. Other variants ignore this attribute.
 
 | Variant | Default label |
 | --- | --- |
@@ -79,6 +79,6 @@ se-empty-illustration {
 }
 ```
 
-The regular component bundle includes all 21 illustrations. Apps importing individual component modules can omit this component to omit its artwork entirely. The existing `se-empty-state` remains unchanged and uses the standard icon set.
+The regular component bundle includes all 21 illustrations. Apps importing individual component modules can omit this component to omit its artwork entirely. The related `se-empty-state` uses the standard icon set.
 
 The `title` attribute supplies the visible heading only; the illustration suppresses the browser’s native hover tooltip.

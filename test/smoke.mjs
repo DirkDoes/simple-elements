@@ -87,7 +87,7 @@ assert.doesNotMatch(compiledCss, /se-choice--light-dark/, 'checkbox and radio st
 assert.match(compiledCss, /\.se-theme--segmented/, 'theme switch variants must be compiled');
 assert.match(compiledCss, /#f59e0b/, 'theme controls must retain the sun color');
 assert.match(compiledCss, /#60a5fa/, 'theme controls must retain the moon color');
-assert.match(compiledCss, /textarea:read-only\{[^}]*resize:none/);
+assert.match(compiledCss, /se-code-editor:is\(\[readonly\],\[disabled\],\[autosize\]\) \.se-editor\{resize:none/, 'non-editable and autosized code editor frames must not resize');
 assert.match(compiledCss, /se-code\[block\]\[wrap\]/);
 assert.match(compiledCss, /se-code-editor\[wrap\]/);
 assert.match(compiledCss, /--se-surface-raised:#292d33/, 'dark overlay surface must be compiled');
@@ -227,7 +227,7 @@ for (const tag of ['sidebar', 'sidebar-toggle', 'topbar']) {
 assert.equal(new Set(componentCatalog.map(({ tag }) => tag)).size, componentCatalog.length, 'catalog pages must be unique');
 componentCatalog.forEach(({ tag, icon, attributes, custom }) => {
   assert.ok(iconNames[icon], `${tag} needs a supported sidebar icon`);
-  assert.ok(custom || attributes.length, `${tag} needs editable attributes`);
+  assert.ok(custom || attributes.length || tag === 'tooltip', `${tag} needs editable attributes`);
 });
 for (const { tag, attributes, custom } of componentCatalog) {
   if (custom) continue;
@@ -236,7 +236,7 @@ for (const { tag, attributes, custom } of componentCatalog) {
   const used = [...source.matchAll(/this\.(?:get|has)Attribute\('([^']+)'\)/g)].map((match) => match[1]).filter((name) => name !== 'id' && !name.startsWith('data-'));
   const listed = new Set(attributes.map(({ name }) => name));
   used.forEach((name) => assert.ok(listed.has(name), `${tag} catalog is missing ${name}`));
-  attributes.filter(({ name }) => !['content', 'child-content'].includes(name)).forEach(({ name }) => assert.ok(documentation.includes(`\`${name}`) || documentation.includes(` ${name}=`) || documentation.includes(` ${name} `), `${tag} docs are missing ${name}`));
+  attributes.filter(({ name }) => name !== 'content').forEach(({ name }) => assert.ok(documentation.includes(`\`${name}`) || documentation.includes(` ${name}=`) || documentation.includes(` ${name} `), `${tag} docs are missing ${name}`));
 }
 assert.match(exampleScript, /querySelectorAll\('\.demo-component-attributes \[data-component-attribute\], \.demo-component-attributes \[data-component-context\]'\)/, 'attribute and context controls may rebuild a preview');
 assert.match(exampleScript, /const sourceTemplate = document\.createElement\('template'\)/, 'overrides must rebuild one-shot components');

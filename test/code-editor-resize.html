@@ -1,0 +1,20 @@
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script><style>.pattern .se-editor{height:15rem;min-height:15rem}</style></head><body>
+<div class="pattern"><se-code-editor language="html" wrap value="&lt;div&gt;First line&lt;/div&gt;"></se-code-editor></div>
+<se-code-editor readonly value="Read-only code"></se-code-editor>
+<se-code-editor autosize value="one"></se-code-editor>
+<pre id="result"></pre><script type="module">
+const assert=(ok,msg)=>{if(!ok)throw Error(msg)};
+try{
+ await customElements.whenDefined('se-code-editor');
+ const editors=document.querySelectorAll('se-code-editor'),frame=editors[0].querySelector('.se-editor'),textarea=frame.querySelector('textarea'),highlight=frame.querySelector('.se-editor__highlight'),lines=frame.querySelector('.se-editor__lines');
+ const aligned=()=>Math.abs(frame.getBoundingClientRect().bottom-textarea.getBoundingClientRect().bottom)<2&&Math.abs(highlight.getBoundingClientRect().height-textarea.getBoundingClientRect().height)<2&&Math.abs(lines.getBoundingClientRect().height-textarea.getBoundingClientRect().height)<2;
+ assert(getComputedStyle(frame).resize==='vertical'&&getComputedStyle(textarea).resize==='none','Resize handle belongs to frame');
+ assert(aligned(),'Editor layers align initially');
+ frame.style.height='350px';assert(aligned(),'Editor layers follow taller frame');
+ assert(getComputedStyle(editors[1].querySelector('.se-editor')).resize==='none','Read-only frame stays fixed');
+ assert(getComputedStyle(editors[2].querySelector('.se-editor')).resize==='none','Autosize frame stays automatic');
+ editors[2].value='one\ntwo\nthree\nfour\nfive\nsix\nseven\neight\nnine\nten\neleven\ntwelve';
+ assert(editors[2].querySelector('.se-editor').getBoundingClientRect().height>150,'Autosize still grows with content');
+ document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Editor layers, frame resizing, readonly and autosize passed';
+}catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack}
+</script></body></html>

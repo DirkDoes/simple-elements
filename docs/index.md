@@ -16,7 +16,9 @@ Studio and Edge are optional visual themes, each with light and dark modes. Impo
 
 - [Visual themes, color modes, and brand colors](theme.md)
 
-Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground configuration with color-preservation flags. See [Icons](icon.md) for HTML, JavaScript, and option-array examples; [Layout brand](layout-brand.md) documents legacy dark-asset compatibility.
+Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground configuration with color-preservation flags. See [Icons](icon.md) for HTML, JavaScript, and option-array examples; [Layout brand](layout-brand.md) uses the same icon object for full and compact artwork.
+
+Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) for renamed attributes and the new child regions.
 
 ## Foundations
 

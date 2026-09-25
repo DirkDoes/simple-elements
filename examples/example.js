@@ -57,16 +57,18 @@ const defaultMarkup = (attribute) => {
   if (attribute.control === 'code' || String(attribute.defaultValue).length > 32) return `<se-code-editor class="demo-default-code" language="${attribute.name === 'options' ? 'json' : 'html'}" value="${escapeAttribute(attribute.defaultValue)}" readonly wrap></se-code-editor>`;
   return `<se-badge text="${escapeAttribute(attribute.defaultValue)}"></se-badge>`;
 };
-const contextTableMarkup = (contexts = []) => contexts.length ? `<div class="demo-context-heading"><se-title level="sidebar">Context</se-title><se-tooltip content="These are external layout states, not attributes of this component."><se-icon name="info"></se-icon></se-tooltip></div><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Context</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${contexts.map((context) => `<se-list-row><strong data-description="${escapeAttribute(context.description)}">${context.name}</strong><span>${context.description}</span>${defaultMarkup(context)}<se-checkbox variant="switch" data-component-context="${context.name}" label="Enabled"></se-checkbox></se-list-row>`).join('')}</se-collection>` : '';
+const contextTableMarkup = (contexts = []) => contexts.length ? `<div class="demo-context-heading"><se-title level="sidebar">Context</se-title><se-tooltip><se-button data-se-region="trigger" variant="mini" icon="info" aria-label="About contexts"></se-button>These are external layout states, not attributes of this component.</se-tooltip></div><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Context</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${contexts.map((context) => `<se-list-row><strong data-description="${escapeAttribute(context.description)}">${context.name}</strong><span>${context.description}</span>${defaultMarkup(context)}<se-checkbox variant="switch" data-component-context="${context.name}" label="Enabled"></se-checkbox></se-list-row>`).join('')}</se-collection>` : '';
 const renderComponentPage = (component) => {
   const { tag, description, markup, attributes, contexts, previewSurface } = component;
-  const contentAttribute = attributes.find(({ control }) => control === 'content');
+  const sourceTemplate = document.createElement('template');
+  sourceTemplate.innerHTML = markup;
+  const contentAttribute = attributes.find(({ control }) => control === 'content') || (component.regions?.length ? { name: 'content', defaultValue: sourceTemplate.content.firstElementChild.innerHTML } : null);
   const order = ({ name }) => name === 'variant' ? 0 : name === 'type' ? 1 : 2;
   const tableAttributes = attributes.filter(({ control }) => control !== 'content').sort((left, right) => order(left) - order(right));
   const section = document.createElement('section');
   section.dataset.demo = tag;
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-segmented-control aria-label="Preview view" value="component" options='[{"id":"component","label":"Component"},{"id":"code","label":"Code"}]' data-component-view></se-segmented-control></div><div data-component-preview${previewSurface ? ` data-preview-surface="${escapeAttribute(previewSurface)}"` : ''}></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${contextTableMarkup(contexts)}${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-collection>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}</se-card></div>`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-segmented-control aria-label="Preview view" value="component" options='[{"id":"component","label":"Component"},{"id":"code","label":"Code"}]' data-component-view></se-segmented-control></div><div data-component-preview${previewSurface ? ` data-preview-surface="${escapeAttribute(previewSurface)}"` : ''}></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${contextTableMarkup(contexts)}${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-collection>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}${component.regions?.length ? `<div class="demo-component-regions"><se-title level="sidebar">Regions</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 5rem"><se-list-header><span>Region</span><span>Description</span><span></span></se-list-header>${component.regions.map((region, index) => `<se-list-row><strong>${region.name}</strong><span>${region.description}</span><se-button variant="secondary" text="Add" data-add-region="${index}"></se-button></se-list-row>`).join('')}</se-collection></div>` : ''}</se-card></div>`;
   document.querySelector('.demo-content').append(section);
   const preview = section.querySelector('[data-component-preview]');
   const code = section.querySelector('[data-component-code]');
@@ -83,8 +85,7 @@ const renderComponentPage = (component) => {
     section.querySelectorAll('[data-component-attribute]').forEach((control) => {
       const name = control.dataset.componentAttribute;
       const value = control.matches('se-checkbox') ? control.checked : control.matches('se-range') ? control.querySelector('input').value : control.value;
-      if (name === 'content' && tag !== 'tooltip') { if (value) clone.innerHTML = value; return; }
-      if (name === 'child-content') { if (value) clone.innerHTML = value; return; }
+      if (name === 'content') { if (value) clone.innerHTML = value; return; }
       if (control.matches('se-checkbox')) { if (value) clone.setAttribute(name, ''); else clone.removeAttribute(name); return; }
       if (value) clone.setAttribute(name, value);
     });
@@ -108,6 +109,21 @@ const renderComponentPage = (component) => {
     code.value = formatHtml(usageMarkup);
   };
   section.querySelectorAll('.demo-component-attributes [data-component-attribute], .demo-component-attributes [data-component-context]').forEach((control) => control.addEventListener(control.matches('se-input, se-code-editor, se-range') ? 'input' : 'change', render));
+  section.querySelectorAll('[data-add-region]').forEach((button) => button.addEventListener('click', () => {
+    const editor = section.querySelector('[data-component-attribute="content"]');
+    const region = component.regions[Number(button.dataset.addRegion)];
+    if (region.name === 'trigger' && editor.value.includes('data-se-region="trigger"')) {
+      const content = document.createElement('template');
+      const replacement = document.createElement('template');
+      content.innerHTML = editor.value;
+      replacement.innerHTML = region.example;
+      content.content.querySelector('[data-se-region="trigger"]').replaceWith(replacement.content);
+      editor.value = formatHtml(content.innerHTML);
+    } else {
+      editor.value = [editor.value.trim(), region.example].filter(Boolean).join('\n');
+    }
+    render();
+  }));
   section.querySelector('[data-component-view]').addEventListener('change', (event) => { preview.hidden = event.currentTarget.value === 'code'; code.hidden = event.currentTarget.value !== 'code'; });
   render();
 };
@@ -192,7 +208,7 @@ const renderIconGallery = () => {
   const names = customElements.get('se-icon').names.filter(name => name.includes(query)).sort();
   const count = iconGallery.querySelector('[data-icon-count]');
   count.setAttribute('text', `${names.length} icons`);
-  iconGallery.querySelector('.demo-icon-gallery').innerHTML = names.map(name => `<se-tooltip content="${escapeAttribute(name)}"><se-button variant="secondary" icon="${escapeAttribute(name)}" aria-label="Copy ${escapeAttribute(name)}" data-copy-icon="${escapeAttribute(name)}"></se-button></se-tooltip>`).join('');
+  iconGallery.querySelector('.demo-icon-gallery').innerHTML = names.map(name => `<se-tooltip><se-button data-se-region="trigger" variant="secondary" icon="${escapeAttribute(name)}" aria-label="Copy ${escapeAttribute(name)}" data-copy-icon="${escapeAttribute(name)}"></se-button>${escapeAttribute(name)}</se-tooltip>`).join('');
 };
 iconGallery.querySelector('[data-icon-search]').addEventListener('input', renderIconGallery);
 const iconCopyNotice = document.createElement('se-toast');

@@ -4,13 +4,16 @@ class SeCollapsible extends HTMLElement {
   static observedAttributes = ['open'];
 
   connectedCallback() {
+    if (this._details || this._scheduled) return;
+    this._scheduled = true;
+    queueMicrotask(() => { if (this.isConnected) this.render(); });
+  }
+  render() {
     if (this._details) return;
     const children = [...this.childNodes];
-    const badge = this.firstElementChild?.matches('se-badge') ? this.firstElementChild : null;
     this.innerHTML = `<details class="se-collapsible"${this.hasAttribute('open') ? ' open' : ''}><summary><span class="se-collapsible__heading">${this.hasAttribute('icon') ? `<se-icon name="${escapeIcon(this.getAttribute('icon'))}"></se-icon>` : ''}<span>${escapeHtml(this.getAttribute('title') || 'Details')}</span></span><se-icon class="se-collapsible__chevron" name="chevron"></se-icon></summary><div class="se-collapsible__content"></div></details>`;
     this._details = this.querySelector('details');
-    if (badge) this.querySelector('.se-collapsible__heading').append(badge);
-    this.querySelector('.se-collapsible__content').append(...children.filter(node => node !== badge));
+    for (const node of children) this.querySelector(node.nodeType === 1 && node.getAttribute('data-se-region') === 'heading-end' ? '.se-collapsible__heading' : '.se-collapsible__content').append(node);
     this._details.addEventListener('toggle', () => this.toggleAttribute('open', this._details.open));
   }
 
