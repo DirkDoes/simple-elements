@@ -66,10 +66,12 @@ Build the showcase after editing `examples/pages/*.html`, then open `examples/in
 
 The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates the components. Concise, AI-friendly API documentation lives in [`docs`](./docs/index.md) and is included when installing directly from GitHub.
 
-If upgrading from v0.14.6, follow the [v0.15.0 migration guide](./docs/migration-0.15.0.md). This release standardizes title/subtitle attributes and adds named child regions for composing actions and supporting content.
+If upgrading from v0.14.6, follow the [v0.15.0 migration guide](./docs/migration-0.15.0.md). v0.15.0 standardizes title/subtitle attributes and adds named child regions for composing actions and supporting content.
 
 Component icon inputs support Lucide names, external SVGs, and foreground-aware light/dark artwork with optional color preservation. See [icons](./docs/icon.md).
 
 Need every Lucide icon? Import `simple-elements/icons/all` after the components, or load `dist/icons-all.js` after the browser bundle. The [icon guide](./docs/icon.md#default-and-full-lucide-sets) also covers individual registration. Browse the showcase’s **Patterns → Icon gallery** to search and copy icon names.
 
 For original, brand-colored empty-state artwork, use [`se-empty-illustration`](./docs/empty-illustration.md). Its 21 variants adapt to light and dark mode from a single SVG per illustration.
+
+Compare source with [`se-diff`](./docs/diff.md) (`split` or `unified`), or text values with [`se-diff-value`](./docs/diff-value.md) (`inline` or `stacked`, with an optional action region). Add `diff` to `se-code` or `se-code-editor` for patch row highlighting while retaining the source language. The [Diffs pattern](./docs/diffs.md) shows code, translation-tree, document, and spreadsheet examples.

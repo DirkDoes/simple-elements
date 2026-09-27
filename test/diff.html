@@ -1,0 +1,70 @@
+<!doctype html><html data-theme="light"><head><meta charset="utf-8"><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<se-diff id="comparison" title="Example" language="javascript" before="const x = 1;&#10;keep" after="const x = 2;&#10;new&#10;keep"></se-diff>
+<se-diff-value id="value" before="Save" after="Save changes"></se-diff-value>
+<se-diff-value id="action-value" variant="stacked" before="Old text" after="New text"><se-button data-se-region="action" variant="mini" icon="rotate-ccw" aria-label="Restore"></se-button><se-button data-se-region="action" variant="mini" icon="info" aria-label="Details"></se-button></se-diff-value>
+<se-code id="patch" block language="javascript" diff>-const ready = false;
++const ready = true;
+</se-code>
+<se-code-editor id="editor" language="javascript" diff value="-const ready = false;&#10;+const ready = true;&#10;&#10; context"></se-code-editor>
+<se-collection type="table" columns="1fr 2fr"><se-list-row collapsible><span>Namespace</span><span>1 change</span></se-list-row><se-list-row level="1" guides><span>button</span><se-diff-value variant="stacked" before="Pay" after="Complete&#10;purchase&#10;securely"></se-diff-value></se-list-row></se-collection>
+<pre id="result"></pre><script type="module">
+const assert=(value,message)=>{if(!value)throw Error(message)};
+try {
+ await customElements.whenDefined('se-diff'); await new Promise(resolve=>requestAnimationFrame(resolve));
+ const viewer=document.querySelector('#comparison');
+ viewer.style.width='240px';
+ assert(viewer.querySelector('.se-diff__scroll').clientWidth<=240,'Viewer remains within a narrow container');
+ assert(viewer.querySelector('.se-diff__scroll').scrollWidth>240,'Wide code scrolls inside the viewer');
+ assert(viewer.querySelectorAll('.se-diff__cell--added').length===2,'Aligned additions');
+ assert(viewer.querySelectorAll('.se-diff__cell--removed').length===1,'Aligned removal');
+ assert(viewer.querySelectorAll('tbody tr').length===3,'Aligned replacement and context');
+ assert(viewer.querySelectorAll('.se-diff__sign se-icon svg').length===3,'Viewer change markers use icons');
+ assert(viewer.querySelector('.se-diff__counts se-icon[name="minus"] svg'),'Count badge uses minus icon');
+ viewer.setAttribute('variant','unified');
+ assert(viewer.querySelectorAll('tbody tr').length===4,'Unified rows');
+ viewer.after='<script>unsafe<\/script>';
+ assert(!viewer.querySelector('script'),'Source escaped');
+ viewer.before=''; viewer.after=''; assert(viewer.textContent.includes('No content to compare'),'Empty comparison');
+ const value=document.querySelector('#value');
+ assert(value.dataset.change==='modified'&&value.querySelector('del')&&value.querySelector('ins'),'Modified value');
+ value.removeAttribute('before');assert(value.dataset.change==='added'&&!value.querySelector('del'),'Addition');
+ value.setAttribute('before','');value.setAttribute('after','');assert(value.dataset.change==='unchanged'&&value.textContent==='Empty','Empty unchanged value');
+ const patch=document.querySelector('#patch');
+ assert(patch.querySelector('.se-token--keyword'),'Diff retains language');
+ assert(patch.querySelector('.se-code-diff-sign se-icon[name="minus"] svg'),'Patch uses minus icon');
+ const actionValue=document.querySelector('#action-value'), action=actionValue.querySelector('se-button');
+ let clicked=0;action.addEventListener('click',()=>clicked++);
+ actionValue.setAttribute('after','Updated text');
+ assert(actionValue.querySelector('se-button')===action,'Action node survives value update');
+ assert(actionValue.querySelectorAll('.se-diff-value__actions > se-button').length===2,'Multiple actions supported');
+ action.querySelector('button').click();assert(clicked===1,'Action listener survives value update');
+ const actionBox=actionValue.querySelector('.se-diff-value__actions').getBoundingClientRect(),valueBox=actionValue.querySelector('.se-diff-value').getBoundingClientRect();
+ assert(Math.abs(actionBox.height-valueBox.height)<1&&actionBox.left>=valueBox.right,'Stacked action spans both values');
+ actionValue.setAttribute('variant','inline');
+ assert(actionValue.querySelector('se-button')===action,'Action survives variant change');
+ assert(actionValue.querySelector('.se-diff-value__actions').getBoundingClientRect().left>=actionValue.querySelector('.se-diff-value').getBoundingClientRect().right,'Inline action follows both values');
+ assert(actionValue.querySelector('se-icon[name="plus"] svg'),'Value marker uses plus icon');
+ assert(patch.querySelector('.se-code-diff-line--added'),'Patch addition');
+ patch.removeAttribute('diff');assert(!patch.querySelector('.se-code-diff-line'),'Toggle patch off');
+ patch.setAttribute('language','diff');assert(patch.querySelector('.se-code-diff-line--added'),'Diff grammar shorthand');
+ const editor=document.querySelector('#editor'),textarea=editor.querySelector('textarea'),highlight=editor.querySelector('.se-editor__highlight');
+ assert(highlight.textContent===textarea.value+'\n','Patch source preserved exactly');
+ const lineHeight=parseFloat(getComputedStyle(textarea).lineHeight);
+ const rowRects=[...highlight.querySelectorAll('.se-code-diff-line')].map(row=>row.getBoundingClientRect());
+ for(let i=1;i<rowRects.length;i++)assert(Math.abs(rowRects[i].top-rowRects[i-1].top-lineHeight)<1,'Overlay rows match textarea line height');
+ editor.removeAttribute('diff');assert(!highlight.querySelector('.se-code-diff-line'),'Live editor diff toggle');
+ editor.setAttribute('diff','');editor.value='+const next = true;';assert(highlight.querySelector('.se-code-diff-line--added'),'Editing refreshes diff');
+ editor.setAttribute('wrap','');editor.value='+'+'longword '.repeat(40)+'\n-removed\n context';
+ assert(Math.abs(textarea.scrollHeight-highlight.scrollHeight)<3,'Wrapped overlay stays aligned');
+ const collection=document.querySelector('se-collection'), guided=collection.querySelector('se-list-row[guides]');
+ for(const dividers of [false,true]){
+  collection.toggleAttribute('dividers',dividers);
+  const row=guided.getBoundingClientRect(), cell=guided.firstElementChild.getBoundingClientRect();
+  assert(Math.abs(cell.top-row.top)<2&&Math.abs(cell.bottom-row.bottom)<2,'Guides cover tall rows with and without dividers');
+ }
+ const group=document.querySelector('se-collection se-list-row');group.querySelector('.se-list__toggle').click();
+ await new Promise(resolve=>setTimeout(resolve,200));
+ assert(group.nextElementSibling.hasAttribute('data-tree-hidden'),'Translation tree collapses natively');
+ document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='Diff rendering, escaping, live updates, overlay alignment, and tree disclosure passed';
+}catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack}
+</script></body></html>

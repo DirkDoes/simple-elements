@@ -18,3 +18,10 @@ Long lines scroll horizontally by default. Add `wrap` to wrap them visually; wra
 Drag the editor frame’s bottom edge to resize the whole editor, including the line numbers and highlighted code. Add `autosize` to grow and shrink the editor with its content while disabling manual resizing.
 
 Tab inserts two spaces at the caret. With a selection, Tab indents every selected line and remains undoable with the browser's normal undo command.
+
+Add `diff` to tint added (`+`) and removed (`-`) patch rows without replacing the selected `language`. The markers are part of the editable value and submitted textarea, not generated text. `language="diff"` also renders a plain-text patch. `diff` and `language` can change on a mounted editor. This highlights a supplied patch; it does not generate one.
+
+```html
+<se-code-editor language="json" diff value='-{"enabled":false}
++{"enabled":true}'></se-code-editor>
+```

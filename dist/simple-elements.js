@@ -319,7 +319,14 @@ const highlightHtml = (source) => {
   return result + escapeHtml(source.slice(cursor));
 };
 
-const highlightCode = (source = '', language = '') => {
+const highlightCode = (source = '', language = '', diff = false) => {
+  if (diff || language === 'diff') return source.replaceAll('\r', '').split('\n').map(line => {
+    const type = /^(?:diff |index |--- |\+\+\+ )/.test(line) ? 'meta' : line.startsWith('@@') ? 'hunk' : line.startsWith('+') ? 'added' : line.startsWith('-') ? 'removed' : 'context';
+    const content = ['added', 'removed'].includes(type)
+      ? `<span class="se-code-diff-sign">${escapeHtml(line[0])}<se-icon name="${type === 'added' ? 'plus' : 'minus'}" aria-hidden="true"></se-icon></span>${highlightCode(line.slice(1), language === 'diff' ? '' : language)}`
+      : ['meta', 'hunk'].includes(type) ? escapeHtml(line) : highlightCode(line, language === 'diff' ? '' : language);
+    return `<span class="se-code-diff-line se-code-diff-line--${type}">${content}</span>`;
+  }).join('\n');
   const resolvedLanguage = aliases[language] || language;
   if (resolvedLanguage === 'html') return highlightHtml(source);
   const pattern = patterns[resolvedLanguage];
@@ -378,6 +385,37 @@ const renderMarkdown = (source = '') => {
   }
   flush();
   return html.join('');
+};
+
+// ponytail: bounded LCS for small reviews; large unmatched middles become one change block.
+// Use a Myers/streaming implementation if detailed huge-file diffs become a product requirement.
+const compareLines = (before = '', after = '') => {
+  const split = value => value === '' ? [] : String(value).replace(/\r\n?/g, '\n').split('\n');
+  const a = split(before), b = split(after), rows = [], suffix = [];
+  const add = (type, text) => rows.push({ type, text });
+  let start = 0, endA = a.length, endB = b.length;
+  while (start < endA && start < endB && a[start] === b[start]) add('context', a[start++]);
+  while (endA > start && endB > start && a[endA - 1] === b[endB - 1]) {
+    suffix.push({ type: 'context', text: a[--endA] }); --endB;
+  }
+  const old = a.slice(start, endA), next = b.slice(start, endB);
+  if (old.length * next.length > 1000000) {
+    old.forEach(text => add('removed', text)); next.forEach(text => add('added', text));
+  } else {
+    const lengths = Array.from({ length: old.length + 1 }, () => new Uint32Array(next.length + 1));
+    for (let i = old.length - 1; i >= 0; i--) for (let j = next.length - 1; j >= 0; j--) {
+      lengths[i][j] = old[i] === next[j] ? lengths[i + 1][j + 1] + 1 : Math.max(lengths[i + 1][j], lengths[i][j + 1]);
+    }
+    let i = 0, j = 0;
+    while (i < old.length || j < next.length) {
+      if (i < old.length && j < next.length && old[i] === next[j]) { add('context', old[i++]); j++; }
+      else if (i < old.length && (j === next.length || lengths[i + 1][j] >= lengths[i][j + 1])) add('removed', old[i++]);
+      else add('added', next[j++]);
+    }
+  }
+  const aligned = rows.concat(suffix.reverse());
+  let oldLine = 0, newLine = 0;
+  return aligned.map(row => ({ ...row, oldLine: row.type === 'added' ? null : ++oldLine, newLine: row.type === 'removed' ? null : ++newLine }));
 };
 
 
@@ -1697,16 +1735,23 @@ define('se-empty-illustration', SeEmptyIllustration);
 
 
 class SeCode extends HTMLElement {
+  static observedAttributes = ['diff', 'language'];
+  attributeChangedCallback() { if (this.dataset.ready) this.render(); }
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const source = this.textContent;
-    this.innerHTML = this.hasAttribute('block')
-      ? `<pre class="se-code-block"><code>${highlightCode(source, this.getAttribute('language') || '')}</code></pre>`
-      : `<code class="se-code-inline">${highlightCode(source, this.getAttribute('language') || '')}</code>`;
+    this._source = this.textContent;
+    this.render();
+  }
+  render() {
+    const language = this.getAttribute('language') || '';
+    const diff = this.hasAttribute('diff') || language === 'diff';
+    const highlighted = highlightCode(this._source, language, diff);
+    this.innerHTML = this.hasAttribute('block') || diff
+      ? `<pre class="se-code-block"><code>${highlighted}</code></pre>`
+      : `<code class="se-code-inline">${highlighted}</code>`;
   }
 }
-
 define('se-code', SeCode);
 
 
@@ -1736,17 +1781,18 @@ define('se-markdown', SeMarkdown);
 
 
 class SeCodeEditor extends HTMLElement {
+  static observedAttributes = ['diff', 'language'];
+  attributeChangedCallback() { this._sync?.(); }
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
     const value = this.getAttribute('value') || this.textContent.trim();
-    const language = this.getAttribute('language') || 'javascript';
     this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-editor"><pre class="se-editor__lines" aria-hidden="true"></pre><pre class="se-editor__highlight" aria-hidden="true"><code></code></pre><textarea name="${escapeHtml(this.getAttribute('name') || '')}" aria-label="${escapeHtml(this.getAttribute('label') || 'Code editor')}" spellcheck="false"${this.hasAttribute('autosize') ? ' data-autosize' : ''}${this.hasAttribute('readonly') ? ' readonly' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}>${escapeHtml(value)}</textarea></div>`;
     const textarea = this.querySelector('textarea');
     const highlight = this.querySelector('.se-editor__highlight');
     const lines = this.querySelector('.se-editor__lines');
-    const sync = () => {
-      highlight.querySelector('code').innerHTML = `${highlightCode(textarea.value, language)}\n`;
+    const sync = this._sync = () => {
+      highlight.querySelector('code').innerHTML = `${highlightCode(textarea.value, this.getAttribute('language') || 'javascript', this.hasAttribute('diff'))}\n`;
       lines.textContent = Array.from({ length: textarea.value.split('\n').length }, (_, index) => index + 1).join('\n');
       if (textarea.dataset.autosize !== undefined) { textarea.style.height = '0px'; textarea.style.height = `${textarea.scrollHeight}px`; }
     };
@@ -2703,6 +2749,72 @@ class SePopover extends HTMLElement {
 }
 
 define('se-popover', SePopover);
+
+
+class SeDiff extends HTMLElement {
+  static observedAttributes = ['before', 'after', 'language', 'variant', 'title', 'before-label', 'after-label'];
+  attributeChangedCallback() { if (this.isConnected) this.render(); }
+  connectedCallback() { this.render(); }
+  get before() { return this.getAttribute('before') || ''; }
+  set before(value) { this.setAttribute('before', value ?? ''); }
+  get after() { return this.getAttribute('after') || ''; }
+  set after(value) { this.setAttribute('after', value ?? ''); }
+  render() {
+    const rows = compareLines(this.before, this.after);
+    const language = this.getAttribute('language') || '';
+    const split = this.getAttribute('variant') !== 'unified';
+    const oldLabel = escapeHtml(this.getAttribute('before-label') || 'Previous');
+    const newLabel = escapeHtml(this.getAttribute('after-label') || 'Current');
+    const title = escapeHtml(this.getAttribute('title') || 'Changes');
+    const added = rows.filter(row => row.type === 'added').length;
+    const removed = rows.filter(row => row.type === 'removed').length;
+    const sign = type => type === 'context' ? '' : `<se-icon name="${type === 'added' ? 'plus' : 'minus'}" aria-hidden="true"></se-icon>`;
+    const code = row => `<span class="se-diff__sign" aria-label="${row.type === 'added' ? 'Added' : row.type === 'removed' ? 'Removed' : 'Unchanged'}">${sign(row.type)}</span><code>${highlightCode(row.text, language)}</code>`;
+    const cell = (row, side) => row
+      ? `<td class="se-diff__cell se-diff__cell--${row.type}"><span class="se-diff__number" aria-hidden="true">${row[side]}</span>${code(row)}</td>`
+      : '<td class="se-diff__cell se-diff__cell--empty" aria-label="No corresponding line"></td>';
+    let body = '';
+    if (split) {
+      for (let index = 0; index < rows.length;) {
+        if (rows[index].type === 'context') {
+          const row = rows[index++]; body += `<tr>${cell(row, 'oldLine')}${cell(row, 'newLine')}</tr>`;
+          continue;
+        }
+        const oldRows = [], newRows = [];
+        while (index < rows.length && rows[index].type !== 'context') {
+          const row = rows[index++]; (row.type === 'removed' ? oldRows : newRows).push(row);
+        }
+        for (let pair = 0; pair < Math.max(oldRows.length, newRows.length); pair++) body += `<tr>${cell(oldRows[pair], 'oldLine')}${cell(newRows[pair], 'newLine')}</tr>`;
+      }
+    } else body = rows.map(row => `<tr class="se-diff__row--${row.type}"><td class="se-diff__number" aria-hidden="true">${row.oldLine ?? ''}</td><td class="se-diff__number" aria-hidden="true">${row.newLine ?? ''}</td><td class="se-diff__cell">${code(row)}</td></tr>`).join('');
+    this.innerHTML = `<section class="se-diff" title=""><header class="se-diff__heading"><strong>${title}</strong><span class="se-diff__counts"><se-badge tone="success" icon="plus" text="${added}" aria-label="${added} added lines"></se-badge><se-badge tone="error" icon="minus" text="${removed}" aria-label="${removed} removed lines"></se-badge></span></header><div class="se-diff__scroll" tabindex="0" aria-label="Scrollable code comparison">${rows.length ? `<table class="se-diff__table se-diff__table--${split ? 'split' : 'unified'}" aria-label="${title}"><thead><tr>${split ? `<th scope="col">${oldLabel}</th><th scope="col">${newLabel}</th>` : `<th scope="col" colspan="3">${oldLabel} → ${newLabel}</th>`}</tr></thead><tbody>${body}</tbody></table>` : '<p class="se-diff__empty">No content to compare.</p>'}</div></section>`;
+  }
+}
+define('se-diff', SeDiff);
+
+
+class SeDiffValue extends HTMLElement {
+  static observedAttributes = ['before', 'after', 'variant'];
+  attributeChangedCallback() { if (this._rendered && this.isConnected) this.render(); }
+  connectedCallback() {
+    queueMicrotask(() => { if (this.isConnected) this.render(); });
+  }
+  render() {
+    const before = this.getAttribute('before'), after = this.getAttribute('after');
+    const change = before === after ? 'unchanged' : before === null ? 'added' : after === null ? 'removed' : 'modified';
+    this.dataset.change = change;
+    const text = value => escapeHtml(value === '' ? 'Empty' : value);
+    const part = (tag, value, label, icon) => `<${tag} aria-label="${label}: ${text(value)}"><se-icon class="se-diff-value__sign" name="${icon}" aria-hidden="true"></se-icon>${text(value)}</${tag}>`;
+    const values = `<span class="se-diff-value se-diff-value--${this.getAttribute('variant') === 'stacked' ? 'stacked' : 'inline'}">${change === 'unchanged' ? text(after ?? '—') : (before !== null ? part('del', before, 'Previous', 'minus') : '') + (after !== null ? part('ins', after, 'Current', 'plus') : '')}</span>`;
+    if (this._rendered) { this.querySelector('.se-diff-value').outerHTML = values; return; }
+    const actions = [...this.querySelectorAll(':scope > [data-se-region="action"]')];
+    this.innerHTML = actions.length ? `<span class="se-diff-value-with-actions">${values}<span class="se-diff-value__actions"></span></span>` : values;
+    if (actions.length) this.querySelector('.se-diff-value__actions').append(...actions);
+    this._rendered = true;
+  }
+}
+
+define('se-diff-value', SeDiffValue);
 
  globalThis.SimpleElements = { setBrandTheme, registerIcons };
 })();

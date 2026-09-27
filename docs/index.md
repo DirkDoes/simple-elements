@@ -12,6 +12,8 @@ Flat is the default visual theme. Use `data-se-theme="clean"` for Clean, or foll
 
 Studio and Edge are optional visual themes, each with light and dark modes. Import only the optional theme stylesheets your app uses; see the guide below for single-theme and all-four setups.
 
+v0.16.0 adds code and value comparisons, optional diff-value actions, and patch highlighting in the existing code components. See [Diff](diff.md), [Diff value](diff-value.md), and the [Diffs pattern](diffs.md). Existing component markup remains valid.
+
 ## Theming
 
 - [Visual themes, color modes, and brand colors](theme.md)
@@ -31,6 +33,8 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 - [Workspace card](workspace-card.md)
 - [Folder card](folder-card.md)
 - [Code](code.md)
+- [Diff](diff.md)
+- [Diff value](diff-value.md)
 - [Blockquote](blockquote.md)
 - [Markdown](markdown.md)
 
@@ -92,6 +96,7 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 - [Chats](chats.md)
 - [File system](file-system.md)
 - [Forms](forms.md)
+- [Diff designs](diffs.md)
 
 ## Data display
 

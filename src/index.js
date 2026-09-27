@@ -64,3 +64,6 @@ import './components/spinner.js';
 import './components/progress-ring.js';
 
 import './components/popover.js';
+
+import './components/diff.js';
+import './components/diff-value.js';

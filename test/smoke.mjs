@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readdir, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
-import { highlightCode, renderMarkdown } from '../src/syntax.js';
+import { highlightCode, renderMarkdown, compareLines } from '../src/syntax.js';
 import { calendarDays, dateValue, parseDate, parseTime, timeValue, wrapNumber } from '../src/calendar.js';
 import { iconNames, extraIcons } from '../src/icon-names.js';
 import { primaryTheme, setBrandTheme } from '../src/theme.js';
@@ -206,7 +206,7 @@ assert.doesNotMatch(colorPickerSource, /hasAttribute\('popover'\)/);
 const documentedComponents = components;
 assert.equal(componentCatalog.length, documentedComponents.length, 'every standalone component needs a catalog page');
 assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(documentedComponents), 'catalog tags must match standalone component files');
-assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['comments', 'multi-scope-navigation', 'workspaces', 'page-layout', 'chats', 'file-system', 'forms'], 'all patterns must be documented');
+assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['diffs', 'comments', 'multi-scope-navigation', 'workspaces', 'page-layout', 'chats', 'file-system', 'forms'], 'all patterns must be documented');
 assert.ok(patternCatalog.every(({ examples }) => examples?.length), 'each pattern needs named examples');
 assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.every(({ markup }) => markup.includes('layout-mode="responsive"')), 'every page layout pattern needs responsive navigation');
 assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.slice(0, 3).every(({ markup }) => markup.includes('<se-topbar layout-mode="mobile-only">')), 'sidebar-only layouts need a mobile top bar');
@@ -352,3 +352,23 @@ assert.equal(await readFile('dist/themes/edge.css', 'utf8'), await readFile('src
 assert.doesNotMatch(compiledCss, /:root\[data-se-theme="edge"\]/, 'Edge must remain optional');
 
 for (const name of ["unlink", "external-link", "qr-code", "star", "house", "circle-check", "map-pin", "sparkles", "pencil", "circle-x", "calendar", "log-out", "download", "arrow-left", "arrow-up", "arrow-down", "arrow-right", "save", "camera", "rocket", "truck", "languages", "box", "map", "paperclip", "database", "notebook-pen", "message-square", "messages-square", "grip-vertical", "car", "blocks", "pin", "palette", "timer", "receipt-text", "crown", "scroll-text", "book-open-text", "thumbs-up", "audio-lines", "leaf", "network", "boxes", "list-checks", "plane", "folder-open", "ticket", "images", "files", "inbox", "scan", "type", "laptop", "locate", "lock", "lock-open", "scan-qr-code", "archive", "ruler", "square-terminal", "thumbs-down", "skip-forward", "play", "pause", "trash", "trash-off", "rotate-ccw", "book-plus", "share-2", "star-off", "play-off"]) assert.ok(iconNames[name], `Requested icon ${name} must be bundled`);
+
+// Verify exact reconstruction, repeated-line matching, empty sides, and the bounded fallback.
+for (const [before, after] of [['a\nb\nc', 'a\nnew\nc'], ['', 'new'], ['old', ''], ['a\na\nb', 'a\nb\na'], ['line\n', 'line'], ['a\r\nb', 'a\nb']]) {
+  const rows = compareLines(before, after);
+  const normalize = value => value === '' ? [] : value.replace(/\r\n?/g, '\n').split('\n');
+  assert.deepEqual(rows.filter(row => row.type !== 'added').map(row => row.text), normalize(before));
+  assert.deepEqual(rows.filter(row => row.type !== 'removed').map(row => row.text), normalize(after));
+}
+assert.deepEqual(compareLines('a\nb\nc', 'a\nx\nc').map(row => row.type), ['context', 'removed', 'added', 'context']);
+const largeDiff = compareLines(Array.from({length:1001},(_,i)=>'old'+i).join('\n'), Array.from({length:1001},(_,i)=>'new'+i).join('\n'));
+assert.equal(largeDiff.length, 2002);
+assert.equal(largeDiff.at(-1).newLine, 1001);
+const patchHighlight = highlightCode('--- a.js\n+++ b.js\n@@ -1 +1 @@\n-const ready = false;\n+const ready = true;', 'javascript', true);
+assert.equal((patchHighlight.match(/se-code-diff-line--meta/g) || []).length, 2);
+assert.match(patchHighlight, /se-code-diff-line--added/);
+assert.match(patchHighlight, /se-code-diff-line--removed/);
+assert.match(patchHighlight, /se-token--keyword/);
+assert.doesNotMatch(highlightCode('+<script>alert(1)</script>', 'html', true), /<script>/);
+assert.match(highlightCode('+new', 'diff'), /se-code-diff-line--added/);
+assert.equal(patternCatalog.find(({tag})=>tag==='diffs').examples.length, 6);

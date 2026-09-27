@@ -33,7 +33,14 @@ const highlightHtml = (source) => {
   return result + escapeHtml(source.slice(cursor));
 };
 
-export const highlightCode = (source = '', language = '') => {
+export const highlightCode = (source = '', language = '', diff = false) => {
+  if (diff || language === 'diff') return source.replaceAll('\r', '').split('\n').map(line => {
+    const type = /^(?:diff |index |--- |\+\+\+ )/.test(line) ? 'meta' : line.startsWith('@@') ? 'hunk' : line.startsWith('+') ? 'added' : line.startsWith('-') ? 'removed' : 'context';
+    const content = ['added', 'removed'].includes(type)
+      ? `<span class="se-code-diff-sign">${escapeHtml(line[0])}<se-icon name="${type === 'added' ? 'plus' : 'minus'}" aria-hidden="true"></se-icon></span>${highlightCode(line.slice(1), language === 'diff' ? '' : language)}`
+      : ['meta', 'hunk'].includes(type) ? escapeHtml(line) : highlightCode(line, language === 'diff' ? '' : language);
+    return `<span class="se-code-diff-line se-code-diff-line--${type}">${content}</span>`;
+  }).join('\n');
   const resolvedLanguage = aliases[language] || language;
   if (resolvedLanguage === 'html') return highlightHtml(source);
   const pattern = patterns[resolvedLanguage];
@@ -92,4 +99,35 @@ export const renderMarkdown = (source = '') => {
   }
   flush();
   return html.join('');
+};
+
+// ponytail: bounded LCS for small reviews; large unmatched middles become one change block.
+// Use a Myers/streaming implementation if detailed huge-file diffs become a product requirement.
+export const compareLines = (before = '', after = '') => {
+  const split = value => value === '' ? [] : String(value).replace(/\r\n?/g, '\n').split('\n');
+  const a = split(before), b = split(after), rows = [], suffix = [];
+  const add = (type, text) => rows.push({ type, text });
+  let start = 0, endA = a.length, endB = b.length;
+  while (start < endA && start < endB && a[start] === b[start]) add('context', a[start++]);
+  while (endA > start && endB > start && a[endA - 1] === b[endB - 1]) {
+    suffix.push({ type: 'context', text: a[--endA] }); --endB;
+  }
+  const old = a.slice(start, endA), next = b.slice(start, endB);
+  if (old.length * next.length > 1000000) {
+    old.forEach(text => add('removed', text)); next.forEach(text => add('added', text));
+  } else {
+    const lengths = Array.from({ length: old.length + 1 }, () => new Uint32Array(next.length + 1));
+    for (let i = old.length - 1; i >= 0; i--) for (let j = next.length - 1; j >= 0; j--) {
+      lengths[i][j] = old[i] === next[j] ? lengths[i + 1][j + 1] + 1 : Math.max(lengths[i + 1][j], lengths[i][j + 1]);
+    }
+    let i = 0, j = 0;
+    while (i < old.length || j < next.length) {
+      if (i < old.length && j < next.length && old[i] === next[j]) { add('context', old[i++]); j++; }
+      else if (i < old.length && (j === next.length || lengths[i + 1][j] >= lengths[i][j + 1])) add('removed', old[i++]);
+      else add('added', next[j++]);
+    }
+  }
+  const aligned = rows.concat(suffix.reverse());
+  let oldLine = 0, newLine = 0;
+  return aligned.map(row => ({ ...row, oldLine: row.type === 'added' ? null : ++oldLine, newLine: row.type === 'removed' ? null : ++newLine }));
 };
