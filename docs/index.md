@@ -91,6 +91,7 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 
 ## Patterns
 
+- [Complex input and completions](complex-input.md)
 - [Page layout](page-layout.md)
 - [Workspaces](workspaces.md)
 - [Chats](chats.md)

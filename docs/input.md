@@ -21,4 +21,6 @@ Icon inputs support Lucide names, asset URLs, and the shared [icon configuration
 
 `size="normal"` is the default field density; use `size="small"` for compact controls. For textareas this also reduces line height and minimum height.
 
+Text, search, email, URL, and textarea fields accept application-provided [`completions`](complex-input.md).
+
 Use `aria-label` to name an input without a visible label, for example an editable cell under a named column.

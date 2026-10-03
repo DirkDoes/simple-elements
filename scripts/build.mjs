@@ -9,6 +9,7 @@ const files = [
   'src/illustrations.js',
   'src/syntax.js',
   'src/native-input.js',
+  'src/completions.js',
   'src/choice.js',
   'src/calendar.js',
   ...((await readFile('src/index.js', 'utf8')).match(/components\/.+?\.js/g) || []).map((file) => `src/${file}`),

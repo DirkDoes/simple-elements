@@ -1,5 +1,6 @@
 import { define, escapeHtml } from '../helpers.js';
 import { highlightCode } from '../syntax.js';
+import { attachCompletions } from '../completions.js';
 
 class SeCodeEditor extends HTMLElement {
   static observedAttributes = ['diff', 'language'];
@@ -20,6 +21,7 @@ class SeCodeEditor extends HTMLElement {
     textarea.addEventListener('input', sync);
     textarea.addEventListener('scroll', () => { highlight.scrollTop = textarea.scrollTop; highlight.scrollLeft = textarea.scrollLeft; lines.scrollTop = textarea.scrollTop; });
     textarea.addEventListener('keydown', (event) => {
+      if (this._hasCompletions?.()) return;
       if (event.key !== 'Tab') return;
       event.preventDefault();
       const start = textarea.selectionStart;
@@ -40,7 +42,9 @@ class SeCodeEditor extends HTMLElement {
       sync();
     });
     sync();
+    attachCompletions(this, textarea);
   }
+  disconnectedCallback() { this._disposeCompletions?.(); }
   get value() { return this.querySelector('textarea')?.value || ''; }
   set value(value) { const textarea = this.querySelector('textarea'); if (textarea) { textarea.value = value; textarea.dispatchEvent(new Event('input', { bubbles: true })); } }
 }

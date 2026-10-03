@@ -1,4 +1,5 @@
 import { define, escapeIcon, escapeHtml } from '../helpers.js';
+import { attachCompletions } from '../completions.js';
 
 const typeDefaults = {
   text: { placeholder: 'Enter some text...' },
@@ -54,7 +55,10 @@ class SeInput extends HTMLElement {
       event.currentTarget.innerHTML = `<se-icon name="${input.type === 'password' ? 'eye' : 'eye-off'}"></se-icon>`;
       event.currentTarget.setAttribute('aria-label', `${input.type === 'password' ? 'Show' : 'Hide'} password`);
     });
+    if (textarea || ['text', 'search', 'email', 'url'].includes(type)) attachCompletions(this, this.querySelector('.se-control'));
   }
+
+  disconnectedCallback() { this._disposeCompletions?.(); }
 
   get value() { return this.querySelector('input, textarea')?.value || ''; }
   set value(value) { const input = this.querySelector('input, textarea'); if (input) input.value = value; }

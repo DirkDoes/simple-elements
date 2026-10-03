@@ -1,5 +1,6 @@
 import { define, escapeHtml } from '../helpers.js';
 import { highlightCode } from '../syntax.js';
+import { attachCompletions } from '../completions.js';
 
 const wysiwygInlineMarkdown = (value) => escapeHtml(value)
   .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -113,7 +114,9 @@ class SeWysiwyg extends HTMLElement {
     source.value = sourceValue();
     highlightSource();
     this.closest('form')?.addEventListener('reset', () => queueMicrotask(() => { editor.innerHTML = value.defaultValue; this._html = value.defaultValue; sync(); }));
+    attachCompletions(this, editor);
   }
+  disconnectedCallback() { this._disposeCompletions?.(); }
   get value() { return this.querySelector('[data-value]')?.value || ''; }
   set value(value) { const editor = this.querySelector('.se-wysiwyg__editor'); const input = this.querySelector('[data-value]'); if (editor && input) { editor.innerHTML = value; input.value = value; this._html = value; } }
 }

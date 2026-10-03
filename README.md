@@ -66,6 +66,8 @@ Build the showcase after editing `examples/pages/*.html`, then open `examples/in
 
 The [live showcase](https://dirkdoes.github.io/simple-elements/) demonstrates the components. Concise, AI-friendly API documentation lives in [`docs`](./docs/index.md) and is included when installing directly from GitHub.
 
+Text inputs, textareas, code editors, and the WYSIWYG editor accept application-supplied completion suggestions. See the [Complex input guide](./docs/complex-input.md) and pattern for filtering, keyboard controls, and asynchronous sources.
+
 If upgrading from v0.14.6, follow the [v0.15.0 migration guide](./docs/migration-0.15.0.md). v0.15.0 standardizes title/subtitle attributes and adds named child regions for composing actions and supporting content.
 
 Component icon inputs support Lucide names, external SVGs, and foreground-aware light/dark artwork with optional color preservation. See [icons](./docs/icon.md).

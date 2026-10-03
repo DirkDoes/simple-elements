@@ -1,0 +1,36 @@
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<se-input label="Assignee"></se-input><se-input type="textarea" label="Notes"></se-input><se-code-editor label="Script" value="const user = "></se-code-editor><se-wysiwyg label="Message"></se-wysiwyg><pre id="result"></pre>
+<script type="module">
+const assert = (ok, message) => { if (!ok) throw Error(message); };
+const options = JSON.stringify([{ text: 'alex_morgan' }, { text: 'sam_rivera' }]);
+const press = (target, key) => target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+try {
+  await customElements.whenDefined('se-wysiwyg');
+  for (const [host, selector] of [
+    [document.querySelector('se-input'), 'input'],
+    [document.querySelector('se-input[type="textarea"]'), 'textarea'],
+    [document.querySelector('se-code-editor'), 'textarea'],
+    [document.querySelector('se-wysiwyg'), '[contenteditable]'],
+  ]) {
+    const editable = host.querySelector(selector);
+    editable.focus();
+    if (editable.isContentEditable) { editable.textContent = '@al'; const range = document.createRange(); range.setStart(editable.firstChild, 3); range.collapse(true); getSelection().removeAllRanges(); getSelection().addRange(range); }
+    else { editable.value = '@al'; editable.setSelectionRange(3, 3); }
+    host.setAttribute('completions', options);
+    await new Promise((resolve) => setTimeout(resolve));
+    assert(document.querySelector('.se-completions:not([hidden]) [aria-selected="true"]')?.textContent.includes('alex_morgan'), 'First suggestion starts selected');
+    press(editable, 'ArrowDown');
+    assert(document.querySelector('.se-completions:not([hidden]) [aria-selected="true"]')?.textContent.includes('sam_rivera'), 'Down selects second suggestion');
+    press(editable, 'ArrowDown');
+    assert(document.querySelector('.se-completions:not([hidden]) [aria-selected="true"]')?.textContent.includes('alex_morgan'), 'Down wraps to first');
+    press(editable, 'Tab');
+    assert((editable.isContentEditable ? editable.textContent : editable.value) === '@alex_morgan', `Tab replaces typed prefix in ${host.localName}: ${editable.isContentEditable ? editable.textContent : editable.value}`);
+    assert(!host.hasAttribute('completions'), 'Accepted suggestions are cleared');
+  }
+  document.documentElement.dataset.test = 'passed';
+  document.querySelector('#result').textContent = 'Completion keyboard and insertion checks passed';
+} catch (error) {
+  document.documentElement.dataset.test = 'failed';
+  document.querySelector('#result').textContent = error.stack;
+}
+</script></body></html>
