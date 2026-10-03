@@ -52,7 +52,7 @@ const wysiwygHtmlToMarkdown = (html) => {
 
 class SeWysiwyg extends HTMLElement {
   connectedCallback() {
-    if (this.dataset.ready) return;
+    if (this.dataset.ready) { attachCompletions(this, this.querySelector('.se-wysiwyg__editor')); return; }
     const initial = this.getAttribute('value') || this.innerHTML.trim();
     this._formatMode = ['html', 'markdown', 'both'].includes(this.getAttribute('format')) ? this.getAttribute('format') : 'markdown';
     this._format = this._formatMode === 'html' ? 'html' : 'markdown';

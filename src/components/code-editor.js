@@ -6,7 +6,7 @@ class SeCodeEditor extends HTMLElement {
   static observedAttributes = ['diff', 'language'];
   attributeChangedCallback() { this._sync?.(); }
   connectedCallback() {
-    if (this.dataset.ready) return;
+    if (this.dataset.ready) { attachCompletions(this, this.querySelector('textarea')); return; }
     this.dataset.ready = 'true';
     const value = this.getAttribute('value') || this.textContent.trim();
     this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-editor"><pre class="se-editor__lines" aria-hidden="true"></pre><pre class="se-editor__highlight" aria-hidden="true"><code></code></pre><textarea name="${escapeHtml(this.getAttribute('name') || '')}" aria-label="${escapeHtml(this.getAttribute('label') || 'Code editor')}" spellcheck="false"${this.hasAttribute('autosize') ? ' data-autosize' : ''}${this.hasAttribute('readonly') ? ' readonly' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}>${escapeHtml(value)}</textarea></div>`;

@@ -16,7 +16,7 @@ class SeInput extends HTMLElement {
   static defaultsFor(type = 'text') { return { ...(typeDefaults[type] || {}) }; }
 
   connectedCallback() {
-    if (this.dataset.ready) return;
+    if (this.dataset.ready) { if (this._disposeCompletions) attachCompletions(this, this.querySelector('.se-control')); return; }
     this.dataset.ready = 'true';
     const id = this.getAttribute('id') || `se-input-${crypto.randomUUID()}`;
     const type = this.getAttribute('type') || 'text';

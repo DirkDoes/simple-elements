@@ -435,6 +435,10 @@ const defineNativeInput = (tag, type, fallbackLabel) => define(tag, class extend
 
 // A single, application-controlled suggestion list for native and rich-text editors.
 function attachCompletions(host, editable) {
+  if (host._completionAttached) return;
+  host._completionAttached = true;
+  const listeners = new AbortController();
+  const { signal } = listeners;
   let items = [];
   let selected = 0;
   const menu = document.createElement('div');
@@ -536,17 +540,17 @@ function attachCompletions(host, editable) {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); selected = (selected + (event.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length; render(); }
     if (event.key === 'Tab' || event.key === 'Enter') { event.preventDefault(); accept(); }
     if (event.key === 'Escape') { event.preventDefault(); items = []; render(); host.removeAttribute('completions'); }
-  });
-  editable.addEventListener('focus', render);
-  editable.addEventListener('blur', () => queueMicrotask(render));
-  editable.addEventListener('input', () => { if (items.length) render(); });
-  menu.addEventListener('pointerdown', (event) => event.preventDefault());
-  menu.addEventListener('click', (event) => { const option = event.target.closest('[role="option"]'); if (option) { selected = Number(option.id.slice(host._completionId.length + 1)); accept(); } });
+  }, { signal });
+  editable.addEventListener('focus', render, { signal });
+  editable.addEventListener('blur', () => queueMicrotask(render), { signal });
+  editable.addEventListener('input', () => { if (items.length) render(); }, { signal });
+  menu.addEventListener('pointerdown', (event) => event.preventDefault(), { signal });
+  menu.addEventListener('click', (event) => { const option = event.target.closest('[role="option"]'); if (option) { selected = Number(option.id.slice(host._completionId.length + 1)); accept(); } }, { signal });
   const observer = new MutationObserver(update);
   observer.observe(host, { attributes: true, attributeFilter: ['completions'] });
-  const cleanup = () => { if (!host.isConnected) { menu.remove(); observer.disconnect(); window.removeEventListener('scroll', position, true); window.removeEventListener('resize', position); } };
-  window.addEventListener('scroll', position, true);
-  window.addEventListener('resize', position);
+  const cleanup = () => { if (!host.isConnected) { listeners.abort(); menu.remove(); observer.disconnect(); host._completionAttached = false; } };
+  window.addEventListener('scroll', position, { capture: true, signal });
+  window.addEventListener('resize', position, { signal });
   host._disposeCompletions = cleanup;
   update();
 }
@@ -854,7 +858,7 @@ class SeInput extends HTMLElement {
   static defaultsFor(type = 'text') { return { ...(typeDefaults[type] || {}) }; }
 
   connectedCallback() {
-    if (this.dataset.ready) return;
+    if (this.dataset.ready) { if (this._disposeCompletions) attachCompletions(this, this.querySelector('.se-control')); return; }
     this.dataset.ready = 'true';
     const id = this.getAttribute('id') || `se-input-${crypto.randomUUID()}`;
     const type = this.getAttribute('type') || 'text';
@@ -1932,7 +1936,7 @@ class SeCodeEditor extends HTMLElement {
   static observedAttributes = ['diff', 'language'];
   attributeChangedCallback() { this._sync?.(); }
   connectedCallback() {
-    if (this.dataset.ready) return;
+    if (this.dataset.ready) { attachCompletions(this, this.querySelector('textarea')); return; }
     this.dataset.ready = 'true';
     const value = this.getAttribute('value') || this.textContent.trim();
     this.innerHTML = `${this.getAttribute('label') ? `<label class="se-label">${escapeHtml(this.getAttribute('label'))}</label>` : ''}<div class="se-editor"><pre class="se-editor__lines" aria-hidden="true"></pre><pre class="se-editor__highlight" aria-hidden="true"><code></code></pre><textarea name="${escapeHtml(this.getAttribute('name') || '')}" aria-label="${escapeHtml(this.getAttribute('label') || 'Code editor')}" spellcheck="false"${this.hasAttribute('autosize') ? ' data-autosize' : ''}${this.hasAttribute('readonly') ? ' readonly' : ''}${this.hasAttribute('disabled') ? ' disabled' : ''}>${escapeHtml(value)}</textarea></div>`;
@@ -2028,7 +2032,7 @@ const wysiwygHtmlToMarkdown = (html) => {
 
 class SeWysiwyg extends HTMLElement {
   connectedCallback() {
-    if (this.dataset.ready) return;
+    if (this.dataset.ready) { attachCompletions(this, this.querySelector('.se-wysiwyg__editor')); return; }
     const initial = this.getAttribute('value') || this.innerHTML.trim();
     this._formatMode = ['html', 'markdown', 'both'].includes(this.getAttribute('format')) ? this.getAttribute('format') : 'markdown';
     this._format = this._formatMode === 'html' ? 'html' : 'markdown';

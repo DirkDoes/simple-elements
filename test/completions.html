@@ -26,6 +26,20 @@ try {
     press(editable, 'Tab');
     assert((editable.isContentEditable ? editable.textContent : editable.value) === '@alex_morgan', `Tab replaces typed prefix in ${host.localName}: ${editable.isContentEditable ? editable.textContent : editable.value}`);
     assert(!host.hasAttribute('completions'), 'Accepted suggestions are cleared');
+    const menuCount = document.querySelectorAll('.se-completions').length;
+    const destination = document.createElement('div');
+    document.body.append(destination);
+    destination.append(host);
+    assert(document.querySelectorAll('.se-completions').length === menuCount, 'Moving a field replaces its menu without leaking one');
+    editable.focus();
+    if (editable.isContentEditable) { editable.textContent = '@sa'; const range = document.createRange(); range.setStart(editable.firstChild, 3); range.collapse(true); getSelection().removeAllRanges(); getSelection().addRange(range); }
+    else { editable.value = '@sa'; editable.setSelectionRange(3, 3); }
+    host.setAttribute('completions', options);
+    await new Promise((resolve) => setTimeout(resolve));
+    assert(document.querySelector('.se-completions:not([hidden]) [aria-selected="true"]')?.textContent.includes('alex_morgan'), 'Moved field shows completions again');
+    press(editable, 'ArrowDown');
+    press(editable, 'Enter');
+    assert((editable.isContentEditable ? editable.textContent : editable.value) === '@sam_rivera', `Moved ${host.localName} accepts one selected completion: ${editable.isContentEditable ? editable.textContent : editable.value}`);
   }
   document.documentElement.dataset.test = 'passed';
   document.querySelector('#result').textContent = 'Completion keyboard and insertion checks passed';

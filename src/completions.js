@@ -1,5 +1,9 @@
 // A single, application-controlled suggestion list for native and rich-text editors.
 export function attachCompletions(host, editable) {
+  if (host._completionAttached) return;
+  host._completionAttached = true;
+  const listeners = new AbortController();
+  const { signal } = listeners;
   let items = [];
   let selected = 0;
   const menu = document.createElement('div');
@@ -101,17 +105,17 @@ export function attachCompletions(host, editable) {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); selected = (selected + (event.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length; render(); }
     if (event.key === 'Tab' || event.key === 'Enter') { event.preventDefault(); accept(); }
     if (event.key === 'Escape') { event.preventDefault(); items = []; render(); host.removeAttribute('completions'); }
-  });
-  editable.addEventListener('focus', render);
-  editable.addEventListener('blur', () => queueMicrotask(render));
-  editable.addEventListener('input', () => { if (items.length) render(); });
-  menu.addEventListener('pointerdown', (event) => event.preventDefault());
-  menu.addEventListener('click', (event) => { const option = event.target.closest('[role="option"]'); if (option) { selected = Number(option.id.slice(host._completionId.length + 1)); accept(); } });
+  }, { signal });
+  editable.addEventListener('focus', render, { signal });
+  editable.addEventListener('blur', () => queueMicrotask(render), { signal });
+  editable.addEventListener('input', () => { if (items.length) render(); }, { signal });
+  menu.addEventListener('pointerdown', (event) => event.preventDefault(), { signal });
+  menu.addEventListener('click', (event) => { const option = event.target.closest('[role="option"]'); if (option) { selected = Number(option.id.slice(host._completionId.length + 1)); accept(); } }, { signal });
   const observer = new MutationObserver(update);
   observer.observe(host, { attributes: true, attributeFilter: ['completions'] });
-  const cleanup = () => { if (!host.isConnected) { menu.remove(); observer.disconnect(); window.removeEventListener('scroll', position, true); window.removeEventListener('resize', position); } };
-  window.addEventListener('scroll', position, true);
-  window.addEventListener('resize', position);
+  const cleanup = () => { if (!host.isConnected) { listeners.abort(); menu.remove(); observer.disconnect(); host._completionAttached = false; } };
+  window.addEventListener('scroll', position, { capture: true, signal });
+  window.addEventListener('resize', position, { signal });
   host._disposeCompletions = cleanup;
   update();
 }
