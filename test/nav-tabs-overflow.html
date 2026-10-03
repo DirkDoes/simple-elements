@@ -1,0 +1,60 @@
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<div style="width:320px">
+  <se-nav-tabs value="a" options='[{"id":"a","label":"Overview"},{"id":"b","label":"Projects"},{"id":"c","label":"Settings"}]'>
+    <span data-actions><se-split-button direct variant="secondary" text="New" icon="plus" options='[{"id":"issue","label":"Create issue"},{"id":"draft","label":"Save draft"}]'></se-split-button></span>
+  </se-nav-tabs>
+</div>
+<div style="width:320px"><se-nav-tabs value="a" options='[{"id":"a","label":"Files"},{"id":"b","label":"Activity"}]'><span data-actions><se-date-picker label="Deadline"></se-date-picker></span></se-nav-tabs></div>
+<div style="width:320px"><se-nav-tabs value="a" options='[{"id":"a","label":"Files"},{"id":"b","label":"Activity"}]'><span data-actions><se-select label="Owner" options='[{"id":"one","label":"One"},{"id":"two","label":"Two"}]'></se-select></span></se-nav-tabs></div>
+<div style="width:320px"><se-nav-tabs value="a" options='[{"id":"a","label":"Files"},{"id":"b","label":"Activity"}]'><span data-actions><se-tooltip><se-button data-se-region="trigger" icon="info" aria-label="Help"></se-button>Context help</se-tooltip></span></se-nav-tabs></div>
+<button id="outside">Outside</button><pre id="result"></pre>
+<script type="module">
+const assert=(ok,message)=>{if(!ok)throw Error(message)};
+try{
+ await customElements.whenDefined('se-nav-tabs');
+ await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+ const tabs=document.querySelector('se-nav-tabs'),nav=tabs.querySelector('nav'),items=nav;
+ const split=tabs.querySelector('se-split-button'),toggle=split.querySelector('.se-split__toggle'),menu=split.querySelector('.se-split__menu');
+ assert(!nav.contains(split)&&tabs.contains(split),'Actions are outside tab scroller');
+ assert(getComputedStyle(tabs).overflowY==='visible','Action container does not clip popups');
+ const scrollHeight=items.scrollHeight;
+ toggle.click();
+ assert(menu.getBoundingClientRect().top>=tabs.getBoundingClientRect().bottom,'Menu opens beyond tab row');
+ assert(items.scrollHeight===scrollHeight,'Menu does not add a vertical scrollbar');
+ assert(toggle.getAttribute('aria-expanded')==='true','Expanded state');
+ document.querySelector('#outside').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));
+ assert(getComputedStyle(menu).display==='none'&&toggle.getAttribute('aria-expanded')==='false','Outside click closes menu');
+ toggle.click();
+ toggle.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+ assert(getComputedStyle(menu).display==='none'&&toggle.getAttribute('aria-expanded')==='false','Escape closes menu');
+ toggle.click();
+ menu.querySelector('[data-index]').click();
+ assert(getComputedStyle(menu).display==='none'&&toggle.getAttribute('aria-expanded')==='false','Selection closes direct menu');
+ const action=tabs.querySelector('[data-actions]');
+ tabs.value='b';
+ assert(tabs.querySelector('[data-actions]')===action,'Tab changes preserve action node');
+ assert(tabs.querySelector('[aria-current="page"]').textContent==='Projects','Tab selection still works');
+ for(const [tag,triggerSelector,popupSelector] of [
+  ['se-date-picker','.se-date__trigger','.se-date__popover'],
+  ['se-select','.se-select__trigger','.se-select__menu']
+ ]){
+  const control=document.querySelector('se-nav-tabs '+tag),host=control.closest('se-nav-tabs'),tabScroller=host.querySelector('nav');
+  const controlNode=control,baseline=tabScroller.scrollHeight;
+  control.querySelector(triggerSelector).click();
+  assert(control.querySelector(popupSelector).matches(':popover-open'),tag+' opens in top layer');
+  assert(tabScroller.scrollHeight===baseline,tag+' does not add scrollbars');
+  host.value='b';
+  assert(control===controlNode&&control.querySelector(popupSelector).matches(':popover-open'),tag+' survives active-tab change');
+  control.close();
+ }
+ const tip=document.querySelector('se-nav-tabs se-tooltip'),tipHost=tip.closest('se-nav-tabs');
+ const tipTrigger=tip.querySelector('button');
+ tipTrigger.focus();
+ assert(tip.querySelector('[role="tooltip"]').matches(':popover-open'),'Tooltip opens from trailing action');
+ tipHost.value='b';
+ assert(tip.querySelector('[role="tooltip"]').matches(':popover-open'),'Tooltip survives tab change');
+ tipTrigger.blur();
+ document.documentElement.dataset.test='passed';
+ document.querySelector('#result').textContent='Tabs overflow and split-button dismissal passed';
+}catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack}
+</script></body></html>

@@ -1,5 +1,5 @@
 import { setBrandTheme } from '../src/theme.js';
-import { componentCatalog, patternCatalog } from './catalog.js?v=20260927v0160';
+import { componentCatalog, patternCatalog } from './catalog.js?v=20261003v0161';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
@@ -77,7 +77,7 @@ const renderComponentPage = (component) => {
     sourceTemplate.innerHTML = markup;
     const source = sourceTemplate.content.firstElementChild;
     attributes.forEach(({ name }) => {
-      if (!['pagination', 'progress-ring'].includes(tag) && (tag !== 'segmented-control' || name !== 'options')) source.removeAttribute(name);
+      if (!['pagination', 'progress-ring'].includes(tag) && (tag !== 'segmented-control' || name !== 'options') && (tag !== 'nav-tabs' || !['value', 'options'].includes(name))) source.removeAttribute(name);
     });
     const clone = source.cloneNode(true);
     const contextMarkers = { 'sidebar-collapsed': 'data-sidebar-collapsed' };
@@ -178,7 +178,7 @@ const renderPatternPage = ({ tag, description, examples, isolated = false }) => 
         frame.dataset.height = frameHeight;
         frame.style.width = `${frameWidth}px`;
         frame.style.height = `${frameHeight}px`;
-        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20260927v0160"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20260927v0160"></script></head><body>${editor.value}</body></html>`;
+        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20261003v0161"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20261003v0161"></script></head><body>${editor.value}</body></html>`;
         preview.replaceChildren(frame);
         resizeFrame();
         return;

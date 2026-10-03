@@ -3,8 +3,29 @@ import { define, escapeIcon, emit, escapeHtml, parseOptions, placePopover } from
 class SeSplitButton extends HTMLElement {
   set options(value) { this._options = value; if (this.isConnected) this.render(); }
   get options() { return this._options; }
-  connectedCallback() { if (!this.dataset.ready) { this.dataset.ready = 'true'; this._selected = 0; this.render(); } }
+  connectedCallback() {
+    if (!this.dataset.ready) {
+      this.dataset.ready = 'true';
+      this._selected = 0;
+      this._outside = event => { if (!this.contains(event.target)) this.close(); };
+      this.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && this.querySelector('.se-split--open')) {
+          event.stopPropagation();
+          this.close();
+          this.querySelector('.se-split__toggle').focus();
+        }
+      });
+      this.render();
+    }
+  }
+  disconnectedCallback() { this.close(); }
+  close() {
+    document.removeEventListener('pointerdown', this._outside);
+    this.querySelector('.se-split')?.classList.remove('se-split--open');
+    this.querySelector('.se-split__toggle')?.setAttribute('aria-expanded', 'false');
+  }
   render() {
+    this.close();
     const options = parseOptions(this);
     const fallback = { label: this.getAttribute('text') || this.getAttribute('label') || 'Action', icon: this.getAttribute('icon') || '' };
     const selected = this.hasAttribute('direct') ? fallback : options[this._selected] || fallback;
@@ -15,13 +36,19 @@ class SeSplitButton extends HTMLElement {
     const root = this.querySelector('.se-split');
     const trigger = this.querySelector('.se-split__toggle');
     const position = () => placePopover(trigger, this.querySelector('.se-split__menu'));
-    trigger.addEventListener('click', (event) => { const open = root.classList.toggle('se-split--open'); event.currentTarget.setAttribute('aria-expanded', String(open)); if (open) position(); });
+    trigger.addEventListener('click', () => {
+      if (root.classList.contains('se-split--open')) { this.close(); return; }
+      root.classList.add('se-split--open');
+      trigger.setAttribute('aria-expanded', 'true');
+      position();
+      document.addEventListener('pointerdown', this._outside);
+    });
     root.addEventListener('pointerenter', position);
     root.addEventListener('focusin', position);
     this.querySelector('.se-split > .se-button').addEventListener('click', () => emit(this, 'action', selected));
     this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => {
       const option = options[Number(button.dataset.index)];
-      if (this.hasAttribute('direct')) { root.classList.remove('se-split--open'); emit(this, 'action', option); return; }
+      if (this.hasAttribute('direct')) { this.close(); emit(this, 'action', option); return; }
       this._selected = Number(button.dataset.index);
       this.render();
       emit(this, 'change', option);

@@ -8,10 +8,22 @@ Route links, not an ARIA tab widget. Set `options` as JSON or an array property 
 
 ## Trailing actions
 
-Place a child wrapper with `data-actions` inside `se-nav-tabs` to align buttons at the right end of the tab line. Actions retain their DOM nodes and listeners when the active tab changes. On narrow screens the navigation can scroll horizontally.
+Place a child wrapper with `data-actions` inside `se-nav-tabs` to align buttons at the right end of the tab line. Actions retain their DOM nodes and listeners when the active tab changes. On narrow screens only the tab links scroll horizontally; trailing controls stay outside the scroller so their menus, date pickers, and tooltips can open without adding scrollbars.
 
 ```html
 <se-nav-tabs value="files" options='[{"id":"files","label":"Files","href":"#files"}]'>
   <span data-actions><se-button text="Upload" icon="plus" variant="secondary"></se-button></span>
+</se-nav-tabs>
+```
+
+For a split-button action:
+
+```html
+<se-nav-tabs value="issues" options='[{"id":"issues","label":"Issues"}]'>
+  <span data-actions>
+    <se-split-button direct variant="secondary" text="New issue" icon="plus"
+      options='[{"id":"issue","label":"Create issue"},{"id":"draft","label":"Save draft"}]'>
+    </se-split-button>
+  </span>
 </se-nav-tabs>
 ```

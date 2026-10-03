@@ -20,3 +20,5 @@ Assign `options` as JSON or JavaScript. Choosing an item emits `change`; clickin
 Add `direct` to emit `action` immediately when a menu option is chosen instead of replacing the primary action. Each option accepts its own `label`, `icon`, and optional `disabled` state. Keyboard focus is drawn around the complete split button.
 
 Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
+
+The alternatives open by clicking the chevron. Clicking outside, pressing Escape, or choosing an option closes the menu; Escape restores focus to the chevron.
