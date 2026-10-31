@@ -4,25 +4,26 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Simple Elements</title>
-    <link rel="stylesheet" href="../dist/styles.css?v=20261003v0163">
-    <link rel="stylesheet" href="./example.css?v=20261003v0163">
-    <link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css">
-    <script defer src="../dist/simple-elements.js?v=20261003v0163"></script>
-    <script type="module" src="./example.js?v=20261003v0163"></script>
+    <link rel="stylesheet" href="../dist/styles.css?v=20261031layout4">
+    <link rel="stylesheet" href="./example.css?v=20261031layout4">
+    <link rel="stylesheet" href="../dist/themes/studio.css?v=20261031layout4"><link rel="stylesheet" href="../dist/themes/edge.css?v=20261031layout4">
+    <script defer src="../dist/simple-elements.js?v=20261031layout4"></script>
+    <script type="module" src="./example.js?v=20261031layout4"></script>
   </head>
   <body>
     <div class="demo-shell">
       <main class="demo-main">
-        <se-topbar><section data-start><se-sidebar-toggle for="example-sidebar" layout-mode="mobile-only"></se-sidebar-toggle><se-layout-brand label="Simple Elements" icon="package" href="#dashboard"></se-layout-brand></section><section data-end><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"},{"id":"studio","label":"Studio"},{"id":"edge","label":"Edge"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></se-topbar>
+        <header class="demo-topbar"><section data-start><se-panel-toggle for="example-sidebar" variant="menu" class="demo-mobile" label="Toggle navigation"></se-panel-toggle><se-brand label="Simple Elements" icon="package" href="#dashboard"></se-brand></section><section data-end><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"},{"id":"studio","label":"Studio"},{"id":"edge","label":"Edge"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></header>
         <div class="demo-body">
-          <se-sidebar id="example-sidebar" layout-mode="responsive" collapsible>
+          <nav id="example-sidebar" class="demo-sidebar" data-mobile-navigation aria-label="Showcase">
             <section>
-              <se-sidebar-chapter title="Overview"><se-sidebar-button label="Dashboard" icon="dashboard" href="#dashboard"></se-sidebar-button></se-sidebar-chapter>
-              <se-sidebar-chapter title="Components" data-component-section collapsible></se-sidebar-chapter>
-              <se-sidebar-chapter title="Patterns" data-pattern-section collapsible></se-sidebar-chapter>
+              <se-nav-section title="Overview"><se-nav-item label="Dashboard" icon="dashboard" href="#dashboard"></se-nav-item></se-nav-section>
+              <se-nav-section title="Components" data-component-section collapsible></se-nav-section>
+              <se-nav-section title="Patterns" data-pattern-section collapsible></se-nav-section>
             </section>
-            <footer layout-mode="desktop-only"><small class="demo-version" aria-label="Latest released version"></small></footer>
-          </se-sidebar>
+            <footer><small class="demo-version" aria-label="Latest released version"></small></footer>
+          </nav>
+          <se-resize-handle for="example-sidebar" min="210" max="380" label="Showcase navigation width"></se-resize-handle>
           <div class="demo-scroll">
             <div class="demo-content">
           <!-- page:dashboard -->

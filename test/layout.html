@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Layout interaction checks</title>
+<link rel="stylesheet" href="../dist/styles.css?v=20261031layout4">
+<script defer src="../dist/simple-elements.js?v=20261031layout4"></script>
+<style>body{font-family:system-ui}#fixtures{max-width:900px}.test-row{display:flex;height:250px}.test-pane{width:var(--se-resize-size,240px);flex:none}.fill{flex:1;min-width:0}</style>
+<body><pre id="result">Running…</pre><div id="fixtures"></div>
+<script type="module">
+const assert = (value, message) => { if (!value) throw Error(message); checks++; };
+const settle = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+let checks = 0;
+try {
+  await customElements.whenDefined('se-resize-handle');
+  const fixtures = document.getElementById('fixtures');
+  fixtures.innerHTML = `<se-panel-toggle for="pane" mode="minimize" label="Minimize resources"></se-panel-toggle><se-panel-toggle for="pane" mode="minimize" label="Mirror"></se-panel-toggle><se-panel-toggle for="pane" label="Toggle resources"></se-panel-toggle><div class="test-row"><nav id="pane" class="test-pane" aria-label="Resources"><se-nav-item label="Projects" icon="folder" active><se-badge data-se-region="end" text="3"></se-badge></se-nav-item><se-nav-item label="No icon"></se-nav-item><div data-se-minimized="false"><se-nav-item label="Nested" icon="file"></se-nav-item></div><se-nav-group label="Group" icon="folder"><se-nav-group label="Nested group"><se-nav-item label="Child" icon="file"></se-nav-item></se-nav-group></se-nav-group></nav><se-resize-handle for="pane" min="120" max="400" label="Resource width"></se-resize-handle><main class="fill">Content</main></div>`;
+  await settle();
+  const pane = document.getElementById('pane');
+  const item = pane.querySelector('se-nav-item');
+  const minimize = fixtures.querySelector('se-panel-toggle[mode="minimize"] button');
+  const mirror = fixtures.querySelectorAll('se-panel-toggle[mode="minimize"] button')[1];
+  const collapse = fixtures.querySelector('se-panel-toggle:not([mode]) button');
+  const group = pane.querySelector('se-nav-group');
+  const nested = group.querySelector('se-nav-group');
+  const handle = fixtures.querySelector('se-resize-handle');
+  assert(item.querySelector('[data-se-region="end"]')?.textContent === '3', 'Trailing region is preserved');
+  assert(item.querySelector('button').getAttribute('aria-current') === 'page', 'Active item announces current page');
+  item.removeAttribute('active');
+  assert(!item.querySelector('button').hasAttribute('aria-current'), 'Active state synchronizes');
+  minimize.click(); await settle();
+  assert(pane.dataset.seMinimized === 'true', 'Minimize writes a generic context');
+  assert(minimize.getAttribute('aria-pressed') === 'true' && mirror.getAttribute('aria-pressed') === 'true', 'Multiple minimize controls synchronize');
+  assert(item.hasAttribute('data-se-compact'), 'Item inherits minimized context');
+  assert(!pane.querySelector('[data-se-minimized="false"] se-nav-item').hasAttribute('data-se-compact'), 'Nested false context resets presentation');
+  assert(getComputedStyle(item.querySelector('.se-nav-item > span')).display === 'none', 'Minimized icon item hides label');
+  assert(getComputedStyle(pane.querySelector('se-nav-item:not([icon]) span')).display !== 'none', 'Items without icons retain labels');
+  assert(!group.collapsed && !nested.collapsed, 'Minimizing does not erase disclosure state');
+  assert(handle.getAttribute('aria-disabled') === 'true', 'Minimized panes disable resizing');
+  item.querySelector('button').focus();
+  assert(item.querySelector('[role="tooltip"]').matches(':popover-open'), 'Icon-only item exposes tooltip on focus');
+  item.querySelector('button').dispatchEvent(new KeyboardEvent('keydown', { key:'Escape', bubbles:true }));
+  assert(!item.querySelector('[role="tooltip"]').matches(':popover-open'), 'Escape dismisses tooltip');
+  group.querySelector('se-nav-item button').focus();
+  group.collapsed = true;
+  assert(group.querySelector(':scope > .se-nav-group__content').inert, 'Closed content is removed from tab navigation');
+  assert(document.activeElement === group.querySelector('.se-nav-group__head button'), 'Collapsing returns focus to disclosure');
+  group.collapsed = false; await settle();
+  assert(!nested.collapsed && getComputedStyle(nested.querySelector('.se-nav-group__content')).gridTemplateRows !== '0px', 'Nested disclosure state survives ancestor toggling');
+  minimize.click(); await settle();
+  assert(!item.hasAttribute('data-se-compact'), 'Expanding restores presentation');
+  item.querySelector('button').focus(); collapse.click(); await settle();
+  assert(pane.hidden && !pane.getClientRects().length, 'Collapse hides target completely');
+  assert(collapse.getAttribute('aria-expanded') === 'false', 'Collapse semantics are synchronized');
+  assert(document.activeElement === collapse, 'Hidden focused content returns focus to trigger');
+  collapse.click(); await settle();
+  const initial = pane.getBoundingClientRect().width;
+  const key = (name, shiftKey = false) => handle.dispatchEvent(new KeyboardEvent('keydown', {key:name, shiftKey, bubbles:true, cancelable:true}));
+  key('ArrowRight'); await settle();
+  assert(pane.getBoundingClientRect().width === initial + 10, 'Keyboard increases physical width');
+  key('ArrowLeft', true); await settle();
+  assert(pane.getBoundingClientRect().width === initial - 30, 'Shift uses a larger resize step');
+  key('End'); await settle(); assert(pane.getBoundingClientRect().width === 400, 'Maximum bound');
+  key('Home'); await settle(); assert(pane.getBoundingClientRect().width === 120, 'Minimum bound');
+  key('ArrowLeft'); assert(pane.getBoundingClientRect().width === 120, 'Arrow respects minimum');
+  handle.setAttribute('edge','start'); key('ArrowLeft'); await settle(); assert(pane.getBoundingClientRect().width === 130, 'Start edge reverses physical direction');
+  handle.removeAttribute('edge');
+  assert(handle.getAttribute('role') === 'separator' && handle.getAttribute('aria-orientation') === 'vertical', 'Width handle has separator semantics');
+  handle.setAttribute('disabled',''); key('End'); assert(pane.getBoundingClientRect().width === 130, 'Disabled handle does not resize');
+  handle.removeAttribute('disabled');
+  // The same target/handle also works in a stacked application layout.
+  pane.parentElement.style.flexDirection = 'column'; pane.parentElement.style.height = '600px';
+  pane.style.width = '100%'; pane.style.height = 'var(--se-resize-size,200px)';
+  handle.setAttribute('axis','y'); await settle(); key('ArrowDown'); await settle();
+  assert(pane.getBoundingClientRect().height === 140, 'Horizontal separator changes height');
+  assert(handle.getAttribute('aria-orientation') === 'horizontal', 'Height separator orientation');
+  const old = pane.style.getPropertyValue('--se-resize-size');
+  // Test the drag state machine without faking browser pointer capture.
+  handle._drag = {id:999, size:140, original:old, target:pane};
+  handle.resize(260); handle.finish(true); await settle();
+  assert(pane.style.getPropertyValue('--se-resize-size') === old, 'Cancelled drag restores prior size');
+  const detached = fixtures.querySelector('se-panel-toggle'); detached.remove(); fixtures.prepend(detached);
+  detached.querySelector('button').click(); await settle();
+  assert(pane.dataset.seMinimized === 'true', 'Toggle reconnects correctly');
+  pane.dataset.seMinimized = 'false'; await settle();
+  assert(detached.querySelector('button').getAttribute('aria-pressed') === 'false', 'Application context changes synchronize');
+  const orphan = document.createElement('se-panel-toggle'); orphan.setAttribute('for','late'); fixtures.append(orphan); await settle();
+  assert(orphan.querySelector('button').disabled, 'Missing target disables toggle');
+  const late = document.createElement('section'); late.id='late'; fixtures.append(late); await settle();
+  assert(!orphan.querySelector('button').disabled, 'Late target is discovered');
+  // Existing child listeners survive group initialization.
+  const button = document.createElement('button'); let clicked=0; button.onclick=()=>clicked++;
+  const section = document.createElement('se-nav-section'); section.setAttribute('collapsible',''); section.append(button); fixtures.append(section); button.click();
+  assert(clicked === 1 && section.contains(button), 'Section preserves child identity and listeners');
+  section.collapsed = true; assert(section.querySelector('.se-nav-section__content').inert, 'Section disclosure is inert when collapsed');
+  const modal = document.createElement('se-modal'); modal.setAttribute('size','large'); modal.setAttribute('title','Project settings');
+  modal.innerHTML='<nav aria-label="Settings"><se-nav-group label="Account"><se-nav-item icon="user" label="Profile"></se-nav-item></se-nav-group></nav>';
+  fixtures.append(modal); await settle(); modal.open();
+  const modalGroup=modal.querySelector('se-nav-group');modalGroup.querySelector('button').click();
+  assert(modalGroup.collapsed && modalGroup.querySelector('.se-nav-group__content').inert, 'Navigation disclosure works inside modal content');
+  modal.close(); modal.remove();
+  const moved=pane.querySelector('se-nav-item');pane.dataset.seMinimized='true';await settle();
+  pane.querySelector('[data-se-minimized="false"]').append(moved);await settle();
+  assert(!moved.hasAttribute('data-se-compact'), 'Moving an item recomputes its nearest context');
+  pane.dataset.seMinimized='false';
+  handle.setAttribute('axis','x');pane.style.height='200px';pane.style.width='var(--se-resize-size,240px)';pane.parentElement.style.flexDirection='row';
+  pane.style.setProperty('--se-resize-size','240px');handle.setAttribute('snap','minimize');await settle();
+  const beginDrag=()=>{handle._drag={id:999,size:240,original:'240px',target:pane};pane.setAttribute('data-resizing','');};
+  beginDrag();handle.resize(70);
+  assert(handle.hasAttribute('data-snap-pending')&&pane.dataset.seMinimized==='false','Dragging past threshold previews snap without changing state');
+  handle.resize(125);assert(!handle.hasAttribute('data-snap-pending'),'Retreating cancels pending snap');
+  handle.resize(70);handle.finish(true);await settle();
+  assert(pane.dataset.seMinimized==='false'&&pane.style.getPropertyValue('--se-resize-size')==='240px','Cancelled snap preserves state and size');
+  beginDrag();handle.resize(70);handle.finish();await settle();
+  assert(pane.dataset.seMinimized==='true'&&pane.style.getPropertyValue('--se-resize-size')==='240px','Minimize snap preserves expanded size');
+  assert(!pane.hasAttribute('data-resizing'),'Dragging marker cleared on completion');
+  key('Enter');await settle();assert(pane.dataset.seMinimized==='false'&&pane.getBoundingClientRect().width===240,'Enter restores snapped pane');
+  handle.setAttribute('snap','collapse');beginDrag();handle.resize(70);handle.finish();await settle();assert(pane.hidden,'Collapse snap hides a generic pane');
+  key('Enter');await settle();assert(!pane.hidden&&pane.getBoundingClientRect().width===240,'Collapsed pane restores using separator keyboard control');
+  const preventSnap=event=>event.preventDefault();handle.addEventListener('snap',preventSnap);beginDrag();handle.resize(70);handle.finish();await settle();assert(!pane.hidden,'Application can cancel default snap');handle.removeEventListener('snap',preventSnap);
+  handle.removeAttribute('snap');beginDrag();handle.resize(0);handle.finish();assert(!pane.hidden&&pane.dataset.seMinimized==='false','Snapping is opt-in');
+  document.documentElement.dataset.test='passed'; document.querySelector('#result').textContent=`PASS: ${checks} layout interaction checks`;
+} catch(error) { document.documentElement.dataset.test='failed'; document.querySelector('#result').textContent=error.stack; }
+</script></body></html>

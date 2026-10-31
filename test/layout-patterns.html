@@ -1,0 +1,72 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Layout recipe checks</title><body><pre id="result">Running…</pre><div id="fixtures"></div>
+<script type="module">
+import { patternCatalog } from '../examples/catalog.js?v=20261031layout4';
+let count=0;
+const assert=(condition,message)=>{if(!condition)throw Error(message);count++;};
+const wait=async fn=>{const end=Date.now()+10000;while(!fn()){if(Date.now()>end)throw Error('Timed out');await new Promise(r=>setTimeout(r,20));}};
+const settle=async doc=>{await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));await Promise.all(doc.getAnimations().map(a=>a.finished.catch(()=>{})));};
+try{
+assert(!patternCatalog.some(p=>['workspaces','multi-scope-navigation'].includes(p.tag)),'Retired pages removed');
+const examples=patternCatalog.find(p=>p.tag==='page-layout').examples;
+assert(examples.length===7,'Seven recipes consolidated under Page Layout');
+for(const example of examples){
+ const frame=document.createElement('iframe');frame.style.cssText='width:1024px;height:576px;border:0';
+ frame.srcdoc=`<!doctype html><html><head><link rel="stylesheet" href="${new URL('../dist/styles.css?v=20261031layout4',location.href)}"><script defer src="${new URL('../dist/simple-elements.js?v=20261031layout4',location.href)}"><\/script><style>html,body{height:100%;margin:0}</style></head><body>${example.markup}</body></html>`;
+ document.querySelector('#fixtures').append(frame);
+ await wait(()=>frame.contentDocument?.querySelector('se-nav-item button,se-nav-item a,se-nav-tabs a'));
+ const doc=frame.contentDocument;
+ await settle(doc);
+ assert(!doc.querySelector('se-sidebar,se-topbar'),`${example.title}: native containers`);
+ assert(doc.documentElement.scrollWidth<=1024,`${example.title}: desktop fits viewport`);
+ assert(!(doc.querySelector('se-project-card')&&doc.querySelector('se-empty-illustration')),`${example.title}: populated content is not an empty state`);
+ const brand=doc.querySelector('.app-rail>se-brand,.mock-primary[data-se-minimized="true"]>se-brand');
+ if(brand){const a=brand.getBoundingClientRect(),b=brand.parentElement.getBoundingClientRect();assert(Math.abs((a.left+a.width/2)-(b.left+b.width/2))<1,`${example.title}: global identity centered`);assert(brand.getAttribute('icon')!==doc.querySelector('header se-brand').getAttribute('icon'),`${example.title}: application and scope identity differ`);}
+ const routeTab=doc.querySelector('.app-tabs a[href="#view-activity"]');
+ if(routeTab){routeTab.click();assert(doc.querySelector('[data-page-title]').textContent==='Activity',`${example.title}: app handles route tabs`);}
+ const toggle=doc.querySelector('se-panel-toggle[mode="minimize"] button');
+ if(toggle){
+  const nav=doc.querySelector('#navigation');const width=nav.getBoundingClientRect().width;
+  const circle=toggle.getBoundingClientRect(),edge=nav.getBoundingClientRect().right;
+  assert(Math.abs(circle.left+circle.width/2-edge)<1,`${example.title}: circle straddles panel edge`);
+  toggle.click();await settle(doc);assert(nav.getBoundingClientRect().width<width,`${example.title}: animated minimize finishes`);
+  toggle.click();await settle(doc);assert(Math.abs(nav.getBoundingClientRect().width-width)<1,`${example.title}: expanded width restored`);
+ }
+ const handle=doc.querySelector('se-resize-handle');
+ if(handle){
+  const target=doc.getElementById(handle.getAttribute('for'));const width=target.getBoundingClientRect().width;
+  assert(handle.getBoundingClientRect().width===0,`${example.title}: resize edge adds no gutter`);
+  assert(Math.abs(target.getBoundingClientRect().right-handle.nextElementSibling.getBoundingClientRect().left)<1,`${example.title}: adjacent panes meet at edge`);
+  handle.dispatchEvent(new frame.contentWindow.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await settle(doc);
+  assert(Math.abs(target.getBoundingClientRect().width-width-10)<1,`${example.title}: recipe wires resize variable`);
+ }
+ frame.style.width='768px';frame.style.height='1024px';await wait(()=>frame.contentWindow.innerWidth===768);await settle(doc);
+ assert(doc.documentElement.scrollWidth<=768,`${example.title}: tablet fits viewport`);
+ frame.style.width='390px';frame.style.height='844px';await wait(()=>frame.contentWindow.innerWidth===390);await settle(doc);
+ assert(doc.documentElement.scrollWidth<=390,`${example.title}: phone fits viewport`);
+ assert([...doc.querySelectorAll('se-resize-handle')].every(h=>doc.defaultView.getComputedStyle(h).display==='none'),`${example.title}: phone omits resize controls`);
+ const mobileToggle=doc.querySelector('se-panel-toggle[for="mobile-navigation"] button,.mock-menu button');
+ if(mobileToggle){
+  const panel=doc.getElementById(mobileToggle.getAttribute('aria-controls'));
+  const main=doc.querySelector('main.app-content,.mock-main');const before=main.getBoundingClientRect();
+  assert(panel.hidden,`${example.title}: mobile menu starts closed`);
+  mobileToggle.click();await settle(doc);const after=main.getBoundingClientRect();
+  assert(!panel.hidden&&panel.getBoundingClientRect().width<=390,`${example.title}: mobile menu opens within viewport`);
+  assert(after.top===before.top&&after.left===before.left&&after.width===before.width,`${example.title}: overlay never pushes content`);
+  assert(main.inert,`${example.title}: covered content is inert`);
+  assert(doc.defaultView.getComputedStyle(panel).position==='fixed',`${example.title}: top-opening overlay`);
+  assert(doc.defaultView.getComputedStyle(doc.querySelector('.navigation-backdrop')).backdropFilter.includes('blur'),`${example.title}: backdrop blurs content`);
+  doc.dispatchEvent(new frame.contentWindow.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));await settle(doc);
+  assert(panel.hidden&&!main.inert&&doc.activeElement===mobileToggle,`${example.title}: Escape restores content and focus`);
+  mobileToggle.click();await settle(doc);doc.querySelector('.navigation-backdrop').click();await settle(doc);
+  assert(panel.hidden,`${example.title}: backdrop dismisses menu`);
+  mobileToggle.click();mobileToggle.click();mobileToggle.click();await settle(doc);
+  assert(!panel.hidden&&!panel.inert,`${example.title}: rapid toggle keeps final open state`);
+  frame.style.width='1024px';await wait(()=>frame.contentWindow.innerWidth===1024);await settle(doc);
+  assert(panel.hidden&&!main.inert&&doc.querySelector('.navigation-backdrop').hidden,`${example.title}: desktop breakpoint cleans up overlay`);
+  assert(!panel.contains(doc.activeElement),`${example.title}: breakpoint never leaves focus in hidden menu`);
+ }
+ frame.remove();
+}
+document.documentElement.dataset.test='passed';document.querySelector('#result').textContent=`PASS: ${count} recipe checks (desktop, tablet, phone overlays, edge alignment, animation, and routing)`;
+}catch(error){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=error.stack;}
+</script></body></html>

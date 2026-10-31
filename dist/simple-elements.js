@@ -35,17 +35,34 @@ const placePopover = (trigger, popover) => {
 // Icon objects cross HTML attribute boundaries as JSON, never as SVG markup.
 const escapeIcon = (value) => escapeHtml(value && typeof value === 'object' ? JSON.stringify(value) : value);
 
-// Sidebar sections scroll, so their tooltips use the top layer to avoid clipping.
-const sidebarTooltip = (host, trigger, label) => {
+// Resolve the nearest explicit context; a nested false value resets it.
+const minimizedConsumers = new Map();
+let minimizedObserver;
+const connectMinimized = (host) => {
+  const sync = () => host.toggleAttribute('data-se-compact', host.hasAttribute('minimized') || host.closest('[data-se-minimized]')?.getAttribute('data-se-minimized') === 'true');
+  minimizedConsumers.set(host, sync);
+  if (!minimizedObserver) {
+    minimizedObserver = new MutationObserver(() => minimizedConsumers.forEach(update => update()));
+    minimizedObserver.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['data-se-minimized', 'minimized'] });
+  }
+  sync();
+  return () => {
+    minimizedConsumers.delete(host);
+    if (!minimizedConsumers.size) { minimizedObserver.disconnect(); minimizedObserver = null; }
+  };
+};
+
+// Navigation can live inside scrolling panes; tooltips use the top layer.
+const navigationTooltip = (host, trigger, label) => {
   const tip = document.createElement('span');
-  tip.className = 'se-tooltip__bubble se-sidebar-tooltip';
+  tip.className = 'se-tooltip__bubble se-navigation-tooltip';
   tip.setAttribute('role', 'tooltip');
   tip.setAttribute('popover', 'manual');
   tip.textContent = label;
   host.append(tip);
   const hide = () => { if (tip.matches(':popover-open')) tip.hidePopover(); };
   const show = () => {
-    if (!host.closest('[data-sidebar-collapsed]') || trigger.matches(':disabled')) return;
+    if (!host.hasAttribute('data-se-compact') || trigger.matches(':disabled')) return;
     tip.showPopover();
     const rect = trigger.getBoundingClientRect();
     tip.style.left = `${Math.min(rect.right + 8, innerWidth - tip.offsetWidth - 8)}px`;
@@ -1416,6 +1433,7 @@ define('se-menu', SeMenu);
 
 class SeProfile extends HTMLElement {
   connectedCallback() {
+    this._disconnectContext = connectMinimized(this);
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
     const options = parseOptions(this);
@@ -1425,13 +1443,14 @@ class SeProfile extends HTMLElement {
     const image = this.getAttribute('image');
     const avatar = image ? `<img src="${escapeHtml(image)}" alt="" draggable="false">` : escapeHtml(this.getAttribute('initials') || '');
     const identity = `<span class="se-profile__avatar${image ? ' se-profile__avatar--image' : ''}">${avatar}</span><span><strong>${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span>`;
-    if (!options.length) { this.innerHTML = `<${tag} title="" class="se-profile se-profile--${tone}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
-    this.innerHTML = `<div class="se-profile-menu" title=""><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
+    if (!options.length) { this.innerHTML = `<${tag} title="" class="se-profile se-profile--${tone}" aria-label="${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || 'Profile')}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
+    this.innerHTML = `<div class="se-profile-menu" title=""><button class="se-profile se-profile--${tone}" aria-label="${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || 'Profile')}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
     const menu = this.querySelector('.se-profile-menu');
     const trigger = this.querySelector('.se-profile');
     trigger.addEventListener('click', () => { const open = menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(open)); if (open) placePopover(trigger, this.querySelector('.se-profile-menu__items')); });
     this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { menu.classList.remove('se-profile-menu--open'); trigger.setAttribute('aria-expanded', 'false'); emit(this, 'select', options[Number(button.dataset.index)]); }));
   }
+  disconnectedCallback() { this._disconnectContext?.(); }
 }
 
 define('se-profile', SeProfile);
@@ -1577,121 +1596,9 @@ class SeToast extends HTMLElement {
 define('se-toast', SeToast);
 
 
-class SeSidebar extends HTMLElement {
-  static get observedAttributes() { return ['collapsed', 'closed']; }
-  attributeChangedCallback(name) {
-    if (name === 'collapsed') this.toggleAttribute('data-sidebar-collapsed', this.hasAttribute('collapsed'));
-    if (name === 'closed') { this.setAttribute('aria-hidden', String(this.hasAttribute('closed'))); emit(this, 'closedchange', { closed: this.hasAttribute('closed') }); }
-  }
+class SeBrand extends HTMLElement {
   connectedCallback() {
-    if (this.dataset.ready) return;
-    this.dataset.ready = 'true';
-    if (this.getAttribute('layout-mode') === 'responsive') {
-      this._media = matchMedia('(max-width: 767px)');
-      this._responsive = ({ matches }) => {
-        if (matches) {
-          this._desktopClosed = this.closed;
-          this._desktopCollapsed = this.collapsed;
-          this.collapsed = false;
-          this.closed = true;
-        } else {
-          this.collapsed = this._desktopCollapsed;
-          this.closed = this._desktopClosed;
-        }
-      };
-      this._desktopClosed = this.closed;
-      this._desktopCollapsed = this.collapsed;
-      this._responsive(this._media);
-      this._media.addEventListener('change', this._responsive);
-    }
-    if (this.hasAttribute('collapsible')) this.insertAdjacentHTML('beforeend', '<button class="se-sidebar__edge-collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="chevron"></se-icon></button>');
-    this.addEventListener('click', (event) => {
-      if (event.target.closest('[data-sidebar-collapse]')) {
-        this.collapsed = !this.collapsed;
-        emit(this, 'collapsechange', { collapsed: this.collapsed });
-      } else if (this._media?.matches && event.target.closest('se-sidebar-button')) {
-        this.closed = true;
-      }
-    });
-    this.addEventListener('change', (event) => {
-      const control = event.target.closest('se-theme-switch');
-      if (!control) return;
-      const theme = control.value === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : control.value;
-      document.documentElement.dataset.theme = theme;
-      emit(this, 'themechange', { theme: control.value });
-    });
-    this.collapsed = this.collapsed;
-  }
-  disconnectedCallback() {
-    clearTimeout(this._transitionTimer);
-    this._media?.removeEventListener('change', this._responsive);
-  }
-  get collapsed() { return this.hasAttribute('collapsed'); }
-  set collapsed(value) {
-    this.toggleAttribute('collapsed', Boolean(value));
-    this.toggleAttribute('data-sidebar-collapsed', Boolean(value));
-    if (value) this.querySelectorAll('se-sidebar-group').forEach((group) => { group.collapsed = true; });
-    this.querySelectorAll('[data-sidebar-collapse]').forEach((button) => {
-      button.setAttribute('aria-label', value ? 'Expand sidebar' : 'Collapse sidebar');
-      if (!button.classList.contains('se-sidebar__edge-collapse')) button.querySelector('se-icon')?.setAttribute('name', value ? 'panel-left-open' : 'panel-left-close');
-    });
-  }
-  get closed() { return this.hasAttribute('closed'); }
-  set closed(value) {
-    if (Boolean(value) !== this.closed && (this._media?.matches || this.hasAttribute('overlay'))) {
-      this.setAttribute('data-transitioning', '');
-      clearTimeout(this._transitionTimer);
-      this._transitionTimer = setTimeout(() => this.removeAttribute('data-transitioning'), 210);
-    }
-    this.toggleAttribute('closed', Boolean(value));
-  }
-}
-
-define('se-sidebar', SeSidebar);
-
-
-class SeSidebarToggle extends HTMLElement {
-  connectedCallback() {
-    if (this.dataset.ready) return;
-    this.dataset.ready = 'true';
-    this.innerHTML = `<button class="se-sidebar-toggle" type="button"><se-icon name="menu"></se-icon></button>`;
-    this.addEventListener('click', (event) => {
-      if (!event.target.closest('button')) return;
-      const sidebar = this.sidebar;
-      if (!sidebar) return;
-      sidebar.closed = !sidebar.closed;
-      this.sync();
-    });
-    this.sync();
-  }
-  disconnectedCallback() { this._sidebar?.removeEventListener('closedchange', this._sync); }
-  get sidebar() {
-    const id = this.getAttribute('for');
-    return (id ? document.getElementById(id.replace(/^#/, '')) : this.closest('se-sidebar')) || null;
-  }
-  sync() {
-    const button = this.querySelector('button');
-    if (!button) return;
-    const sidebar = this.sidebar;
-    if (sidebar !== this._sidebar) {
-      this._sidebar?.removeEventListener('closedchange', this._sync);
-      this._sidebar = sidebar;
-      this._sync = () => this.sync();
-      sidebar?.addEventListener('closedchange', this._sync);
-    }
-    const closed = !sidebar || sidebar.closed;
-    button.disabled = !sidebar;
-    if (sidebar?.id) button.setAttribute('aria-controls', sidebar.id);
-    button.setAttribute('aria-expanded', String(!closed));
-    button.setAttribute('aria-label', this.getAttribute('label') || (closed ? 'Open sidebar' : 'Close sidebar'));
-  }
-}
-
-define('se-sidebar-toggle', SeSidebarToggle);
-
-
-class SeLayoutBrand extends HTMLElement {
-  connectedCallback() {
+    this._disconnectContext = connectMinimized(this);
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
     const icon = this.getAttribute('icon') || 'dashboard';
@@ -1700,134 +1607,135 @@ class SeLayoutBrand extends HTMLElement {
     const isAsset = (source) => /^(?:data:|https?:|[./\\])|\.svg(?:$|[?#])/i.test(source);
     const renderIcon = (source) => isAsset(source) && !source.trim().startsWith('{') ? `<img src="${escapeHtml(source)}" alt="">` : `<se-icon name="${escapeIcon(source)}"></se-icon>`;
     this.toggleAttribute('data-wide-icon', isAsset(icon));
-    const asset = (source, mode) => source ? `<span class="se-layout-brand__asset se-layout-brand__asset--${mode}">${renderIcon(source)}</span>` : '';
+    const asset = (source, mode) => source ? `<span class="se-brand__asset se-brand__asset--${mode}">${renderIcon(source)}</span>` : '';
     const identity = href ? 'a' : 'span';
-    const identityAttributes = href ? ` href="${escapeHtml(href)}"${this.hasAttribute('label') ? '' : ' aria-label="Home"'}` : '';
-    this.innerHTML = `<${identity} class="se-layout-brand__identity"${identityAttributes}><span class="se-layout-brand__logo">${asset(icon, 'full-light')}${asset(compactIcon, 'compact-light')}</span>${this.hasAttribute('label') ? `<strong>${escapeHtml(this.getAttribute('label'))}</strong>` : ''}</${identity}>${this.hasAttribute('collapsible') ? '<button class="se-close se-layout-brand__collapse" type="button" data-sidebar-collapse aria-label="Collapse sidebar"><se-icon name="panel-left-close"></se-icon></button>' : ''}`;
+    const identityAttributes = href ? ` href="${escapeHtml(href)}" aria-label="${escapeHtml(this.getAttribute('label') || 'Home')}"` : '';
+    this.innerHTML = `<${identity} class="se-brand__identity"${identityAttributes}><span class="se-brand__logo">${asset(icon, 'full-light')}${asset(compactIcon, 'compact-light')}</span>${this.hasAttribute('label') ? `<strong>${escapeHtml(this.getAttribute('label'))}</strong>` : ''}</${identity}>`;
   }
+  disconnectedCallback() { this._disconnectContext?.(); }
 }
 
-define('se-layout-brand', SeLayoutBrand);
+define('se-brand', SeBrand);
 
 
-class SeSidebarChapter extends HTMLElement {
+class SeNavSection extends HTMLElement {
+  static observedAttributes = ['collapsed'];
+  attributeChangedCallback() { this.sync(); }
+  sync() {
+    const content = this.querySelector(':scope > .se-nav-section__content');
+    const toggle = this.querySelector(':scope > .se-nav-section__title');
+    if (!content) return;
+    if (!content.id) content.id = `se-section-${crypto.randomUUID()}`;
+    toggle?.setAttribute('aria-controls', content.id);
+    toggle?.setAttribute('aria-expanded', String(!this.collapsed));
+    if (this.collapsed && content.contains(document.activeElement)) toggle?.focus();
+    content.inert = this.collapsed;
+    content.setAttribute('aria-hidden', String(this.collapsed));
+  }
+  get collapsed() { return this.hasAttribute('collapsed'); }
+  set collapsed(value) { this.toggleAttribute('collapsed', Boolean(value)); }
   connectedCallback() {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.innerHTML;
+    const children = [...this.childNodes];
     const collapsible = this.hasAttribute('collapsible');
     const expanded = !this.hasAttribute('collapsed');
-    this.innerHTML = `${collapsible ? `<button class="se-sidebar-chapter__title" type="button" aria-expanded="${expanded}"><span>${escapeHtml(this.getAttribute('title') || 'Chapter')}</span><se-icon name="chevron"></se-icon></button>` : `<se-title level="sidebar">${escapeHtml(this.getAttribute('title') || 'Chapter')}</se-title>`}<div class="se-sidebar-chapter__content"><div>${content}</div></div>`;
-    this.querySelector('.se-sidebar-chapter__title')?.addEventListener('click', (event) => {
+    this.innerHTML = `${collapsible ? `<button class="se-nav-section__title" type="button" aria-expanded="${expanded}"><span>${escapeHtml(this.getAttribute('title') || 'Section')}</span><se-icon name="chevron"></se-icon></button>` : `<se-title level="sidebar">${escapeHtml(this.getAttribute('title') || 'Section')}</se-title>`}<div class="se-nav-section__content"><div></div></div>`;
+    this.querySelector('.se-nav-section__content > div').append(...children);
+    this.querySelector('.se-nav-section__title')?.addEventListener('click', (event) => {
       this.toggleAttribute('collapsed');
       event.currentTarget.setAttribute('aria-expanded', String(!this.hasAttribute('collapsed')));
     });
+    this.sync();
   }
 }
 
-define('se-sidebar-chapter', SeSidebarChapter);
+define('se-nav-section', SeNavSection);
 
 
-class SeSidebarButton extends HTMLElement {
+class SeNavItem extends HTMLElement {
+  static observedAttributes = ['active'];
+  attributeChangedCallback() { this.sync(); }
+  sync() {
+    const control = this.querySelector('.se-nav-item');
+    if (!control) return;
+    if (this.hasAttribute('active')) control.setAttribute('aria-current', 'page');
+    else control.removeAttribute('aria-current');
+  }
   connectedCallback() {
+    this._disconnectContext = connectMinimized(this);
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const label = this.getAttribute('label') || this.textContent.trim() || 'Navigation item';
+    const end = [...this.children].filter(child => child.getAttribute('data-se-region') === 'end');
+    const label = this.getAttribute('label') || [...this.childNodes].filter(node => !end.includes(node)).map(node => node.textContent).join('').trim() || 'Navigation item';
     const icon = this.getAttribute('icon');
     const disabled = this.hasAttribute('disabled');
     const content = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}<span>${escapeHtml(label)}</span>`;
     this.innerHTML = this.getAttribute('href') && !disabled
-      ? `<a class="se-sidebar-button" href="${escapeHtml(this.getAttribute('href'))}" aria-label="${escapeHtml(label)}">${content}</a>`
-      : `<button class="se-sidebar-button" type="button" aria-label="${escapeHtml(label)}"${disabled ? ' disabled' : ''}>${content}</button>`;
-    sidebarTooltip(this, this.querySelector('.se-sidebar-button'), label);
+      ? `<a class="se-nav-item" href="${escapeHtml(this.getAttribute('href'))}" aria-label="${escapeHtml(label)}">${content}</a>`
+      : `<button class="se-nav-item" type="button" aria-label="${escapeHtml(label)}"${disabled ? ' disabled' : ''}>${content}</button>`;
+    const control = this.querySelector('.se-nav-item');
+    control.append(...end);
+    navigationTooltip(this, control, label);
+    this.sync();
   }
+  disconnectedCallback() { this._disconnectContext?.(); }
 }
 
-define('se-sidebar-button', SeSidebarButton);
+define('se-nav-item', SeNavItem);
 
 
-class SeSidebarGroup extends HTMLElement {
-  static observedAttributes = ['active'];
-  attributeChangedCallback() { this.syncActive(); }
+class SeNavGroup extends HTMLElement {
+  static observedAttributes = ['active', 'collapsed'];
+  attributeChangedCallback() { this.syncActive(); this.syncDisclosure(); }
+  syncDisclosure() {
+    const content = this.querySelector(':scope > .se-nav-group__content');
+    const toggle = this.querySelector(':scope > .se-nav-group__head > button:last-child');
+    if (!content || !toggle) return;
+    if (!content.id) content.id = `se-group-${crypto.randomUUID()}`;
+    toggle.setAttribute('aria-controls', content.id);
+    toggle.setAttribute('aria-expanded', String(!this.collapsed));
+    if (this.collapsed && content.contains(document.activeElement)) toggle.focus();
+    content.inert = this.collapsed;
+    content.setAttribute('aria-hidden', String(this.collapsed));
+  }
   syncActive() {
-    const control = this.querySelector(':scope > .se-sidebar-group__head > :first-child');
+    const control = this.querySelector(':scope > .se-nav-group__head > :first-child');
     if (!control) return;
     if (this.getAttribute('variant') === 'page' && this.hasAttribute('active')) control.setAttribute('aria-current', 'page');
     else control.removeAttribute('aria-current');
   }
   connectedCallback() {
+    this._disconnectContext = connectMinimized(this);
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
-    const content = this.innerHTML;
+    const children = [...this.childNodes];
     const label = escapeHtml(this.getAttribute('label') || 'Group');
     const icon = this.getAttribute('icon');
     const page = this.getAttribute('variant') === 'page';
     const href = this.getAttribute('href');
     const heading = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}<span><strong>${label}</strong></span>`;
-    const subtext = this.getAttribute('subtext') ? `<small class="se-sidebar-group__label">${escapeHtml(this.getAttribute('subtext'))}</small>` : '';
-    this.innerHTML = `<div class="se-sidebar-group__head">${page ? `${href ? `<a href="${escapeHtml(href)}">${heading}</a>` : `<button type="button">${heading}</button>`}<button type="button" aria-label="Toggle ${label}" aria-expanded="${!this.hasAttribute('collapsed')}"><se-icon name="chevron"></se-icon></button>` : `<button type="button" aria-expanded="${!this.hasAttribute('collapsed')}">${heading}<se-icon name="chevron"></se-icon></button>`}</div><div class="se-sidebar-group__content"><div>${subtext}${content}</div></div>`;
+    const subtext = this.getAttribute('subtext') ? `<small class="se-nav-group__label">${escapeHtml(this.getAttribute('subtext'))}</small>` : '';
+    this.innerHTML = `<div class="se-nav-group__head">${page ? `${href ? `<a href="${escapeHtml(href)}">${heading}</a>` : `<button type="button">${heading}</button>`}<button type="button" aria-label="Toggle ${label}" aria-expanded="${!this.hasAttribute('collapsed')}"><se-icon name="chevron"></se-icon></button>` : `<button type="button" aria-expanded="${!this.hasAttribute('collapsed')}">${heading}<se-icon name="chevron"></se-icon></button>`}</div><div class="se-nav-group__content"><div>${subtext}</div></div>`;
+    this.querySelector('.se-nav-group__content > div').append(...children);
     this.syncActive();
-    const toggle = this.querySelector('.se-sidebar-group__head > button:last-child');
+    const toggle = this.querySelector('.se-nav-group__head > button:last-child');
     toggle.addEventListener('click', () => {
-      const sidebar = this.closest('se-sidebar');
-      if (!page && sidebar?.collapsed) {
-        sidebar.collapsed = false;
-        sidebar.dispatchEvent(new CustomEvent('collapsechange', { detail: { collapsed: false }, bubbles: true }));
-        setTimeout(() => { this.collapsed = false; }, 200);
-        return;
-      }
       this.collapsed = !this.collapsed;
     });
-    const headingControl = this.querySelector('.se-sidebar-group__head > :first-child');
+    const headingControl = this.querySelector('.se-nav-group__head > :first-child');
     headingControl.setAttribute('aria-label', this.getAttribute('label') || 'Group');
-    sidebarTooltip(this, headingControl, this.getAttribute('label') || 'Group');
+    navigationTooltip(this, headingControl, this.getAttribute('label') || 'Group');
+    this.syncDisclosure();
   }
+  disconnectedCallback() { this._disconnectContext?.(); }
   get collapsed() { return this.hasAttribute('collapsed'); }
   set collapsed(value) {
     this.toggleAttribute('collapsed', Boolean(value));
-    this.querySelector('.se-sidebar-group__head > button:last-child')?.setAttribute('aria-expanded', String(!value));
   }
 }
 
-define('se-sidebar-group', SeSidebarGroup);
-
-
-class SeTopbar extends HTMLElement {
-  connectedCallback() {
-    if (this.dataset.ready) return;
-    this.dataset.ready = 'true';
-    this._setSearch = (open) => {
-      const panel = this.querySelector('[data-mobile-search]');
-      const toggle = this.querySelector('[data-mobile-search-toggle]');
-      if (!panel || !toggle) return;
-      if (open) this.querySelectorAll('se-sidebar-toggle').forEach((control) => { if (control.sidebar) control.sidebar.closed = true; });
-      panel.hidden = !open;
-      const button = toggle.matches('button') ? toggle : toggle.querySelector('button');
-      if (!panel.id) panel.id = `se-mobile-search-${crypto.randomUUID()}`;
-      button?.setAttribute('aria-controls', panel.id);
-      button?.setAttribute('aria-expanded', String(open));
-      if (open) panel.querySelector('input')?.focus();
-    };
-    this._click = (event) => {
-      if (!event.target.closest('[data-mobile-search-toggle]')) return;
-      this._setSearch(this.querySelector('[data-mobile-search]')?.hidden);
-    };
-    this._sidebarChange = (event) => {
-      if (!event.detail.closed && [...this.querySelectorAll('se-sidebar-toggle')].some((control) => control.sidebar === event.target)) this._setSearch(false);
-    };
-    this._scroll = () => this._setSearch(false);
-    this.addEventListener('click', this._click);
-    document.addEventListener('closedchange', this._sidebarChange);
-    document.addEventListener('scroll', this._scroll, true);
-    setTimeout(() => this._setSearch(false));
-  }
-  disconnectedCallback() {
-    document.removeEventListener('closedchange', this._sidebarChange);
-    document.removeEventListener('scroll', this._scroll, true);
-  }
-}
-
-define('se-topbar', SeTopbar);
+define('se-nav-group', SeNavGroup);
 
 
 class SeEmptyState extends HTMLElement {
@@ -2981,6 +2889,183 @@ class SeDiffValue extends HTMLElement {
 }
 
 define('se-diff-value', SeDiffValue);
+
+
+class SePanelToggle extends HTMLElement {
+  static observedAttributes = ['for', 'mode', 'label', 'variant'];
+  connectedCallback() {
+    if (!this._button) {
+      this.innerHTML = '<button class="se-panel-toggle" type="button"><se-icon name="chevron"></se-icon></button>';
+      this._button = this.querySelector('button');
+      this._button.addEventListener('click', () => {
+        const target = this.target;
+        if (!target) return;
+        if (!this.dispatchEvent(new CustomEvent('beforetoggle', { bubbles: true, cancelable: true, detail: { target, mode: this.mode } }))) return;
+        if (this.mode === 'minimize') {
+          target.setAttribute('data-se-minimized', String(target.getAttribute('data-se-minimized') !== 'true'));
+        } else {
+          if (!target.hidden && target.contains(document.activeElement)) this._button.focus();
+          target.hidden = !target.hidden;
+        }
+        this.sync();
+        emit(this, 'change', { target, mode: this.mode, minimized: target.getAttribute('data-se-minimized') === 'true', collapsed: target.hidden });
+      });
+    }
+    this._observer = new MutationObserver(() => this.sync());
+    this._observer.observe(this.getRootNode(), { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'data-se-minimized', 'id'] });
+    this.sync();
+  }
+  disconnectedCallback() { this._observer?.disconnect(); }
+  attributeChangedCallback() { if (this._button) this.sync(); }
+  get mode() { return this.getAttribute('mode') === 'minimize' ? 'minimize' : 'collapse'; }
+  get target() { return this.getRootNode().getElementById?.(this.getAttribute('for')) || null; }
+  sync() {
+    const target = this.target;
+    const minimized = target?.getAttribute('data-se-minimized') === 'true';
+    const inactive = !target || (this.mode === 'collapse' && target.contains(this));
+    this._button.disabled = inactive;
+    this._button.setAttribute('aria-controls', target?.id || '');
+    this._button.setAttribute('aria-label', this.getAttribute('label') || (this.mode === 'minimize' ? 'Minimize panel' : target?.hidden ? 'Expand panel' : 'Collapse panel'));
+    this._button.removeAttribute(this.mode === 'minimize' ? 'aria-expanded' : 'aria-pressed');
+    this._button.setAttribute(this.mode === 'minimize' ? 'aria-pressed' : 'aria-expanded', String(this.mode === 'minimize' ? minimized : !!target && !target.hidden));
+    this.toggleAttribute('data-active', this.mode === 'minimize' ? minimized : !!target?.hidden);
+    const icon = this.querySelector('se-icon');
+    const name = this.getAttribute('variant') === 'menu' ? 'menu' : 'chevron';
+    if (icon.getAttribute('name') !== name) icon.setAttribute('name', name);
+  }
+}
+define('se-panel-toggle', SePanelToggle);
+
+
+class SeResizeHandle extends HTMLElement {
+  static observedAttributes = ['for', 'axis', 'edge', 'min', 'max', 'label', 'disabled', 'snap', 'snap-threshold'];
+  connectedCallback() {
+    if (!this._bound) {
+      this._bound = true;
+      this.addEventListener('pointerdown', event => this.start(event));
+      this.addEventListener('pointermove', event => {
+        if (!this._drag || event.pointerId !== this._drag.id) return;
+        const delta = (this.axis === 'x' ? event.clientX : event.clientY) - this._drag.position;
+        this.resize(this._drag.size + delta * this.sign);
+      });
+      this.addEventListener('pointerup', () => this.finish());
+      this.addEventListener('pointercancel', () => this.finish(true));
+      this.addEventListener('lostpointercapture', () => this.finish());
+      this.addEventListener('keydown', event => this.keydown(event));
+    }
+    this.setAttribute('role', 'separator');
+    this._observer = new ResizeObserver(() => this.sync());
+    this._attributes = new MutationObserver(() => this.sync());
+    this._attributes.observe(this.getRootNode(), { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'data-se-minimized', 'id'] });
+    this.sync();
+  }
+  disconnectedCallback() { this.finish(true); this._observer?.disconnect(); this._attributes?.disconnect(); }
+  attributeChangedCallback() { if (this.isConnected && this._observer) { this.finish(true); this.sync(); } }
+  get target() { return this.getRootNode().getElementById?.(this.getAttribute('for')) || null; }
+  get axis() { return this.getAttribute('axis') === 'y' ? 'y' : 'x'; }
+  get sign() { return this.getAttribute('edge') === 'start' ? -1 : 1; }
+  get snap() { const mode = this.getAttribute('snap'); return ['minimize', 'collapse'].includes(mode) ? mode : null; }
+  get reduced() { return !!this.target && (this.target.hidden || this.target.getAttribute('data-se-minimized') === 'true'); }
+  get bounds() {
+    const number = (name, fallback) => this.hasAttribute(name) && Number.isFinite(Number(this.getAttribute(name))) ? Number(this.getAttribute(name)) : fallback;
+    const min = Math.max(0, number('min', 80));
+    return { min, max: Math.max(min, number('max', 600)) };
+  }
+  get size() { return this.target?.getBoundingClientRect()[this.axis === 'x' ? 'width' : 'height'] || 0; }
+  sync() {
+    const target = this.target;
+    if (target !== this._target) {
+      this._observer?.disconnect();
+      this._target = target;
+      if (target) this._observer?.observe(target);
+    }
+    const disabled = this.hasAttribute('disabled') || !target || (!target.getClientRects().length && !(target.hidden && this.snap)) || (this.reduced && !this.snap);
+    this.tabIndex = disabled ? -1 : 0;
+    this.setAttribute('aria-disabled', String(disabled));
+    this.setAttribute('aria-orientation', this.axis === 'x' ? 'vertical' : 'horizontal');
+    this.setAttribute('aria-label', this.getAttribute('label') || target?.getAttribute('aria-label') || 'Resize panel');
+    this.setAttribute('aria-controls', target?.id || '');
+    const { min, max } = this.bounds;
+    const value = Math.max(this.snap ? 0 : min, Math.min(max, this.size));
+    this.setAttribute('aria-valuemin', String(this.snap ? 0 : min));
+    this.setAttribute('aria-valuemax', String(max));
+    this.setAttribute('aria-valuenow', String(Math.round(value)));
+    this.setAttribute('aria-valuetext', this.hasAttribute('data-snap-pending') ? `Release to ${this.snap}` : this.reduced ? `${target.hidden ? 'Collapsed' : 'Minimized'}. Press Enter to restore` : `${Math.round(this.size)} pixels`);
+  }
+  resize(value) {
+    const target = this.target;
+    if (!target) return;
+    const { min, max } = this.bounds;
+    if (this._drag) {
+      const requested = Number(this.getAttribute('snap-threshold') ?? 40);
+      const threshold = Number.isFinite(requested) ? Math.max(1, requested) : 40;
+      this.toggleAttribute('data-snap-pending', !!this.snap && value <= min - threshold);
+    }
+    const size = Math.max(min, Math.min(max, value));
+    target.style.setProperty('--se-resize-size', `${size}px`);
+    this.sync();
+    emit(this, 'input', { target, size, axis: this.axis });
+  }
+  start(event) {
+    this.sync();
+    if (event.button !== 0 || this.getAttribute('aria-disabled') === 'true' || this.reduced) return;
+    event.preventDefault();
+    this.focus();
+    this._drag = { id: event.pointerId, position: this.axis === 'x' ? event.clientX : event.clientY, size: this.size, original: this.target.style.getPropertyValue('--se-resize-size'), target: this.target };
+    this.setPointerCapture(event.pointerId);
+    this.setAttribute('data-dragging', '');
+    this.target.setAttribute('data-resizing', '');
+  }
+  finish(cancel = false) {
+    const drag = this._drag;
+    if (!drag) return;
+    const snap = !cancel && this.hasAttribute('data-snap-pending');
+    this._drag = null;
+    if (cancel) {
+      if (drag.original) drag.target.style.setProperty('--se-resize-size', drag.original);
+      else drag.target.style.removeProperty('--se-resize-size');
+    }
+    this.removeAttribute('data-dragging');
+    this.removeAttribute('data-snap-pending');
+    drag.target.removeAttribute('data-resizing');
+    if (this.hasPointerCapture(drag.id)) this.releasePointerCapture(drag.id);
+    if (snap) this.snapTarget(drag.original);
+    this.sync();
+    if (!cancel) emit(this, 'change', { target: drag.target, size: this.size, axis: this.axis, state: this.reduced ? (drag.target.hidden ? 'collapsed' : 'minimized') : 'expanded' });
+  }
+  snapTarget(original = this.target?.style.getPropertyValue('--se-resize-size')) {
+    const target = this.target;
+    if (!target || !this.snap) return;
+    if (!this.dispatchEvent(new CustomEvent('snap', { bubbles: true, cancelable: true, detail: { target, mode: this.snap } }))) return;
+    // Preserve the expanded size so either a toggle or Enter restores it.
+    if (original) target.style.setProperty('--se-resize-size', original);
+    else target.style.removeProperty('--se-resize-size');
+    if (target.contains(document.activeElement)) this.focus();
+    if (this.snap === 'minimize') target.setAttribute('data-se-minimized', 'true');
+    else target.hidden = true;
+    this.sync();
+  }
+  keydown(event) {
+    if (event.key === 'Escape' && this._drag) { event.preventDefault(); this.finish(true); return; }
+    if (this.getAttribute('aria-disabled') === 'true') return;
+    if (event.key === 'Enter' && this.snap) {
+      event.preventDefault();
+      if (this.reduced) { this.target.hidden = false; this.target.setAttribute('data-se-minimized', 'false'); this.sync(); }
+      else this.snapTarget();
+      emit(this, 'change', { target: this.target, size: this.size, axis: this.axis, state: this.reduced ? (this.target.hidden ? 'collapsed' : 'minimized') : 'expanded' });
+      return;
+    }
+    if (this.reduced) return;
+    const decrease = this.axis === 'x' ? 'ArrowLeft' : 'ArrowUp';
+    const increase = this.axis === 'x' ? 'ArrowRight' : 'ArrowDown';
+    if (![decrease, increase, 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const step = event.shiftKey ? 40 : 10;
+    this.resize(event.key === 'Home' ? this.bounds.min : event.key === 'End' ? this.bounds.max : this.size + (event.key === increase ? step : -step) * this.sign);
+    emit(this, 'change', { target: this.target, size: this.size, axis: this.axis });
+  }
+}
+define('se-resize-handle', SeResizeHandle);
 
  globalThis.SimpleElements = { setBrandTheme, registerIcons };
 })();

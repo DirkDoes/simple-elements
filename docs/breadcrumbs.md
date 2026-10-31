@@ -9,12 +9,12 @@ Set `options` as JSON or an array property of `{ label, href, icon }`. Ancestors
 `variant` defaults to `default`, the compact trail. Use `variant="header"` for larger, stronger labels with more padding in a top bar. Both variants use a rounded background on link hover instead of an underline. The current item remains a non-interactive label.
 
 ```html
-<se-topbar>
-  <se-layout-brand label="Acme" icon="box" compact></se-layout-brand>
+<header style="display:flex;align-items:center;gap:1rem">
+  <se-brand label="Acme" icon="box" compact></se-brand>
   <se-breadcrumbs variant="header"
     options='[{"label":"Acme","href":"/acme"},{"label":"Website"}]'>
   </se-breadcrumbs>
-</se-topbar>
+</header>
 ```
 
 When composing this header, give the compact brand `width: auto; flex: none` so the breadcrumb sits beside it. Both variants accept a single item; deciding whether to hide a single-scope breadcrumb belongs to the application. See the Contextual sidebar example in [Multi-scope navigation](multi-scope-navigation.md).

@@ -1,5 +1,6 @@
+import { navigationOverlay } from './navigation-overlay.js?v=20261031layout4';
 import { setBrandTheme } from '../src/theme.js';
-import { componentCatalog, patternCatalog } from './catalog.js?v=20261003v0163';
+import { componentCatalog, patternCatalog } from './catalog.js?v=20261031layout4';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
@@ -7,14 +8,15 @@ const patternPages = [...patternCatalog.map(({ tag, icon }) => [tag, titleFor(ta
 const pages = [['dashboard', 'Dashboard', 'dashboard'], ...componentPages, ...patternPages];
 const requestedPage = location.hash.slice(1) || 'dashboard';
 const initialPage = pages.some(([id]) => id === requestedPage) ? requestedPage : 'dashboard';
-const sidebar = document.querySelector('se-sidebar');
+const sidebar = document.getElementById('example-sidebar');
+const showcaseNavigation = navigationOverlay({ panel: sidebar, trigger: document.querySelector('se-panel-toggle[for="example-sidebar"]'), content: [document.querySelector('.demo-scroll')], desktopVisible: true });
 fetch('https://api.github.com/repos/DirkDoes/simple-elements/tags?per_page=1')
   .then((response) => response.ok ? response.json() : [])
   .then(([tag]) => { if (tag?.name) document.querySelector('.demo-version').textContent = tag.name; })
   .catch(() => {});
-const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-sidebar-button label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-sidebar-button>`).join('');
+const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-nav-item label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-nav-item>`).join('');
 const groups = [
-  ['Page layout', 'panel-left-open', ['breadcrumbs', 'nav-tabs', 'pagination', 'profile', 'layout-brand', 'sidebar', 'sidebar-toggle', 'sidebar-button', 'sidebar-chapter', 'sidebar-group', 'topbar']],
+  ['Navigation', 'panel-left-open', ['breadcrumbs', 'nav-tabs', 'pagination', 'profile', 'brand', 'panel-toggle', 'resize-handle', 'nav-item', 'nav-section', 'nav-group']],
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'popover', 'modal', 'toast', 'tooltip']],
   ['Chat', 'message-square', ['comment', 'reactions', 'chat-context', 'chat-message', 'thought-train']],
@@ -22,8 +24,8 @@ const groups = [
   ['Styling', 'badge', ['spinner', 'progress-ring', 'badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'diff', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
 ];
 const componentById = new Map(componentPages.map((page) => [page[0], page]));
-sidebar.querySelector('[data-component-section] .se-sidebar-chapter__content > div').innerHTML = groups.map(([label, icon, ids], index) => `<se-sidebar-group label="${label}" icon="${icon}"${index ? ' collapsed' : ''}>${sidebarItems(ids.map((id) => componentById.get(id)).filter(Boolean))}</se-sidebar-group>`).join('');
-sidebar.querySelector('[data-pattern-section] .se-sidebar-chapter__content > div').innerHTML = sidebarItems(patternPages);
+sidebar.querySelector('[data-component-section] .se-nav-section__content > div').innerHTML = groups.map(([label, icon, ids], index) => `<se-nav-group label="${label}" icon="${icon}"${index ? ' collapsed' : ''}>${sidebarItems(ids.map((id) => componentById.get(id)).filter(Boolean))}</se-nav-group>`).join('');
+sidebar.querySelector('[data-pattern-section] .se-nav-section__content > div').innerHTML = sidebarItems(patternPages);
 
 const inputPage = document.querySelector('section[data-demo="template"]');
 inputPage.dataset.demo = 'input';
@@ -80,8 +82,8 @@ const renderComponentPage = (component) => {
       if (!['pagination', 'progress-ring'].includes(tag) && (tag !== 'segmented-control' || name !== 'options') && (tag !== 'nav-tabs' || !['value', 'options'].includes(name))) source.removeAttribute(name);
     });
     const clone = source.cloneNode(true);
-    const contextMarkers = { 'sidebar-collapsed': 'data-sidebar-collapsed' };
-    section.querySelectorAll('[data-component-context]').forEach((control) => { const marker = contextMarkers[control.dataset.componentContext]; if (marker) preview.toggleAttribute(marker, control.checked); });
+    const contextMarkers = { minimized: 'data-se-minimized' };
+    section.querySelectorAll('[data-component-context]').forEach((control) => { const marker = contextMarkers[control.dataset.componentContext]; if (marker) preview.setAttribute(marker, String(control.checked)); });
     section.querySelectorAll('[data-component-attribute]').forEach((control) => {
       const name = control.dataset.componentAttribute;
       const value = control.matches('se-checkbox') ? control.checked : control.matches('se-range') ? control.querySelector('input').value : control.value;
@@ -92,6 +94,23 @@ const renderComponentPage = (component) => {
     let usageMarkup = clone.outerHTML;
     section.querySelectorAll('se-checkbox[data-component-attribute]').forEach((control) => { if (control.checked) usageMarkup = usageMarkup.replace(` ${control.dataset.componentAttribute}=""`, ` ${control.dataset.componentAttribute}`); });
     preview.replaceChildren(clone);
+    if (tag === 'panel-toggle' || tag === 'resize-handle') {
+      const pane = document.createElement('div');
+      pane.id = `${tag}-preview`;
+      pane.innerHTML = '<se-nav-item label="Projects" icon="folder" active></se-nav-item><se-nav-item label="Settings" icon="settings"></se-nav-item>';
+      pane.style.cssText = 'padding:12px;background:var(--se-surface-soft);width:var(--se-resize-size,200px);flex:none;overflow:auto';
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;min-height:160px;max-width:100%;overflow:auto;gap:8px';
+      if (tag === 'resize-handle' && clone.getAttribute('axis') === 'y') {
+        wrapper.style.flexDirection = 'column';
+        pane.style.width = '100%';
+        pane.style.height = 'var(--se-resize-size,160px)';
+      }
+      preview.replaceChildren(wrapper);
+      if (tag === 'panel-toggle') wrapper.append(clone, pane);
+      else wrapper.append(pane, clone);
+      usageMarkup = `${pane.outerHTML}\n${clone.outerHTML}`;
+    }
     if (component.action === 'open') {
       const opener = document.createElement('se-button');
       opener.setAttribute('text', `Open ${titleFor(tag)}`);
@@ -178,7 +197,7 @@ const renderPatternPage = ({ tag, description, examples, isolated = false }) => 
         frame.dataset.height = frameHeight;
         frame.style.width = `${frameWidth}px`;
         frame.style.height = `${frameHeight}px`;
-        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20261003v0163"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}.se-page-layout{height:100%}</style><script defer src="../dist/simple-elements.js?v=20261003v0163"></script></head><body>${editor.value}</body></html>`;
+        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20261031layout4"><link rel="stylesheet" href="../dist/themes/studio.css?v=20261031layout4"><link rel="stylesheet" href="../dist/themes/edge.css?v=20261031layout4"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}</style><script defer src="../dist/simple-elements.js?v=20261031layout4"></script></head><body>${editor.value}</body></html>`;
         preview.replaceChildren(frame);
         resizeFrame();
         return;
@@ -230,7 +249,7 @@ const showPage = (id) => {
   const selected = pages.some(([pageId]) => pageId === id) ? id : 'input';
   if (selected !== 'dashboard') document.getElementById('dashboard-chat')?.close?.();
   document.querySelectorAll('[data-demo]').forEach((section) => { section.hidden = section.dataset.demo !== selected; });
-  sidebar.querySelectorAll('se-sidebar-button').forEach((button) => button.toggleAttribute('active', button.querySelector('a')?.getAttribute('href') === `#${selected}`));
+  sidebar.querySelectorAll('se-nav-item').forEach((button) => button.toggleAttribute('active', button.querySelector('a')?.getAttribute('href') === `#${selected}`));
   document.querySelector('.demo-scroll').scrollTop = 0;
 };
 

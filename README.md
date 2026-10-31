@@ -77,3 +77,7 @@ Need every Lucide icon? Import `simple-elements/icons/all` after the components,
 For original, brand-colored empty-state artwork, use [`se-empty-illustration`](./docs/empty-illustration.md). Its 21 variants adapt to light and dark mode from a single SVG per illustration.
 
 Compare source with [`se-diff`](./docs/diff.md) (`split` or `unified`), or text values with [`se-diff-value`](./docs/diff-value.md) (`inline` or `stacked`, with an optional action region). Add `diff` to `se-code` or `se-code-editor` for patch row highlighting while retaining the source language. The [Diffs pattern](./docs/diffs.md) shows code, translation-tree, document, and spreadsheet examples.
+
+## Application layouts
+
+Applications own layout using native HTML and CSS. Compose navigation items, groups, sections, branding, panel toggles, and resize handles anywhere. See [layout recipes](docs/page-layout.md) and the [v0.17.0 migration guide](docs/layout-migration.md).

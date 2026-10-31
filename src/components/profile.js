@@ -1,7 +1,8 @@
-import { define, escapeIcon, emit, escapeHtml, parseOptions, placePopover } from '../helpers.js';
+import { define, escapeIcon, emit, escapeHtml, parseOptions, placePopover, connectMinimized } from '../helpers.js';
 
 class SeProfile extends HTMLElement {
   connectedCallback() {
+    this._disconnectContext = connectMinimized(this);
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
     const options = parseOptions(this);
@@ -11,13 +12,14 @@ class SeProfile extends HTMLElement {
     const image = this.getAttribute('image');
     const avatar = image ? `<img src="${escapeHtml(image)}" alt="" draggable="false">` : escapeHtml(this.getAttribute('initials') || '');
     const identity = `<span class="se-profile__avatar${image ? ' se-profile__avatar--image' : ''}">${avatar}</span><span><strong>${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span>`;
-    if (!options.length) { this.innerHTML = `<${tag} title="" class="se-profile se-profile--${tone}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
-    this.innerHTML = `<div class="se-profile-menu" title=""><button class="se-profile se-profile--${tone}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
+    if (!options.length) { this.innerHTML = `<${tag} title="" class="se-profile se-profile--${tone}" aria-label="${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || 'Profile')}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
+    this.innerHTML = `<div class="se-profile-menu" title=""><button class="se-profile se-profile--${tone}" aria-label="${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || 'Profile')}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
     const menu = this.querySelector('.se-profile-menu');
     const trigger = this.querySelector('.se-profile');
     trigger.addEventListener('click', () => { const open = menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(open)); if (open) placePopover(trigger, this.querySelector('.se-profile-menu__items')); });
     this.querySelectorAll('[data-index]').forEach((button) => button.addEventListener('click', () => { menu.classList.remove('se-profile-menu--open'); trigger.setAttribute('aria-expanded', 'false'); emit(this, 'select', options[Number(button.dataset.index)]); }));
   }
+  disconnectedCallback() { this._disconnectContext?.(); }
 }
 
 define('se-profile', SeProfile);

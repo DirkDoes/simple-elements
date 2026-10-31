@@ -28,13 +28,10 @@ import './components/profile.js';
 import './components/modal.js';
 import './components/drawer.js';
 import './components/toast.js';
-import './components/sidebar.js';
-import './components/sidebar-toggle.js';
-import './components/layout-brand.js';
-import './components/sidebar-chapter.js';
-import './components/sidebar-button.js';
-import './components/sidebar-group.js';
-import './components/topbar.js';
+import './components/brand.js';
+import './components/nav-section.js';
+import './components/nav-item.js';
+import './components/nav-group.js';
 import './components/empty-state.js';
 import './components/empty-illustration.js';
 import './components/code.js';
@@ -67,3 +64,6 @@ import './components/popover.js';
 
 import './components/diff.js';
 import './components/diff-value.js';
+
+import './components/panel-toggle.js';
+import './components/resize-handle.js';

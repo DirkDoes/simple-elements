@@ -1,20 +1,7 @@
 # Multi-scope navigation
 
-Patterns → Multi Scope Navigation demonstrates contextual sidebars, a persistent organization rail, and top navigation. The resolution selector controls isolated desktop, tablet, and phone iframes, matching the Page Layout pattern. Each frame contains mock JavaScript with independent in-memory routing, workspace selection, parent navigation, and route tabs. Nothing is sent to a server.
+These examples are now part of the **Page Layout** pattern. Three isolated examples show contextual navigation, a global organization rail beside project navigation, and top-only navigation. Each uses native nav/header/main containers, application-owned flex CSS, and independent mock routing. The snippets include their complete CSS and JavaScript.
 
-Applications own routing, authorization, persistence, and context data. Mobile navigation uses the existing top-opening responsive sidebar and its toggle. Switching workspaces means following the organization breadcrumb and choosing another project card on the listing page; application code handles routing. Component APIs are documented in [Button](button.md), [Breadcrumbs](breadcrumbs.md), and [Navigation tabs](nav-tabs.md).
+The organization rail uses `data-se-minimized="true"` on repository pages and returns to full labels on organization pages. Minimized presentation does not control layout: this application's `.mock-primary` CSS selects its width. On mobile, the app hides desktop navigation and exposes a single animated native navigation overlay with a `se-panel-toggle`, blur backdrop, Escape dismissal, and focus restoration. A route selection replaces the mock page and closes that panel. Applications may choose different breakpoints or an overlay drawer.
 
-Serve the repository over HTTP and open `test/navigation.html` to run the browser checks. Open `examples/index.html#multi-scope-navigation` for the interactive showcase. No authentication or real tenant data is simulated; all actions are local demonstration state.
-
-
-The Organization rail example now composes real `se-sidebar` elements with `primary` and `secondary` visual variants. Organization pages show an expanded primary sidebar; repository pages collapse it and add secondary navigation. The application owns that decision, not the visual variant. On mobile, one `se-sidebar-toggle` opens a responsive sidebar containing organization and repository chapters. Desktop sidebars use `layout-mode="desktop-only"`. No `se-layout` component is required.
-
-Desktop scope changes animate the primary sidebar width and the secondary navigation space over 220ms. The pattern uses the native Web Animations API because it replaces its mock page DOM on navigation. Reduced-motion preferences skip these transitions; mobile navigation remains immediate.
-
-These layouts are optional compositions: an application can use one sidebar plus navigation tabs instead of two sidebars. The example uses the existing responsive sidebar behavior; applications can choose other mobile presentations.
-
-Preview pages intentionally contain only navigation, project cards, and a page label. Dashboard statistics, sample lists, profiles, settings forms, and fake save actions are omitted.
-
-Breadcrumbs in this pattern represent scopes only (`Acme / Website`), never the selected navigation page. Content breadcrumbs are hidden at the organization level, where only one scope exists. The Contextual sidebar example instead uses header breadcrumbs, which remain visible with one scope, beside an always-compact layout brand. These are application conventions, not restrictions of `se-breadcrumbs`.
-
-The code snippet includes the navigation layout CSS and route JavaScript needed inside the viewport. The showcase alone manages the viewport selector, iframe size/scaling, and theme synchronization; those host controls are not included in the snippet. The preview executes the displayed code.
+Breadcrumbs identify organization/project scope, tabs identify pages, and project cards navigate into a scope. No authentication, persistence, or remote tenant data is simulated. Test using `test/navigation.html`; see [application layouts](page-layout.md).

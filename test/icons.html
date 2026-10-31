@@ -1,7 +1,7 @@
 <!doctype html>
 <html data-theme="light"><head><meta charset="utf-8">
-<link rel="stylesheet" href="../dist/styles.css">
-<script defer src="../dist/simple-elements.js"></script>
+<link rel="stylesheet" href="../dist/styles.css?v=20261031layout4">
+<script defer src="../dist/simple-elements.js?v=20261031layout4"></script>
 <style>* { transition: none !important; } .white { color: white; } .black { color: black; }</style>
 </head><body><div id="fixtures"></div><pre id="result">Running...</pre>
 <script>
@@ -36,14 +36,14 @@ addEventListener('DOMContentLoaded', async () => {
       component.setAttribute('value', 'github'); fixture.append(component); await settle();
       assert([...component.querySelectorAll('se-icon')].some(e => e.querySelector('img')), tag + ' supports nested icon objects');
     }
-    for (const tag of ['se-badge', 'se-chat-context', 'se-chat-message', 'se-empty-state', 'se-folder-card', 'se-input', 'se-sidebar-button', 'se-sidebar-group', 'se-tree-item', 'se-project-card']) {
+    for (const tag of ['se-badge', 'se-chat-context', 'se-chat-message', 'se-empty-state', 'se-folder-card', 'se-input', 'se-nav-item', 'se-nav-group', 'se-tree-item', 'se-project-card']) {
       const component = document.createElement(tag); component.setAttribute('icon', JSON.stringify(config)); if (tag === 'se-chat-message') component.setAttribute('profile', ''); fixture.append(component); await settle();
       assert(component.querySelector('se-icon img'), tag + ' accepts an icon object');
     }
-    const brand = document.createElement('se-layout-brand');
+    const brand = document.createElement('se-brand');
     brand.setAttribute('icon', JSON.stringify(config)); brand.setAttribute('compact-icon', JSON.stringify(config));
     fixture.append(brand); await settle(); assert(brand.querySelector('se-icon img'), 'Brand accepts object');
-    assert(brand.querySelectorAll('.se-layout-brand__asset se-icon img').length === 2, 'Full and compact brand icons use object sources');
+    assert(brand.querySelectorAll('.se-brand__asset se-icon img').length === 2, 'Full and compact brand icons use object sources');
     const late = document.createElement('se-icon'); late.setAttribute('name', 'alarm-clock'); fixture.append(late);
     const before = late.innerHTML;
     const trashBefore = document.createElement('se-icon'); trashBefore.setAttribute('name', 'trash'); fixture.append(trashBefore); const trashMarkup = trashBefore.innerHTML;

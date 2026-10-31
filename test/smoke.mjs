@@ -91,11 +91,6 @@ assert.match(compiledCss, /se-code-editor:is\(\[readonly\],\[disabled\],\[autosi
 assert.match(compiledCss, /se-code\[block\]\[wrap\]/);
 assert.match(compiledCss, /se-code-editor\[wrap\]/);
 assert.match(compiledCss, /--se-surface-raised:#292d33/, 'dark overlay surface must be compiled');
-assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\]\{[^}]*position:absolute/, 'mobile sidebars must overlay page content');
-assert.match(compiledCss, /se-sidebar\[overlay\][^{]*\{[^}]*position:absolute/, 'overlay sidebars must leave page content in place while open, closing, or collapsed');
-assert.match(compiledCss, /se-sidebar\[layout-mode=responsive\] \[data-sidebar-collapse\]\{display:none/, 'mobile sidebars must hide desktop collapse controls');
-assert.match(compiledCss, /se-topbar>\[data-mobile-search\]:not\(\[hidden\]\)\{[^}]*position:absolute/, 'mobile search must overlay page content');
-assert.match(compiledCss, /\[layout-mode=desktop-only\][^{]*\{display:none/, 'desktop-only content must be hidden on mobile');
 assert.doesNotMatch(compiledCss, /@import\s/);
 const selectSource = await readFile('src/components/select.js', 'utf8');
 assert.match(selectSource, /const trigger = multiple/);
@@ -116,15 +111,14 @@ assert.match(buttonSource, /getAttribute\('text'\)/);
 assert.doesNotMatch(buttonSource, /hasAttribute\('icon-only'\)/);
 const componentStyles = await readFile('src/styles.css', 'utf8');
 assert.match(componentStyles, /\.se-button--link \{[^}]*color: var\(--se-primary\)/, 'link buttons must use the brand color');
-assert.match(componentStyles, /se-sidebar-button:not\(\[active\]\) \.se-sidebar-button:hover/, 'active sidebar buttons must ignore hover styling');
+assert.match(componentStyles, /se-nav-item:not\(\[active\]\) \.se-nav-item:hover/, 'active sidebar buttons must ignore hover styling');
 assert.match(componentStyles, /\[data-theme="dark"\] \.se-select__option\[aria-selected="true"\][^{]*\{ color: color-mix\(in srgb, white 90%, var\(--se-primary\)\)/, 'dark selected options need brand-tinted near-white text');
 assert.match(componentStyles, /\[data-theme="dark"\] \.se-select__option:not\(\[aria-selected="true"\]\):not\(:disabled\):hover \{ color: var\(--se-text\); background: var\(--se-surface-soft\)/, 'dark option hover must match sidebar hover');
-assert.match(componentStyles, /\[data-theme="dark"\] se-sidebar-button\[active\] \.se-sidebar-button[^{}]*\{ color: color-mix\(in srgb, white 90%, var\(--se-primary\)\)/, 'dark active sidebar buttons need brand-tinted near-white text');
+assert.match(componentStyles, /\[data-theme="dark"\] se-nav-item\[active\] \.se-nav-item[^{}]*\{ color: color-mix\(in srgb, white 90%, var\(--se-primary\)\)/, 'dark active sidebar buttons need brand-tinted near-white text');
 assert.match(componentStyles, /\.se-button--link:hover \{[^}]*text-decoration: underline/, 'link buttons must underline on hover');
 assert.match(componentStyles, /\.se-button \{[^}]*width: 100%/, 'buttons must fill stretched hosts');
 assert.match(componentStyles, /\.se-profile strong, \.se-profile small \{[^}]*text-overflow: ellipsis/, 'profile text must truncate in narrow containers');
 assert.match(componentStyles, /se-profile \{[^}]*max-width: 100%/, 'profiles must stay within their container');
-assert.match(componentStyles, /\[data-sidebar-collapsed\] \.se-profile > span:nth-child\(2\)/, 'collapsed sidebars must hide profile identity text');
 assert.match(componentStyles, /\[data-popover-y="up"\]/, 'menus must support adaptive vertical placement');
 assert.match(await readFile('src/helpers.js', 'utf8'), /export const placePopover/, 'menus must share viewport-aware placement');
 globalThis.innerWidth = 500;
@@ -134,10 +128,8 @@ placePopover({ getBoundingClientRect: () => ({ top: 10, right: 50, bottom: 50, l
 assert.deepEqual(testPopover.dataset, { popoverY: 'down', popoverX: 'right' });
 placePopover({ getBoundingClientRect: () => ({ top: 450, right: 490, bottom: 490, left: 450 }) }, testPopover);
 assert.deepEqual(testPopover.dataset, { popoverY: 'up', popoverX: 'left' });
-assert.match(componentStyles, /width: var\(--se-sidebar-width, 16rem\)/, 'sidebar width must remain configurable');
-const sidebarGroupSource = await readFile('src/components/sidebar-group.js', 'utf8');
+const sidebarGroupSource = await readFile('src/components/nav-group.js', 'utf8');
 assert.match(sidebarGroupSource, /getAttribute\('variant'\) === 'page'/);
-assert.match(sidebarGroupSource, /setTimeout\(\(\) => \{ this\.collapsed = false; \}, 200\)/);
 assert.doesNotMatch(sidebarGroupSource, /variant.*recent/);
 const modalSource = await readFile('src/components/modal.js', 'utf8');
 assert.match(modalSource, /<se-empty-state/);
@@ -206,24 +198,13 @@ assert.doesNotMatch(colorPickerSource, /hasAttribute\('popover'\)/);
 const documentedComponents = components;
 assert.equal(componentCatalog.length, documentedComponents.length, 'every standalone component needs a catalog page');
 assert.deepEqual(new Set(componentCatalog.map(({ tag }) => `${tag}.js`)), new Set(documentedComponents), 'catalog tags must match standalone component files');
-assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['complex-input', 'diffs', 'comments', 'multi-scope-navigation', 'workspaces', 'page-layout', 'chats', 'file-system', 'forms'], 'all patterns must be documented');
+assert.deepEqual(patternCatalog.map(({ tag }) => tag), ['complex-input', 'diffs', 'comments', 'page-layout', 'chats', 'file-system', 'forms'], 'all patterns must be documented');
 assert.ok(patternCatalog.every(({ examples }) => examples?.length), 'each pattern needs named examples');
-assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.every(({ markup }) => markup.includes('layout-mode="responsive"')), 'every page layout pattern needs responsive navigation');
-assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.slice(0, 3).every(({ markup }) => markup.includes('<se-topbar layout-mode="mobile-only">')), 'sidebar-only layouts need a mobile top bar');
-assert.ok(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.slice(1, 3).every(({ markup }) => markup.includes('<footer layout-mode="desktop-only">')), 'mobile top-bar profiles must not be duplicated in sidebar footers');
-assert.match(patternCatalog.find(({ tag }) => tag === 'page-layout').examples[2].markup, /<header layout-mode="desktop-only">/, 'the mobile top-bar brand must not be duplicated in the sidebar header');
-assert.match(patternCatalog.find(({ tag }) => tag === 'page-layout').examples[3].markup, /<se-sidebar id="windowed-sidebar" layout-mode="responsive" overlay closed>/, 'the hamburger sidebar pattern must demonstrate overlay mode');
-assert.equal(patternCatalog.find(({ tag }) => tag === 'page-layout').examples.filter(({ markup }) => /<se-sidebar[^>]* overlay(?: |>|$)/.test(markup)).length, 1, 'only the responsive top-bar pattern should use an overlay sidebar');
 const formExamples = patternCatalog.find(({ tag }) => tag === 'forms').examples;
 assert.equal(formExamples.length, 4, 'forms pattern must show four workflows');
 assert.match(formExamples.find(({ title }) => title === 'New project').markup, /label="Owners" name="owners" value="you" multiple searchable[^>]*"locked":true/, 'project form needs locked multi-owner selection');
 assert.equal(formExamples.filter(({ markup }) => markup.includes('<se-split-button')).length, 2, 'two form patterns must use split buttons');
 for (const tag of ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'theme-switch', 'time-picker', 'wysiwyg']) assert.ok(formExamples.some(({ markup }) => markup.includes(`<se-${tag}`)), `forms pattern must demonstrate se-${tag}`);
-for (const tag of ['sidebar', 'sidebar-toggle', 'topbar']) {
-  const mode = componentCatalog.find((component) => component.tag === tag).attributes.find((attribute) => attribute.name === 'layout-mode');
-  assert.equal(mode.defaultValue, 'always', `${tag} layout mode must default to always`);
-  assert.equal(mode.options[0], 'always', `${tag} layout mode must list always first`);
-}
 assert.equal(new Set(componentCatalog.map(({ tag }) => tag)).size, componentCatalog.length, 'catalog pages must be unique');
 componentCatalog.forEach(({ tag, icon, attributes, custom }) => {
   assert.ok(iconNames[icon], `${tag} needs a supported sidebar icon`);
@@ -233,7 +214,7 @@ for (const { tag, attributes, custom } of componentCatalog) {
   if (custom) continue;
   const source = await readFile(`src/components/${tag}.js`, 'utf8');
   const documentation = await readFile(`docs/${tag}.md`, 'utf8');
-  const used = [...source.matchAll(/this\.(?:get|has)Attribute\('([^']+)'\)/g)].map((match) => match[1]).filter((name) => name !== 'id' && !name.startsWith('data-'));
+  const used = [...source.matchAll(/this\.(?:get|has)Attribute\('([^']+)'\)/g)].map((match) => match[1]).filter((name) => name !== 'id' && !name.startsWith('data-') && !name.startsWith('aria-'));
   const listed = new Set(attributes.map(({ name }) => name));
   used.forEach((name) => assert.ok(listed.has(name), `${tag} catalog is missing ${name}`));
   attributes.filter(({ name }) => name !== 'content').forEach(({ name }) => assert.ok(documentation.includes(`\`${name}`) || documentation.includes(` ${name}=`) || documentation.includes(` ${name} `), `${tag} docs are missing ${name}`));
@@ -297,12 +278,6 @@ const chatMessageSource = await readFile('src/components/chat-message.js', 'utf8
 assert.match(chatMessageSource, /const avatar = initials \?/);
 assert.match(await readFile('src/components/chat-context.js', 'utf8'), /se-chat-context--\$\{variant\}/);
 assert.match(await readFile('src/components/thought-train.js', 'utf8'), /se-thought-train--\$\{variant\}/);
-const topbarSource = await readFile('src/components/topbar.js', 'utf8');
-assert.match(topbarSource, /data-mobile-search/, 'top bar must manage its mobile search row');
-assert.match(topbarSource, /closedchange/, 'top bar overlays must close each other');
-assert.match(await readFile('src/components/sidebar.js', 'utf8'), /data-transitioning/, 'sidebar animation must suppress temporary scrollbars');
-assert.match(await readFile('src/styles.css', 'utf8'), /se-sidebar\[overlay\]\[closed\]\[data-transitioning\]/, 'closing overlay sidebars must stay visible for their transition');
-assert.doesNotMatch(await readFile('src/components/sidebar.js', 'utf8'), /data-overlay-transitioning/, 'overlay positioning must not depend on collapse transitions');
 assert.match(highlightCode('const ready = true;', 'javascript'), /se-token--keyword/);
 const highlightedHtml = highlightCode('<se-button variant="brand" text="Save" disabled></se-button>', 'html');
 assert.match(highlightedHtml, /se-token--tag[^>]*>&lt;se-button/);
@@ -372,3 +347,11 @@ assert.match(patchHighlight, /se-token--keyword/);
 assert.doesNotMatch(highlightCode('+<script>alert(1)</script>', 'html', true), /<script>/);
 assert.match(highlightCode('+new', 'diff'), /se-code-diff-line--added/);
 assert.equal(patternCatalog.find(({tag})=>tag==='diffs').examples.length, 6);
+
+for (const pattern of patternCatalog.filter(({tag}) => ['page-layout'].includes(tag))) {
+  for (const {markup} of pattern.examples) {
+    assert.doesNotMatch(markup, /<se-(?:sidebar|topbar)(?:[ >])/, 'examples must own their native page structure');
+    assert.match(markup, /<style>/, 'layout recipes must include application CSS');
+  }
+}
+assert.doesNotMatch(componentStyles, /se-sidebar|se-topbar|se-page-layout|data-sidebar-collapsed/, 'library CSS must not prescribe page shells');

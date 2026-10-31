@@ -1,4 +1,4 @@
-<!doctype html><html data-theme="light"><head><link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/flat.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<!doctype html><html data-theme="light"><head><link rel="stylesheet" href="../dist/styles.css?v=20261031layout4"><link rel="stylesheet" href="../dist/themes/flat.css"><script defer src="../dist/simple-elements.js?v=20261031layout4"></script></head><body>
 <se-modal id="dialog" size="medium" title="Save" subtitle="A short summary">
   <se-input label="Name"></se-input>
   <se-badge data-se-region="header-end" text="Draft"></se-badge>
@@ -18,7 +18,7 @@
 <se-profile title="Sarah" subtitle="Designer" initials="SJ"></se-profile>
 <se-empty-state title="Empty" subtitle="No items"></se-empty-state>
 <se-empty-illustration title="Empty" subtitle="No illustrations"></se-empty-illustration>
-<se-layout-brand icon="dashboard" compact-icon="package" label="Acme"></se-layout-brand>
+<se-brand icon="dashboard" compact-icon="package" label="Acme"></se-brand>
 <pre id="result">Running</pre>
 <script type="module">
 const assert = (okay, message) => { if (!okay) throw Error(message); };
@@ -65,7 +65,7 @@ try {
   assert(document.querySelector('body > se-profile strong').textContent === 'Sarah', 'profile title alias');
   assert(document.querySelector('body > se-empty-state se-text').textContent === 'No items', 'empty state subtitle');
   assert(document.querySelector('se-empty-illustration se-text').textContent === 'No illustrations', 'illustration subtitle');
-  assert(document.querySelectorAll('se-layout-brand .se-layout-brand__asset').length === 2, 'brand has two icon inputs');
+  assert(document.querySelectorAll('se-brand .se-brand__asset').length === 2, 'brand has two icon inputs');
   document.documentElement.dataset.test = 'passed'; document.querySelector('#result').textContent = 'Regions and labels passed';
 } catch(error) { document.documentElement.dataset.test = 'failed'; document.querySelector('#result').textContent = error.stack; }
 </script></body></html>

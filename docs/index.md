@@ -12,13 +12,13 @@ Flat is the default visual theme. Use `data-se-theme="clean"` for Clean, or foll
 
 Studio and Edge are optional visual themes, each with light and dark modes. Import only the optional theme stylesheets your app uses; see the guide below for single-theme and all-four setups.
 
-v0.16.0 adds code and value comparisons, optional diff-value actions, and patch highlighting in the existing code components. See [Diff](diff.md), [Diff value](diff-value.md), and the [Diffs pattern](diffs.md). Existing component markup remains valid.
+v0.17.0 moves application layout into native HTML and CSS, with reusable navigation, panel toggles, and resize handles. This is a breaking change: read the [v0.17.0 migration guide](layout-migration.md) and the seven [Page Layout examples](page-layout.md) before upgrading.
 
 ## Theming
 
 - [Visual themes, color modes, and brand colors](theme.md)
 
-Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground configuration with color-preservation flags. See [Icons](icon.md) for HTML, JavaScript, and option-array examples; [Layout brand](layout-brand.md) uses the same icon object for full and compact artwork.
+Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground configuration with color-preservation flags. See [Icons](icon.md) for HTML, JavaScript, and option-array examples; [Brand](brand.md) uses the same icon object for full and compact artwork.
 
 Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) for renamed attributes and the new child regions.
 
@@ -76,24 +76,27 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 - [Badge](badge.md)
 - [Empty state](empty-state.md)
 - [Empty illustration](empty-illustration.md)
+- [Comment](comment.md)
+- [Reactions](reactions.md)
 
 ## Navigation
 
 - [Pagination](pagination.md)
-
-- [Sidebar](sidebar.md)
-- [Sidebar toggle](sidebar-toggle.md)
-- [Layout brand](layout-brand.md)
-- [Sidebar chapter](sidebar-chapter.md)
-- [Sidebar button](sidebar-button.md)
-- [Sidebar group](sidebar-group.md)
-- [Top bar](topbar.md)
+- [Breadcrumbs](breadcrumbs.md)
+- [Navigation tabs](nav-tabs.md)
+- [Brand](brand.md)
+- [Navigation section](nav-section.md)
+- [Navigation item](nav-item.md)
+- [Navigation group](nav-group.md)
+- [Panel toggle](panel-toggle.md)
+- [Resize handle](resize-handle.md)
 
 ## Patterns
 
 - [Complex input and completions](complex-input.md)
 - [Page layout](page-layout.md)
-- [Workspaces](workspaces.md)
+- [v0.17.0 layout migration](layout-migration.md)
+- [Comments](comments.md)
 - [Chats](chats.md)
 - [File system](file-system.md)
 - [Forms](forms.md)
@@ -110,11 +113,3 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 Browse the page-like component sections in [`examples/index.html`](../examples/index.html).
 
 The showcase’s **Patterns → Icon gallery** lists the 147 default icon names with tooltips and click-to-copy. The [icon guide](icon.md#default-and-full-lucide-sets) explains optional full-pack loading and individual registration. [Profiles](profile.md) support circular image avatars as well as initials.
-
-- [Breadcrumbs](breadcrumbs.md)
-- [Navigation tabs](nav-tabs.md)
-- [Multi-scope navigation pattern](multi-scope-navigation.md)
-
-- [Comment](comment.md)
-- [Reactions](reactions.md)
-- [Comments pattern](comments.md)

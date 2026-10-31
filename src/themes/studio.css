@@ -37,10 +37,8 @@
 :root[data-se-theme="studio"] .se-title--section { font-weight: 650; letter-spacing: -.02em; }
 
 /* Navigation stays quiet; a solid active surface supplies orientation. */
-:root[data-se-theme="studio"] :is(se-sidebar, .se-sidebar) { background: var(--se-surface-soft); border-color: var(--se-border); }
-:root[data-se-theme="studio"] :is(se-topbar, se-sidebar > header, se-sidebar > footer) { border-color: var(--se-border); }
-:root[data-se-theme="studio"] :is(.se-sidebar-button, se-sidebar-group > .se-sidebar-group__head > :first-child) { border-radius: .375rem; }
-:root[data-se-theme="studio"] se-sidebar-button[active] .se-sidebar-button, :root[data-se-theme="studio"] :is(se-sidebar-group[variant="page"][active], se-sidebar-group[collapsed]:has(se-sidebar-button[active], se-sidebar-group[variant="page"][active])) > .se-sidebar-group__head > :first-child { color: var(--se-primary-text); background: var(--se-surface); box-shadow: 0 0 0 1px var(--se-border), var(--se-shadow); font-weight: 650; }
+:root[data-se-theme="studio"] :is(.se-nav-item, se-nav-group > .se-nav-group__head > :first-child) { border-radius: .375rem; }
+:root[data-se-theme="studio"] se-nav-item[active] .se-nav-item, :root[data-se-theme="studio"] :is(se-nav-group[variant="page"][active], se-nav-group[collapsed]:has(se-nav-item[active], se-nav-group[variant="page"][active])) > .se-nav-group__head > :first-child { color: var(--se-primary-text); background: var(--se-surface); box-shadow: 0 0 0 1px var(--se-border), var(--se-shadow); font-weight: 650; }
 
 /* White fields, precise outlines, and a clear focus ring. */
 :root[data-se-theme="studio"] :is(.se-control, .se-select__trigger, .se-phone__control, .se-editor, .se-wysiwyg, .se-color-picker__trigger, .se-time__spinner input, .se-date__jump input) { background: var(--se-surface); border-color: var(--se-border-strong); border-radius: var(--se-radius); box-shadow: inset 0 1px 2px rgb(0 0 0 / .025); }
@@ -53,5 +51,3 @@
 :root[data-se-theme="studio"] .se-select__option[aria-selected="true"] { background: color-mix(in srgb, var(--se-primary) 14%, var(--se-surface)); box-shadow: none; }
 :root[data-se-theme="studio"] :is(.se-select__menu, .se-phone__menu, .se-split__menu, .se-menu__items, .se-profile-menu__items, .se-modal__panel, .se-drawer__panel, .se-date__popover, .se-time__popover, .se-color-picker__popover, .se-datetime-single__popover, .se-tooltip__bubble, .se-toast) { border-color: var(--se-border); box-shadow: var(--se-shadow-lg); }
 :root[data-se-theme="studio"] :is(button, a, input, textarea, [tabindex], [contenteditable="true"]):focus-visible { outline: 2px solid var(--se-primary); outline-offset: 2px; }
-
-:root[data-se-theme="studio"] { --se-sidebar-primary-expanded: var(--se-surface-soft); --se-sidebar-primary-collapsed: var(--se-surface-soft); }
