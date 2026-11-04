@@ -5,16 +5,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Simple Elements</title>
-    <link rel="stylesheet" href="../dist/styles.css?v=20261104guides3">
-    <link rel="stylesheet" href="./example.css?v=20261104guides3">
-    <link rel="stylesheet" href="../dist/themes/edge.css?v=20261104guides3">
-    <script defer src="../dist/simple-elements.js?v=20261104guides3"></script>
-    <script type="module" src="./example.js?v=20261104guides3"></script>
+    <link rel="stylesheet" href="../dist/styles.css?v=20261104categories1">
+    <link rel="stylesheet" href="./example.css?v=20261104categories1">
+    <link rel="stylesheet" href="../dist/themes/edge.css?v=20261104categories1">
+    <script defer src="../dist/simple-elements.js?v=20261104categories1"></script>
+    <script type="module" src="./example.js?v=20261104categories1"></script>
   </head>
   <body>
     <div class="demo-shell">
       <main class="demo-main">
-        <header class="demo-topbar"><section data-start><se-panel-toggle for="example-sidebar" variant="menu" class="demo-mobile" label="Toggle navigation"></se-panel-toggle><se-brand label="Simple Elements" icon="package" href="#dashboard"></se-brand></section><section class="demo-global-search" role="search" aria-label="Components"><se-input type="search" aria-label="Search components" placeholder="Search components…"></se-input></section><section data-end><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"},{"id":"edge","label":"Edge"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></header>
+        <header class="demo-topbar"><section data-start><se-panel-toggle for="example-sidebar" variant="menu" class="demo-mobile" label="Toggle navigation"></se-panel-toggle><se-brand label="Simple Elements" icon="package" href="#dashboard"></se-brand></section><section class="demo-global-search" role="search" aria-label="Components"><se-input type="search" aria-label="Search components" placeholder="Search components…"></se-input></section><section data-end><se-color-picker class="demo-brand-color" label="Primary color" name="theme[primary]" value="#2563eb"></se-color-picker><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"},{"id":"edge","label":"Edge"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></header>
         <div class="demo-body">
           <nav id="example-sidebar" class="demo-sidebar" data-mobile-navigation aria-label="Showcase">
             <section>
@@ -50,7 +50,6 @@
                   <se-select label="Owners" name="workspace[owners]" value="you" multiple searchable options='[{"id":"you","label":"You","description":"Workspace creator","icon":"user","locked":true},{"id":"maya","label":"Maya Chen","icon":"user"},{"id":"alex","label":"Alex Morgan","icon":"user"},{"id":"jordan","label":"Jordan Lee","icon":"user"}]'></se-select>
                   <se-datetime-picker label="First review" name="workspace[review_at]" value="2026-09-10T09:30" variant="joined"></se-datetime-picker>
                   <div class="demo-dashboard-form__options"><se-checkbox variant="switch" label="Send me the weekly digest" checked></se-checkbox><se-range label="Priority" value="68" suffix="%"></se-range></div>
-                  <div class="demo-dashboard-theme-control"><div><se-title level="card">Brand theme</se-title><se-text muted small>Change the primary color used across the library.</se-text></div><se-color-picker class="demo-dashboard-brand-color" label="Primary color" name="theme[primary]" value="#2563eb"></se-color-picker></div>
                   <div class="demo-row"><se-button variant="brand" text="Create workspace" icon="send" type="button"></se-button><se-button variant="ghost" text="Save as draft" type="button"></se-button></div>
                 </form>
               </se-card>

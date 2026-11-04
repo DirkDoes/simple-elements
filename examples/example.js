@@ -81,12 +81,15 @@ fetch('https://api.github.com/repos/DirkDoes/simple-elements/tags?per_page=1')
   .catch(() => {});
 const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-nav-item label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-nav-item>`).join('');
 const groups = [
-  ['Navigation', 'panel-left-open', ['breadcrumbs', 'nav-tab', 'pagination', 'brand', 'panel-toggle', 'resize-handle', 'nav-item', 'nav-section', 'nav-group']],
-  ['Form elements', 'text-input', ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
-  ['Overlays', 'panel-right', ['drawer', 'menu', 'popover', 'modal', 'toast', 'tooltip']],
-  ['Chat', 'message-square', ['avatar', 'profile', 'comment', 'reactions', 'chat-context', 'chat-message', 'thought-train']],
-  ['Composing', 'list', ['card', 'collection', 'empty-state', 'empty-illustration', 'file-card', 'folder-card', 'list-header', 'list-row', 'project-card', 'workspace-card', 'tree-item', 'diff-value']],
-  ['Styling', 'badge', ['spinner', 'progress-ring', 'badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'diff', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
+  ["Actions & controls", "mouse-pointer", ["button", "split-button", "segmented-control", "theme-switch"]],
+  ["Navigation", "panel-left-open", ["breadcrumbs", "nav-item", "nav-tab", "nav-section", "nav-group", "pagination"]],
+  ["Identity", "user", ["avatar", "profile", "brand"]],
+  ["Inputs & editors", "text-input", ["input", "checkbox", "radio", "select", "range", "phone-input", "color-picker", "date-picker", "time-picker", "datetime-picker", "file-upload", "code-editor", "wysiwyg"]],
+  ["Content & typography", "type", ["title", "text", "icon", "markdown", "blockquote", "code", "diff", "diff-value"]],
+  ["Containers & collections", "list", ["card", "collapsible", "collection", "list-header", "list-row", "tree-item", "file-card", "folder-card", "project-card", "workspace-card"]],
+  ["Panels & overlays", "panel-right", ["panel-toggle", "resize-handle", "drawer", "modal", "popover", "menu", "tooltip"]],
+  ["Status & feedback", "badge", ["badge", "spinner", "progress-ring", "toast", "empty-state", "empty-illustration"]],
+  ["Conversation", "message-square", ["comment", "reactions", "chat-message", "chat-context", "thought-train"]]
 ];
 const componentById = new Map(componentPages.map((page) => [page[0], page]));
 sidebar.querySelector('[data-component-section] .se-nav-section__content > div').innerHTML = groups.map(([label, icon, ids], index) => `<se-nav-group label="${label}" icon="${icon}"${index ? ' collapsed' : ''}>${sidebarItems(ids.map((id) => componentById.get(id)).filter(Boolean))}</se-nav-group>`).join('');
@@ -339,7 +342,7 @@ familyPicker.addEventListener('change', (event) => {
   familyPicker.querySelector('.se-select__trigger').setAttribute('aria-label', 'Visual theme');
 });
 document.querySelector('.demo-theme').addEventListener('change', (event) => { document.documentElement.dataset.theme = event.currentTarget.value; });
-document.querySelector('.demo-dashboard-brand-color')?.addEventListener('change', (event) => { setBrandTheme({ primary: event.detail.value }); });
+document.querySelector('.demo-brand-color')?.addEventListener('change', (event) => { if (event.detail?.value) setBrandTheme({ primary: event.detail.value }); });
 
 const template = document.querySelector('[data-demo="input"]');
 const renderTemplateInput = () => {

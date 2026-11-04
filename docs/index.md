@@ -22,75 +22,94 @@ Icon inputs accept Lucide names, asset URLs, or a shared light/dark foreground c
 
 Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) for renamed attributes and the new child regions.
 
-## Foundations
+## Actions & controls
 
-- [Icon](icon.md)
-- [Text](text.md)
-- [Theme switch](theme-switch.md)
-- [Title](title.md)
-- [Card](card.md)
-- [Project card](project-card.md)
-- [Workspace card](workspace-card.md)
-- [Folder card](folder-card.md)
-- [Code](code.md)
-- [Diff](diff.md)
-- [Diff value](diff-value.md)
-- [Blockquote](blockquote.md)
-- [Markdown](markdown.md)
+- [Button](button.md)
+- [Split Button](split-button.md)
+- [Segmented Control](segmented-control.md)
+- [Theme Switch](theme-switch.md)
 
-## Forms
+## Navigation
+
+- [Breadcrumbs](breadcrumbs.md)
+- [Nav Item](nav-item.md)
+- [Nav Tab](nav-tab.md)
+- [Nav Section](nav-section.md)
+- [Nav Group](nav-group.md)
+- [Pagination](pagination.md)
+
+## Identity
+
+- [Avatar](avatar.md)
+- [Profile](profile.md)
+- [Brand](brand.md)
+
+## Inputs & editors
 
 - [Input](input.md)
 - [Checkbox](checkbox.md)
 - [Radio](radio.md)
-- [Range](range.md)
-- [Segmented control](segmented-control.md)
 - [Select](select.md)
-- [Phone input](phone-input.md)
-- [File upload](file-upload.md)
-- [Code editor](code-editor.md)
+- [Range](range.md)
+- [Phone Input](phone-input.md)
+- [Color Picker](color-picker.md)
+- [Date Picker](date-picker.md)
+- [Time Picker](time-picker.md)
+- [Datetime Picker](datetime-picker.md)
+- [File Upload](file-upload.md)
+- [Code Editor](code-editor.md)
 - [WYSIWYG](wysiwyg.md)
-- [Color picker](color-picker.md)
-- [Date picker](date-picker.md)
-- [Date and time picker](datetime-picker.md)
-- [Time picker](time-picker.md)
 
-## Actions and feedback
+## Content & typography
 
-- [Spinner](spinner.md)
-- [Progress ring](progress-ring.md)
+- [Title](title.md)
+- [Text](text.md)
+- [Icon](icon.md)
+- [Markdown](markdown.md)
+- [Blockquote](blockquote.md)
+- [Code](code.md)
+- [Diff](diff.md)
+- [Diff Value](diff-value.md)
 
-- [Button](button.md)
-- [Split button](split-button.md)
-- [File card](file-card.md)
-- [Tooltip](tooltip.md)
-- [Menu](menu.md)
-- [Popover](popover.md)
-- [Avatar](avatar.md)
-- [Profile](profile.md)
-- [Modal](modal.md)
+## Containers & collections
+
+- [Card](card.md)
+- [Collapsible](collapsible.md)
+- [Collection](collection.md)
+- [List Header](list-header.md)
+- [List Row](list-row.md)
+- [Tree Item](tree-item.md)
+- [File Card](file-card.md)
+- [Folder Card](folder-card.md)
+- [Project Card](project-card.md)
+- [Workspace Card](workspace-card.md)
+
+## Panels & overlays
+
+- [Panel Toggle](panel-toggle.md)
+- [Resize Handle](resize-handle.md)
 - [Drawer](drawer.md)
-- [Toast](toast.md)
-- [Chat message](chat-message.md)
-- [Chat context](chat-context.md)
-- [Thought train](thought-train.md)
+- [Modal](modal.md)
+- [Popover](popover.md)
+- [Menu](menu.md)
+- [Tooltip](tooltip.md)
+
+## Status & feedback
+
 - [Badge](badge.md)
-- [Empty state](empty-state.md)
-- [Empty illustration](empty-illustration.md)
+- [Spinner](spinner.md)
+- [Progress Ring](progress-ring.md)
+- [Toast](toast.md)
+- [Empty State](empty-state.md)
+- [Empty Illustration](empty-illustration.md)
+
+## Conversation
+
 - [Comment](comment.md)
 - [Reactions](reactions.md)
-
-## Navigation
-
-- [Pagination](pagination.md)
-- [Breadcrumbs](breadcrumbs.md)
-- [Navigation tab](nav-tab.md)
-- [Brand](brand.md)
-- [Navigation section](nav-section.md)
-- [Navigation item](nav-item.md)
-- [Navigation group](nav-group.md)
-- [Panel toggle](panel-toggle.md)
-- [Resize handle](resize-handle.md)
+- [Chat Message](chat-message.md)
+- [Chat Context](chat-context.md)
+- [Thought Train](thought-train.md)
 
 ## Patterns
 
@@ -102,14 +121,6 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 - [File system](file-system.md)
 - [Forms](forms.md)
 - [Diff designs](diffs.md)
-
-## Data display
-
-- [Collection](collection.md)
-- [Collapsible](collapsible.md)
-- [List header](list-header.md)
-- [List row](list-row.md)
-- [Tree item](tree-item.md)
 
 Browse the page-like component sections in [`examples/index.html`](../examples/index.html).
 

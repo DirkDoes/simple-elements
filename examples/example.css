@@ -104,7 +104,6 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 .demo-dashboard-form-card { display: grid; gap: 1.5rem; }
 .demo-dashboard-form { display: grid; gap: 1.25rem; }
 .demo-dashboard-form__options { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(12rem, 1fr); align-items: end; gap: 1.5rem; }
-.demo-dashboard-theme-control { display: grid; grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem); align-items: end; gap: 1rem; padding-top: 1.25rem; border-top: 1px solid var(--se-border); }
 .demo-dashboard-form__options se-range { min-width: 0; }
 .demo-dashboard-tip { justify-content: flex-start; }
 .demo-dashboard-layout > .demo-stack > se-card > .se-title { display: block; margin-bottom: 1rem; }
@@ -145,7 +144,7 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
   .demo-content { width: min(100% - 4rem, 72rem); padding-top: 2rem; }
   .demo-pattern-heading { align-items: stretch; flex-direction: column; }
   .demo-pattern-heading se-select { width: 100%; }
-  .demo-grid, .demo-fields, .demo-controls, .demo-code-grid, .demo-dashboard-hero, .demo-dashboard-layout, .demo-dashboard-form__options, .demo-dashboard-theme-control, .demo-file-grid, .demo-form-grid { grid-template-columns: 1fr; }
+  .demo-grid, .demo-fields, .demo-controls, .demo-code-grid, .demo-dashboard-hero, .demo-dashboard-layout, .demo-dashboard-form__options, .demo-file-grid, .demo-form-grid { grid-template-columns: 1fr; }
   .demo-wide, .demo-form-wide { grid-column: auto; }
   .demo-controls se-range { grid-column: auto; }
 }
@@ -236,3 +235,10 @@ body { margin: 0; color: var(--se-text); background: var(--se-bg); font-family: 
 
 .navigation-backdrop{position:fixed;inset:var(--navigation-top,64px) 0 0;z-index:20;background:color-mix(in srgb,var(--se-bg) 45%,transparent);backdrop-filter:blur(4px)}
 .navigation-backdrop[hidden]{display:none}
+
+.demo-topbar > [data-end] { gap: 8px; }
+.demo-brand-color { width: 36px; flex: none; }
+.demo-brand-color > .se-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.demo-brand-color .se-color-picker__trigger { margin: 0; width: 36px; min-height: 36px; padding: 7px; justify-content: center; }
+.demo-brand-color .se-color-picker__trigger-value, .demo-brand-color .se-color-picker__trigger > se-icon { display: none; }
+@media(max-width:600px) { .demo-topbar > [data-start] se-brand strong { display: none; } }
