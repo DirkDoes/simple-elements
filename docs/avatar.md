@@ -13,7 +13,7 @@ Attributes: `name`, `image`, `initials`, `icon`, `tone`, `size`, `shape`, `click
 - `tone`: brand (default), gray, success, warning, error, info, important.
 - `size`: medium (40px default), small (32px), large (48px). Parent regions may supply a smaller default through `--se-avatar-size`.
 - `shape`: circle (default), square. Square has rounded corners in Flat/Clean and sharp corners in Edge.
-- With renders a link. With `clickable`, renders a button. Otherwise it is a non-interactive image representation. The application handles click events and any profile popup; the avatar never opens one automatically.
+- With `clickable`, renders a button. Otherwise it is a non-interactive image representation. The application handles click events and any profile popup; the avatar never opens one automatically.
 
 Image, identity, and interaction attributes update when changed. Style attributes respond through CSS. An empty image uses the fallback directly.
 

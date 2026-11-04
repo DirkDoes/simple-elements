@@ -1,5 +1,7 @@
 # Simple Elements
 
+Version 0.18.0 adds avatars and media components and contains breaking navigation and theme changes. Read the [v0.18.0 migration guide](migration-0.18.0.md).
+
 Install directly from GitHub:
 
 ```sh

@@ -78,4 +78,6 @@ Compare source with [`se-diff`](./docs/diff.md) (`split` or `unified`), or text 
 
 ## Application layouts
 
+Upgrading from v0.17.0? Read the [v0.18.0 migration guide](docs/migration-0.18.0.md) for navigation tabs, avatar composition, theme removal, and new media components.
+
 Applications own layout using native HTML and CSS. Compose navigation items, groups, sections, branding, panel toggles, and resize handles anywhere. See [layout recipes](docs/page-layout.md) and the [v0.17.0 migration guide](docs/layout-migration.md).
