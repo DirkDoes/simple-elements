@@ -76,3 +76,9 @@
 :root[data-se-theme="edge"] .se-table .se-list__row[guides] > :first-child::before { border-radius: 0; }
 
 :root[data-se-theme="edge"] se-avatar[shape="square"] .se-avatar { border-radius: 0; }
+
+[data-se-theme="edge"] .se-playing-card, [data-se-theme="edge"] .se-playing-card__face { border-radius: 0; }
+
+[data-se-theme="edge"] :is(.se-timeline__base, .se-timeline__progress, se-timeline-range, .se-timeline-marker__dot, .se-timeline-marker__flag, .se-timeline-marker__content, .se-playing-card__sides, .se-playing-card__sides button, .se-playing-card__flip) { border-radius: 0; }
+
+[data-se-theme="edge"] .se-media-player { border-radius: 0; box-shadow: none; }

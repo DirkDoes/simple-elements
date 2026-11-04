@@ -3126,5 +3126,271 @@ class SeResizeHandle extends HTMLElement {
 }
 define('se-resize-handle', SeResizeHandle);
 
+
+class SeTimeline extends HTMLElement {
+  static observedAttributes = ['duration', 'value', 'step', 'label', 'disabled'];
+  connectedCallback() {
+    if (this._track) { this.observe(); this.refresh(); return; }
+    setTimeout(() => {
+      if (!this.isConnected || this._track) return;
+      const children = [...this.childNodes];
+      this.innerHTML = '<div class="se-timeline"><output class="se-timeline__current"></output><div class="se-timeline__track"><div class="se-timeline__base"></div><div class="se-timeline__progress"></div><input type="range" min="0"></div><span class="se-timeline__end"></span></div>';
+      this._track = this.querySelector('.se-timeline__track');
+      this._input = this.querySelector('input');
+      this._track.append(...children);
+      for (const type of ['input', 'change']) this._input.addEventListener(type, event => {
+        event.stopPropagation();
+        this.setAttribute('value', this._input.value);
+        emit(this, type, { value: this.value });
+      });
+      this.addEventListener('pointermove', event => {
+        this.querySelectorAll('se-timeline-marker').forEach(marker => {
+          const rect = marker.getBoundingClientRect();
+          marker.toggleAttribute('data-near', Math.abs(event.clientX - rect.left) < 80);
+        });
+      });
+      this.addEventListener('pointerleave', () => this.querySelectorAll('[data-near]').forEach(marker => marker.removeAttribute('data-near')));
+      this.observe();
+      this.refresh();
+    });
+  }
+  observe() {
+    this._observer ||= new MutationObserver(() => this.refresh());
+    this._observer.observe(this, { childList: true });
+    this._observer.observe(this._track, { childList: true, subtree: true, attributes: true, attributeFilter: ['start', 'end', 'at', 'variant', 'position'] });
+  }
+  disconnectedCallback() { this._observer?.disconnect(); }
+  attributeChangedCallback() { this.refresh(); }
+  get duration() { const n = Number(this.getAttribute('duration') ?? 100); return Number.isFinite(n) ? Math.max(0, n) : 100; }
+  get value() { const n = Number(this.getAttribute('value') ?? 0); return Number.isFinite(n) ? Math.max(0, Math.min(this.duration, n)) : 0; }
+  set value(value) { this.setAttribute('value', value); }
+  format(seconds) {
+    const whole = Math.floor(seconds);
+    return (whole >= 3600 ? Math.floor(whole / 3600) + ':' : '') + String(Math.floor(whole / 60) % 60).padStart(whole >= 3600 ? 2 : 1, '0') + ':' + String(whole % 60).padStart(2, '0');
+  }
+  seek(value) {
+    if (this.hasAttribute('disabled')) return;
+    this.value = value;
+    emit(this, 'input', { value: this.value });
+    emit(this, 'change', { value: this.value });
+  }
+  refresh() {
+    if (!this._input) return;
+    for (const child of [...this.children]) {
+      if (child.matches('se-timeline-range, se-timeline-marker')) this._track.append(child);
+    }
+    const duration = this.duration;
+    this._input.max = duration;
+    const step = Number(this.getAttribute('step') ?? 1);
+    this._input.step = Number.isFinite(step) && step > 0 ? step : 'any';
+    this._input.value = this.value;
+    this._input.disabled = this.hasAttribute('disabled') || !duration;
+    this._input.setAttribute('aria-label', this.getAttribute('label') || 'Playback position');
+    this._input.setAttribute('aria-valuetext', this.format(this.value) + ' of ' + this.format(duration));
+    this.querySelector('.se-timeline__current').textContent = this.format(this.value);
+    this.querySelector('.se-timeline__end').textContent = this.format(duration);
+    this.style.setProperty('--se-timeline-time-width', this.format(duration).length + 'ch');
+    this.style.setProperty('--se-timeline-progress', (duration ? this.value / duration * 100 : 0) + '%');
+    const percent = value => (duration ? Math.max(0, Math.min(duration, Number(value) || 0)) / duration * 100 : 0);
+    for (const child of this._track.children) {
+      if (child.matches('se-timeline-range')) {
+        const start = percent(child.getAttribute('start'));
+        const end = percent(child.getAttribute('end'));
+        child.style.setProperty('--se-timeline-start', start + '%');
+        child.style.setProperty('--se-timeline-width', Math.max(0, end - start) + '%');
+      }
+      if (child.matches('se-timeline-marker')) {
+        child.style.setProperty('--se-timeline-start', percent(child.getAttribute('at')) + '%');
+        child.querySelector('button')?.toggleAttribute('disabled', this.hasAttribute('disabled'));
+        if (this.hasAttribute('disabled')) child.close?.();
+      }
+    }
+  }
+}
+define('se-timeline', SeTimeline);
+
+
+class SeTimelineRange extends HTMLElement {
+  static observedAttributes = ['label', 'start', 'end'];
+  connectedCallback() { this.update(); }
+  attributeChangedCallback() { if (this.isConnected) this.update(); }
+  update() {
+    this.setAttribute('role', 'img');
+    this.setAttribute('aria-label', (this.getAttribute('label') || 'Range') + ': ' + (this.getAttribute('start') || 0) + '–' + (this.getAttribute('end') || 0) + ' seconds');
+    this.setAttribute('data-label', this.getAttribute('label') || 'Range');
+  }
+}
+define('se-timeline-range', SeTimelineRange);
+
+
+class SeTimelineMarker extends HTMLElement {
+  static observedAttributes = ['at', 'label', 'icon'];
+  connectedCallback() {
+    setTimeout(() => {
+      if (!this.isConnected || this._button) return;
+      const content = [...this.childNodes];
+      const id = 'se-marker-' + crypto.randomUUID();
+      this.innerHTML = `<button type="button" class="se-timeline-marker__button" aria-controls="${id}" aria-expanded="false" aria-haspopup="dialog"></button><div class="se-timeline-marker__content" id="${id}" role="dialog" popover="manual"><div class="se-timeline-marker__body"></div></div>`;
+      this._button = this.querySelector('button');
+      this._panel = this.querySelector('[popover]');
+      this._panel.querySelector('.se-timeline-marker__body').append(...content);
+      this.update();
+      this._button.addEventListener('click', () => {
+        this.open();
+        const value = Number(this.getAttribute('at')) || 0;
+        this.closest('se-timeline')?.seek(value);
+        emit(this, 'marker-select', { value });
+      });
+      for (const node of [this._button, this._panel]) {
+        node.addEventListener('pointerenter', () => this.open());
+        node.addEventListener('pointerleave', () => this.scheduleClose());
+        node.addEventListener('focusin', () => { if (!this._closing) this.open(); });
+        node.addEventListener('focusout', () => this.scheduleClose());
+      }
+      this.closest('se-timeline')?.refresh();
+    });
+  }
+  attributeChangedCallback() { if (this._button) this.update(); }
+  update() {
+    const label = this.getAttribute('label') || 'Marker';
+    this._button.setAttribute('aria-label', label + ' at ' + (this.getAttribute('at') || 0) + ' seconds');
+    this._panel.setAttribute('aria-label', label);
+    this._button.innerHTML = `<span class="se-timeline-marker__dot"></span><span class="se-timeline-marker__flag">${this.hasAttribute('icon') ? `<se-icon name="${escapeIcon(this.getAttribute('icon'))}"></se-icon>` : escapeHtml(label)}</span>`;
+  }
+  open() {
+    clearTimeout(this._timer);
+    if (this._popup || !this._panel.textContent.trim() && !this._panel.querySelector('.se-timeline-marker__body').children.length || this._button.disabled) return;
+    this._button.setAttribute('aria-expanded', 'true');
+    this._popup = openPopup(this._button, this._panel, () => this.close(), false, true);
+  }
+  scheduleClose() {
+    clearTimeout(this._timer);
+    this._timer = setTimeout(() => {
+      if (!this.contains(document.activeElement) && !this._button.matches(':hover') && !this._panel.matches(':hover')) this.close();
+    }, 180);
+  }
+  close() { this._closing = true; queueMicrotask(() => { this._closing = false; }); clearTimeout(this._timer); this._popup?.(); this._popup = null; this._button?.setAttribute('aria-expanded', 'false'); }
+  disconnectedCallback() { this.close(); }
+}
+define('se-timeline-marker', SeTimelineMarker);
+
+
+class SePlayingCard extends HTMLElement {
+  static observedAttributes = ['front', 'back', 'face-down', 'selected', 'disabled', 'clickable', 'selectable', 'flip-mode', 'label'];
+  constructor() {
+    super();
+    this._hoverKeydown = event => {
+      if (event.defaultPrevented || event.key.toLowerCase() !== 'f' || event.ctrlKey || event.metaKey || event.altKey || event.repeat || event.isComposing) return;
+      if (event.target.closest?.('input, textarea, select') || event.target.isContentEditable) return;
+      if (this.hasAttribute('disabled') || !['button', 'switch'].includes(this.getAttribute('flip-mode'))) return;
+      event.preventDefault();
+      this.flip(!this.hasAttribute('face-down'));
+    };
+    this.addEventListener('pointerenter', event => {
+      if (event.pointerType !== 'touch') this.ownerDocument.addEventListener('keydown', this._hoverKeydown);
+    });
+    this.addEventListener('pointerleave', () => this.ownerDocument.removeEventListener('keydown', this._hoverKeydown));
+  }
+  disconnectedCallback() { this.ownerDocument.removeEventListener('keydown', this._hoverKeydown); }
+
+  flip(faceDown) {
+    if (this.hasAttribute('disabled') || !['button', 'switch'].includes(this.getAttribute('flip-mode')) || faceDown === this.hasAttribute('face-down')) return;
+    this.toggleAttribute('face-down', faceDown);
+    emit(this, 'flip', { faceDown });
+  }
+  connectedCallback() { this.render(); }
+  attributeChangedCallback() { if (this.isConnected) this.render(); }
+  render() {
+    const flipMode = this.getAttribute('flip-mode') || 'none';
+    const faceDown = this.hasAttribute('face-down');
+    const selectable = this.hasAttribute('selectable');
+    const interactive = selectable || this.hasAttribute('clickable');
+    const disabled = this.hasAttribute('disabled');
+    const source = this.getAttribute(faceDown ? 'back' : 'front');
+    const label = this.getAttribute('label') || '';
+    const name = label || 'Playing card';
+    const accessible = name + (faceDown ? ', back' : ', front');
+    const tag = interactive ? 'button' : 'div';
+    const focused = this.contains(document.activeElement) ? document.activeElement.dataset.cardAction : null;
+    this.innerHTML = `<div class="se-playing-card"><${tag} class="se-playing-card__face" data-card-action="activate" aria-label="${escapeHtml(accessible)}" ${interactive ? `type="button" ${selectable ? `aria-pressed="${this.hasAttribute('selected')}"` : ''} ${disabled ? 'disabled' : ''}` : 'role="img"'}>${source ? `<img src="${escapeHtml(source)}" alt="" draggable="false">` : `<span class="se-playing-card__placeholder">${faceDown ? 'Back' : 'Front'}</span>`}</${tag}>${flipMode === 'button' ? `<button type="button" class="se-playing-card__flip se-playing-card__flip--${flipMode}" data-card-action="flip" aria-label="Show ${faceDown ? 'front' : 'back'} of ${escapeHtml(name)}" ${disabled ? 'disabled' : ''}><se-icon name="rotate-ccw"></se-icon></button>` : ''}</div>${label ? `<div class="se-playing-card__label">${escapeHtml(label)}</div>` : ''}${flipMode === 'switch' ? `<div class="se-playing-card__sides" role="group" aria-label="Side of ${escapeHtml(name)}">${['front', 'back'].map(side => `<button type="button" data-card-action="${side}" aria-pressed="${faceDown === (side === 'back')}" ${disabled ? 'disabled' : ''}>${side === 'front' ? 'Front' : 'Back'}</button>`).join('')}</div>` : ''}`;
+    const image = this.querySelector('img');
+    image?.addEventListener('error', () => {
+      const fallback = document.createElement('span');
+      fallback.className = 'se-playing-card__placeholder';
+      fallback.textContent = 'Image unavailable';
+      image.replaceWith(fallback);
+    }, { once: true });
+    if (selectable) this.querySelector('[data-card-action="activate"]').addEventListener('click', () => {
+      if (this.hasAttribute('disabled')) return;
+      this.toggleAttribute('selected');
+      emit(this, 'select', { selected: this.hasAttribute('selected') });
+    });
+    this.querySelectorAll('.se-playing-card__sides button, .se-playing-card__flip').forEach(button => button.addEventListener('click', event => {
+      event.stopPropagation();
+      const nextFaceDown = button.dataset.cardAction === 'flip' ? !this.hasAttribute('face-down') : button.dataset.cardAction === 'back';
+      this.flip(nextFaceDown);
+    }));
+    if (focused) this.querySelector(`[data-card-action="${focused}"]`)?.focus({ preventScroll: true });
+  }
+}
+define('se-playing-card', SePlayingCard);
+
+
+class SeMediaPlayer extends HTMLElement {
+  static observedAttributes = ['video', 'label', 'subtitle'];
+  connectedCallback() { this.render(); }
+  attributeChangedCallback() { if (this.isConnected) this.render(); }
+  videoId() {
+    const value = (this.getAttribute('video') || '').trim();
+    const valid = id => /^[a-zA-Z0-9_-]{11}$/.test(id || '') ? id : '';
+    if (valid(value)) return value;
+    try {
+      const url = new URL(value);
+      if (!['https:', 'http:'].includes(url.protocol)) return '';
+      if (url.hostname === 'youtu.be') return valid(url.pathname.slice(1));
+      if (!['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'].includes(url.hostname)) return '';
+      if (url.pathname === '/watch') return valid(url.searchParams.get('v'));
+      const match = url.pathname.match(/^\/(?:embed|shorts|live)\/([^/]+)\/?$/);
+      return valid(match?.[1]);
+    } catch { return ''; }
+  }
+  render() {
+    if (!this._viewport) {
+      this.innerHTML = '<figure class="se-media-player"><div class="se-media-player__viewport"></div><figcaption class="se-media-player__caption"><div class="se-media-player__label"></div><div class="se-media-player__subtitle"></div></figcaption></figure>';
+      this._viewport = this.querySelector('.se-media-player__viewport');
+    }
+    const id = this.videoId();
+    const label = this.getAttribute('label') || '';
+    const subtitle = this.getAttribute('subtitle') || '';
+    if (this._videoId !== id) {
+      this._videoId = id;
+      if (id) {
+        const frame = document.createElement('iframe');
+        frame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?playsinline=1';
+        frame.loading = 'lazy';
+        frame.allow = 'accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen';
+        frame.allowFullscreen = true;
+        frame.referrerPolicy = 'strict-origin-when-cross-origin';
+        this._viewport.replaceChildren(frame);
+      } else {
+        const placeholder = document.createElement('span');
+        placeholder.className = 'se-media-player__placeholder';
+        this._viewport.replaceChildren(placeholder);
+      }
+    }
+    const frame = this._viewport.querySelector('iframe');
+    if (frame) frame.title = label || 'YouTube video player';
+    else this._viewport.firstElementChild.textContent = this.getAttribute('video') ? 'Enter a valid YouTube URL or video ID.' : 'Add a YouTube video';
+    const caption = this.querySelector('figcaption');
+    caption.hidden = !label && !subtitle;
+    for (const [part, value] of [['label', label], ['subtitle', subtitle]]) {
+      const element = this.querySelector('.se-media-player__' + part);
+      element.textContent = value;
+      element.hidden = !value;
+    }
+  }
+}
+define('se-media-player', SeMediaPlayer);
+
  globalThis.SimpleElements = { setBrandTheme, registerIcons };
 })();

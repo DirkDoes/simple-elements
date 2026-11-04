@@ -68,3 +68,9 @@ import './components/diff-value.js';
 
 import './components/panel-toggle.js';
 import './components/resize-handle.js';
+
+import './components/timeline.js';
+import './components/timeline-range.js';
+import './components/timeline-marker.js';
+import './components/playing-card.js';
+import './components/media-player.js';

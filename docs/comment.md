@@ -16,3 +16,5 @@ Regions: `avatar` for an optional top-aligned identity element, and `reactions` 
 Migration: move `initials`, `image`, and `tone` to a child `se-avatar data-se-region="avatar"`. The comment no longer generates a profile component or a picture automatically.
 
 When multiple direct children use the `avatar` region, only the last one is displayed. Earlier avatar regions are not rendered as body content.
+
+The showcase **Regions & children** table distinguishes named avatar/reactions regions (`data-se-region`) from nested comments (ordinary child elements). Both can be appended repeatedly with Add.

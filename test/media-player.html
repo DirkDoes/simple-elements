@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/edge.css"><script defer src="../dist/simple-elements.js"></script><style>body{font-family:system-ui;background:var(--se-bg);color:var(--se-text);padding:24px}#fixture{max-width:720px;margin:auto}</style></head><body><pre id="result">Running</pre><div id="fixture"></div><script type="module">
+const assert=(ok,text)=>{if(!ok)throw Error(text);checks++};let checks=0;
+try {
+await customElements.whenDefined('se-media-player');const player=document.createElement('se-media-player');
+for(const source of ['M7lc1UVf-VE','https://www.youtube.com/watch?v=M7lc1UVf-VE','https://youtu.be/M7lc1UVf-VE?t=12','https://www.youtube.com/embed/M7lc1UVf-VE','https://youtube.com/shorts/M7lc1UVf-VE','https://youtube.com/live/M7lc1UVf-VE']){player.setAttribute('video',source);assert(player.videoId()==='M7lc1UVf-VE','Supported URL '+source);}
+for(const source of ['','bad','javascript:alert(1)','https://youtube.com.evil.test/watch?v=M7lc1UVf-VE','https://example.com/embed/M7lc1UVf-VE','https://youtube.com/watch?v=<script>']){player.setAttribute('video',source);assert(player.videoId()==='','Reject '+source);}
+player.removeAttribute('video');document.querySelector('#fixture').append(player);assert(!player.querySelector('iframe')&&player.querySelector('figcaption').hidden,'Empty placeholder');
+player.setAttribute('video','M7lc1UVf-VE');const frame=player.querySelector('iframe');assert(frame.src==='https://www.youtube-nocookie.com/embed/M7lc1UVf-VE?playsinline=1','Canonical embed');assert(frame.allowFullscreen&&frame.referrerPolicy==='strict-origin-when-cross-origin','Embed permissions');
+player.setAttribute('label','YouTube player demo');player.setAttribute('subtitle','A small frame around the embedded player.');assert(player.querySelector('iframe')===frame,'Caption does not reload iframe');assert(frame.title==='YouTube player demo','Accessible name');assert(!player.querySelector('se-timeline,video'),'No timeline or native video');
+player.removeAttribute('label');assert(!player.querySelector('figcaption').hidden&&player.querySelector('.se-media-player__label').hidden,'Subtitle alone');player.setAttribute('label','YouTube player demo');
+for(const theme of ['flat','clean','edge'])for(const mode of ['light','dark']){
+ document.documentElement.dataset.seTheme=theme;document.documentElement.dataset.theme=mode;
+ assert(getComputedStyle(player.querySelector('figure')).borderRadius===(theme==='edge'?'0px':'8px'),'Theme radius '+theme+' '+mode);
+ player.style.width='280px';assert(frame.getBoundingClientRect().height>=200,'Small player minimum');assert(player.scrollWidth<=280,'No narrow overflow');player.style.width='';
+}
+player.setAttribute('video','invalid');assert(!player.querySelector('iframe'),'Invalid source removes embed');player.setAttribute('video','M7lc1UVf-VE');
+document.documentElement.dataset.seTheme='flat';document.documentElement.dataset.theme='light';
+document.querySelector('#result').textContent='Passed '+checks+' media-player checks.';
+}catch(error){document.querySelector('#result').textContent='FAIL: '+error.stack;}
+</script></body></html>

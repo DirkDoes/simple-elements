@@ -1,0 +1,64 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/edge.css"><script defer src="../dist/simple-elements.js"></script><style>body{margin:0;padding:24px;background:var(--se-bg);color:var(--se-text);font-family:system-ui}section{padding:24px;margin-block:20px;background:var(--se-surface);border:1px solid var(--se-border);border-radius:8px}#fixtures{max-width:900px;margin:auto} .cards{display:flex;gap:24px;flex-wrap:wrap}</style></head><body><pre id="result">Running</pre><div id="fixtures"></div><script type="module">
+import { timelinesPattern } from '../examples/patterns/timelines.js';
+const root=document.querySelector('#fixtures');
+const tick=()=>new Promise(resolve=>setTimeout(resolve,50));
+let checks=0;const assert=(ok,label)=>{if(!ok)throw Error(label);checks++};
+try {
+await customElements.whenDefined('se-timeline');
+root.innerHTML='<se-timeline duration="180" value="30"><se-timeline-range start="20" end="90" label="Loaded"></se-timeline-range><se-timeline-marker at="60" label="Note"><p>Custom content</p><button>Action</button></se-timeline-marker></se-timeline>';
+await tick();
+const timeline=root.querySelector('se-timeline'), input=timeline.querySelector('input'), range=timeline.querySelector('se-timeline-range'), marker=timeline.querySelector('se-timeline-marker');
+timeline.dispatchEvent(new PointerEvent('pointermove',{clientX:marker.getBoundingClientRect().left+70}));assert(marker.hasAttribute('data-near')&&!marker.querySelector('[popover]').matches(':popover-open'),'Proximity expands without opening');
+assert(input.value==='30','Initial value');
+for (const duration of [842,7200,360000]) { timeline.setAttribute('duration',duration);timeline.value=599;const before=timeline.querySelector('.se-timeline__track').getBoundingClientRect();timeline.value=600;const after=timeline.querySelector('.se-timeline__track').getBoundingClientRect();assert(before.x===after.x&&before.width===after.width,'Stable timestamp columns '+duration); }
+timeline.setAttribute('duration','180');timeline.value=30; assert(input.getAttribute('aria-valuetext')==='0:30 of 3:00','Readable time');
+assert(range.style.getPropertyValue('--se-timeline-width').startsWith('38.88'),'Range positioning');
+let inputs=0,changes=0;timeline.addEventListener('input',e=>{assert(e.target===timeline&&Number.isFinite(e.detail.value),'Input event contract');inputs++});timeline.addEventListener('change',()=>changes++);
+input.value='45';input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));
+assert(timeline.value===45&&inputs===1&&changes===1,'Native input updates state without duplicate events');
+timeline.value=200;assert(timeline.value===180&&input.value==='180','Clamp overflow');timeline.value=-20;assert(timeline.value===0,'Clamp negative');timeline.value='bad';assert(timeline.value===0,'Invalid value');
+timeline.setAttribute('duration','0');assert(input.disabled&&!timeline.style.cssText.includes('NaN'),'Zero duration');timeline.setAttribute('duration','180');
+marker.querySelector('button').click();assert(timeline.value===60&&inputs===2&&changes===2,'Marker seeks');assert(marker.querySelector('[popover]').matches(':popover-open'),'Marker opens custom content');
+marker.querySelector('[popover] button').focus();marker.querySelector('[popover] button').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(!marker.querySelector('[popover]').matches(':popover-open'),'Escape from preview restores focus without reopening');await tick();marker.open();
+timeline.setAttribute('disabled','');assert(input.disabled&&marker.querySelector('button').disabled,'Disabled controls');assert(!marker.querySelector('[popover]').matches(':popover-open'),'Disabled closes popup');timeline.removeAttribute('disabled');
+range.setAttribute('end','10');await tick();assert(range.style.getPropertyValue('--se-timeline-width')==='0%','Reversed range');
+marker.setAttribute('at','90');await tick();assert(marker.style.getPropertyValue('--se-timeline-start')==='50%','Live marker position');
+const extra=document.createElement('se-timeline-marker');extra.setAttribute('at','135');timeline.append(extra);await tick();assert(extra.style.getPropertyValue('--se-timeline-start')==='75%','Dynamic marker');
+timeline.remove();root.append(timeline);await tick();timeline.setAttribute('duration','360');assert(extra.style.getPropertyValue('--se-timeline-start')==='37.5%','Reconnect');
+root.innerHTML='<se-playing-card front="../examples/assets/cards/medusa-front.png" back="../examples/assets/cards/medusa-back.png" label="Second Shot" selectable flip-mode="switch"></se-playing-card>';
+const card=root.firstElementChild;let selections=0,flips=0,faceClicks=0;
+card.addEventListener('select',()=>selections++);card.addEventListener('flip',()=>flips++);card.addEventListener('click',()=>faceClicks++);
+assert(!card.hasAttribute('title')&&card.querySelector('.se-playing-card__label').textContent==='Second Shot','Label is caption without native tooltip');
+assert(card.querySelector('.se-playing-card__face').getAttribute('aria-label')==='Second Shot, front','Card name');
+card.querySelector('.se-playing-card__face').click();assert(card.hasAttribute('selected')&&selections===1,'Click selects');
+card.querySelector('[data-card-action=back]').focus();card.querySelector('[data-card-action=back]').click();
+assert(card.hasAttribute('face-down')&&flips===1&&faceClicks===1,'Flip is separate from face activation');card.querySelector('[data-card-action=back]').click();assert(flips===1,'Active side is a no-op');assert(card.querySelector('[data-card-action=back]').getAttribute('aria-pressed')==='true','Active side is exposed');
+assert(card.querySelector('img').getAttribute('src').endsWith('medusa-back.png'),'Back artwork');assert(document.activeElement===card.querySelector('[data-card-action=back]'),'Flip keeps focus');
+assert(!card.querySelector('button button'),'No nested buttons');card.setAttribute('disabled','');card.querySelector('[data-card-action=back]').click();assert(flips===1&&card.querySelector('.se-playing-card__face').disabled,'Disabled actions');
+card.removeAttribute('selectable');card.removeAttribute('flip-mode');assert(!card.querySelector('button'),'Static card');
+card.removeAttribute('disabled');
+for(const mode of ['none','button','switch','edge','invalid']) {
+ card.setAttribute('flip-mode',mode);
+ assert(card.querySelectorAll('button').length===({button:1,switch:2}[mode]||0),'Control count '+mode);
+ if(mode==='button') {const before=card.hasAttribute('face-down');card.querySelector('button').focus();card.querySelector('button').click();assert(card.hasAttribute('face-down')!==before,'Toggle '+mode);assert(document.activeElement===card.querySelector('button'),'Focus '+mode);card.setAttribute('disabled','');card.querySelector('button').click();assert(card.hasAttribute('face-down')!==before,'Disabled '+mode);card.removeAttribute('disabled');}
+}
+for (const mode of ['button','switch','none']) {
+ card.setAttribute('selectable','');card.setAttribute('flip-mode',mode);
+ const press=(options={})=>document.dispatchEvent(new KeyboardEvent('keydown',{key:'f',bubbles:true,cancelable:true,...options}));
+ card.querySelector('.se-playing-card__face').focus();const before=card.hasAttribute('face-down'), count=flips, selection=card.hasAttribute('selected');
+ card.querySelector('.se-playing-card__face').dispatchEvent(new KeyboardEvent('keydown',{key:'f',bubbles:true}));assert(card.hasAttribute('face-down')===before,'Focus alone does not flip');
+ card.dispatchEvent(new PointerEvent('pointerenter',{pointerType:'mouse'}));
+ press();assert(card.hasAttribute('face-down')===(mode==='none'?before:!before),'F shortcut '+mode);assert(flips===count+(mode==='none'?0:1),'F event '+mode);assert(card.hasAttribute('selected')===selection,'F does not select');assert(document.activeElement===card.querySelector('.se-playing-card__face'),'F preserves focus');
+ const state=card.hasAttribute('face-down');for(const options of [{ctrlKey:true},{metaKey:true},{altKey:true},{repeat:true},{isComposing:true}])press(options);assert(card.hasAttribute('face-down')===state,'Ignore modified/repeated F');
+ card.setAttribute('disabled','');press();assert(card.hasAttribute('face-down')===state,'Disabled F');card.removeAttribute('disabled');card.dispatchEvent(new PointerEvent('pointerleave'));press();assert(card.hasAttribute('face-down')===state,'Leaving stops shortcut');
+}
+card.removeAttribute('selectable');
+card.removeAttribute('flip-mode');
+card.style.setProperty('--se-playing-card-ratio','1');await tick();assert(Math.abs(card.querySelector('.se-playing-card__face').getBoundingClientRect().width-card.querySelector('.se-playing-card__face').getBoundingClientRect().height)<1,'Custom ratio');
+root.innerHTML=timelinesPattern.examples.map(ex=>'<section><h2>'+ex.title+'</h2>'+ex.markup.replaceAll('./assets/','../examples/assets/')+'</section>').join('')+'<section class="cards"><se-playing-card front="../examples/assets/cards/medusa-front.png" back="../examples/assets/cards/medusa-back.png" label="Second Shot" selectable flip-mode="switch"></se-playing-card><se-playing-card front="../examples/assets/cards/medusa-front.png" back="../examples/assets/cards/medusa-back.png" face-down flip-mode="switch"></se-playing-card></section>';
+await tick();
+for(const theme of ['flat','clean','edge'])for(const mode of ['light','dark']){document.documentElement.dataset.seTheme=theme;document.documentElement.dataset.theme=mode;await tick();assert(getComputedStyle(root.querySelector('.se-timeline-marker__dot')).borderRadius===(theme==='edge'?'0px':'50%'),'Theme marker shape '+theme);assert(root.scrollWidth<=root.clientWidth,'No overflow '+theme+' '+mode);assert(getComputedStyle(root.querySelector('se-timeline-range[tone=warning]')).backgroundColor!==getComputedStyle(root.querySelector('se-timeline-range[tone=brand]')).backgroundColor,'Distinct warning tone '+theme+' '+mode);assert(root.querySelector('.se-timeline__track').getBoundingClientRect().width>100,'Usable track '+theme+' '+mode);}
+document.documentElement.dataset.seTheme='flat';document.documentElement.dataset.theme='light';
+document.querySelector('#result').textContent='Passed '+checks+' timeline and playing-card checks.';
+}catch(error){document.querySelector('#result').textContent='FAIL: '+error.stack;}
+</script></body></html>

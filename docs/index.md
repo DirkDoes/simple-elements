@@ -125,3 +125,14 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 Browse the page-like component sections in [`examples/index.html`](../examples/index.html).
 
 The showcase’s **Patterns → Icon gallery** lists the 147 default icon names with tooltips and click-to-copy. The [icon guide](icon.md#default-and-full-lucide-sets) explains optional full-pack loading and individual registration. [Avatars](avatar.md) provide shared identity pictures for profiles, comments, and messages.
+
+## Media
+
+- [Media Player](media-player.md)
+
+- [Playing Card](playing-card.md)
+
+- [Timeline](timeline.md)
+- [Timeline Range](timeline-range.md)
+- [Timeline Marker](timeline-marker.md)
+- [Timeline examples](timelines.md)
