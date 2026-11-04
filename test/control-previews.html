@@ -1,0 +1,95 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Control preview regression checks</title></head>
+<body><pre id="result">Running…</pre><iframe id="showcase" title="Showcase" style="width:1200px;height:800px" src="../examples/?test=control-previews#dashboard"></iframe>
+<script type="module">
+const result = document.querySelector('#result');
+const frame = document.querySelector('#showcase');
+let count = 0;
+const assert = (condition, message) => { if (!condition) throw Error(message); count++; };
+const wait = async condition => {
+  const deadline = performance.now() + 15000;
+  while (!condition()) {
+    if (performance.now() > deadline) throw Error('Timed out waiting for preview');
+    await new Promise(resolve => setTimeout(resolve, 30));
+  }
+};
+const settle = async () => { await new Promise(resolve => setTimeout(resolve, 250)); };
+try {
+  await wait(() => frame.contentDocument.querySelector('[data-demo="resize-handle"] se-resize-handle'));
+  const doc = frame.contentDocument;
+  const page = tag => doc.querySelector(`[data-demo="${tag}"]`);
+  const preview = tag => page(tag).querySelector('[data-component-preview]');
+  const show = async tag => {
+    doc.querySelector(`#example-sidebar a[href="#${tag}"]`).click();
+    await wait(() => !page(tag).hidden); await settle();
+  };
+  const override = async (tag, name, value) => {
+    const control = page(tag).querySelector(`[data-component-attribute="${name}"]`);
+    control.value = value;
+    control.dispatchEvent(new frame.contentWindow.Event(control.matches('se-select') ? 'change' : 'input', { bubbles: true }));
+    await settle();
+  };
+  await show('panel-toggle');
+  let toggle = preview('panel-toggle').querySelector('se-panel-toggle');
+  let pane = doc.getElementById('panel-toggle-preview');
+  assert(!toggle.querySelector('button').disabled, 'Toggle works on first visit without overrides');
+  toggle.querySelector('button').click();
+  assert(pane.hidden, 'Default toggle hides its pane');
+  toggle.querySelector('button').click();
+  assert(!pane.hidden, 'Default toggle restores its pane');
+  await override('panel-toggle', 'for', 'renamed-toggle-pane');
+  toggle = preview('panel-toggle').querySelector('se-panel-toggle');
+  assert(toggle.target === doc.getElementById('renamed-toggle-pane'), 'Target override updates the example pane');
+  await override('panel-toggle', 'mode', 'minimize');
+  toggle = preview('panel-toggle').querySelector('se-panel-toggle');
+  pane = toggle.target;
+  const expanded = pane.getBoundingClientRect().width;
+  toggle.querySelector('button').click(); await settle();
+  assert(!pane.hidden && pane.getBoundingClientRect().width < expanded, 'Minimize visibly changes preview width');
+  toggle.querySelector('button').click(); await settle();
+  assert(pane.getBoundingClientRect().width === expanded, 'Minimize restores expanded width');
+
+  await show('resize-handle');
+  let handle = preview('resize-handle').querySelector('se-resize-handle');
+  pane = handle.target;
+  assert(pane && handle.getAttribute('aria-disabled') === 'false', 'Resize is enabled on first visit');
+  assert(handle.getAttribute('min') === '100' && handle.getAttribute('max') === '400', 'Initial bounds match the documented example');
+  const width = pane.getBoundingClientRect().width;
+  handle.dispatchEvent(new frame.contentWindow.KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })); await settle();
+  assert(pane.getBoundingClientRect().width === width + 10, 'Horizontal resizing changes actual pane width');
+  assert(Math.abs(pane.getBoundingClientRect().right - handle.getBoundingClientRect().left) < 1, 'Divider meets the pane edge without a gap');
+  await override('resize-handle', 'for', 'renamed-resize-pane');
+  handle = preview('resize-handle').querySelector('se-resize-handle');
+  assert(handle.target === doc.getElementById('renamed-resize-pane'), 'Resize target override stays connected');
+  await override('resize-handle', 'axis', 'y');
+  await override('resize-handle', 'edge', 'start');
+  handle = preview('resize-handle').querySelector('se-resize-handle'); pane = handle.target;
+  assert(handle.nextElementSibling === pane, 'Start-edge handle is placed before its target');
+  const height = pane.getBoundingClientRect().height;
+  handle.dispatchEvent(new frame.contentWindow.KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })); await settle();
+  assert(pane.getBoundingClientRect().height === height + 10, 'Vertical start-edge resizing uses the correct direction');
+  await override('resize-handle', 'snap', 'minimize');
+  handle = preview('resize-handle').querySelector('se-resize-handle'); pane = handle.target;
+  handle.dispatchEvent(new frame.contentWindow.KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await settle();
+  assert(pane.getBoundingClientRect().height === 64, 'Vertical minimized state has visible example styling');
+
+  for (const tag of ['panel-toggle', 'resize-handle']) {
+    const markup = page(tag).querySelector('[data-component-code]').value;
+    assert(markup.includes('<style>') && markup.includes('control-example'), `${tag}: copied code includes the layout and styling`);
+    assert(!markup.includes('data-ready=') && !markup.includes('class="se-nav-item"'), `${tag}: copied code contains author markup only`);
+    const copy = document.createElement('iframe');
+    copy.title = `Copied ${tag} example`;
+    copy.srcdoc = `<html><head><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"><\/script></head><body>${markup}</body></html>`;
+    document.body.append(copy);
+    await wait(() => copy.contentDocument.querySelector(`se-${tag}`)?.target);
+    await settle();
+    const copied = copy.contentDocument.querySelector(`se-${tag}`);
+    assert(tag === 'panel-toggle' ? !copied.querySelector('button').disabled : copied.getAttribute('aria-disabled') === 'false', `${tag}: copied example has an enabled control`);
+    copy.remove();
+  }
+  document.documentElement.dataset.test = 'passed';
+  result.textContent = `PASS: ${count} control preview checks`;
+} catch (error) {
+  document.documentElement.dataset.test = 'failed'; result.textContent = error.stack;
+}
+</script></body></html>

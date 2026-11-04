@@ -185,6 +185,8 @@ assert.match(rangeSource, /<span style="left:\$\{index \/ \(steps - 1\) \* 100\}
 assert.match(exampleHtml, /<se-code-editor data-template-code language="html" readonly wrap hidden>/);
 assert.doesNotMatch(exampleHtml, /data-template-wrap-toggle/);
 const colorPickerSource = await readFile('src/components/color-picker.js', 'utf8');
+assert.match(colorPickerSource, /this\._popup = openPopup\(trigger, popup/, 'color picker must share the top-layer popup helper');
+assert.match(colorPickerSource, /disconnectedCallback\(\) \{ this\.close\(\)/, 'removing a color picker must release its popup listeners');
 assert.match(colorPickerSource, /export const colorPalette/);
 const baseColorPalette = colorPickerSource.match(/export const colorPalette = \[(.*?)\];/)?.[1] || '';
 assert.equal((baseColorPalette.match(/#[\da-f]{6}/gi) || []).length, 16, 'color picker palette should contain 16 colors');
@@ -275,7 +277,7 @@ assert.match(wysiwygSource, /items\.join\(''\)/, 'WYSIWYG must group adjacent Ma
 const exampleSource = await readFile('examples/example.js', 'utf8');
 assert.match(exampleSource, /attributes\.forEach\(\(\{ name \}\) =>/);
 const chatMessageSource = await readFile('src/components/chat-message.js', 'utf8');
-assert.match(chatMessageSource, /const avatar = initials \?/);
+assert.match(chatMessageSource, /getAttribute\('data-se-region'\) === 'avatar'/);
 assert.match(await readFile('src/components/chat-context.js', 'utf8'), /se-chat-context--\$\{variant\}/);
 assert.match(await readFile('src/components/thought-train.js', 'utf8'), /se-thought-train--\$\{variant\}/);
 assert.match(highlightCode('const ready = true;', 'javascript'), /se-token--keyword/);
@@ -303,7 +305,7 @@ console.log(`Checked ${components.length} components, ${componentCatalog.length}
 
 const flatCss = await readFile('src/themes/flat.css', 'utf8');
 assert.equal(await readFile('dist/themes/flat.css', 'utf8'), flatCss, 'the optional Flat stylesheet must be built');
-assert.match(compiledCss, /:root:not\(\[data-se-theme="clean"\], \[data-se-theme="studio"\], \[data-se-theme="edge"\]\)/, 'Flat must apply when no theme is selected');
+assert.match(compiledCss, /:root:not\(\[data-se-theme="clean"\], \[data-se-theme="edge"\]\)/, 'Flat must apply when no theme is selected');
 assert.doesNotMatch(await readFile('dist/themes/clean.css', 'utf8'), /data-se-theme/, 'Clean-only apps must not bundle Flat');
 assert.doesNotMatch(await readFile('dist/simple-elements.js', 'utf8'), /se-flat|themes\/flat/, 'theme CSS must not be embedded in component JavaScript');
 assert.equal(JSON.parse(await readFile('package.json', 'utf8')).exports['./themes/flat.css'], './dist/themes/flat.css');
@@ -317,11 +319,6 @@ for (const page of ['dashboard', 'input']) assert.ok(exampleHtml.includes((await
 assert.doesNotMatch(exampleHtml, /<!-- page:/, 'all page includes must be resolved at build time');
 assert.match(exampleHtml, /class="demo-theme-family"[^>]*"label":"Flat"[^>]*"label":"Clean"/);
 
-const studioCss = await readFile('src/themes/studio.css', 'utf8');
-assert.equal(await readFile('dist/themes/studio.css', 'utf8'), studioCss);
-assert.doesNotMatch(compiledCss, /:root\[data-se-theme="studio"\]/, 'Studio must remain an optional stylesheet');
-assert.equal(JSON.parse(await readFile('package.json', 'utf8')).exports['./themes/studio.css'], './dist/themes/studio.css');
-assert.match(exampleHtml, /"label":"Studio"/);
 
 assert.equal(await readFile('dist/themes/edge.css', 'utf8'), await readFile('src/themes/edge.css', 'utf8'));
 assert.doesNotMatch(compiledCss, /:root\[data-se-theme="edge"\]/, 'Edge must remain optional');

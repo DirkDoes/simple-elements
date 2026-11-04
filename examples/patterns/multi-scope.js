@@ -1,7 +1,7 @@
-import { navigationOverlay } from '../navigation-overlay.js?v=20261031layout4';
-import { layoutStyles } from './layouts.js?v=20261031layout4';
+import { navigationOverlay } from '../navigation-overlay.js?v=20261104avatar1';
+import { layoutStyles } from './layouts.js?v=20261104avatar1';
 function scopeDemo(variant, navigationOverlay) {
-  customElements.whenDefined('se-nav-tabs').then(() => {
+  customElements.whenDefined('se-nav-tab').then(() => {
     const root = document.querySelector('#scope-demo');
     const names = { org: 'Acme', web: 'Website', api: 'Platform API' };
     let activeRoute = '';
@@ -48,7 +48,7 @@ function scopeDemo(variant, navigationOverlay) {
           <div class="mock-body">
             ${variant === 'sidebar' || secondary ? `<nav aria-label="Project" class="mock-sidebar"><section>${current}</section></nav>` : ''}
             ${variant !== 'top' ? `<nav aria-label="Mobile navigation" id="scope-navigation" class="mock-mobile" data-mobile-navigation hidden><div style="margin-bottom:24px"><se-brand icon="package" label="Studio"></se-brand></div><section>${variant === 'rail' ? organization + (repo ? current : '') : current}</section></nav>` : ''}
-            <main class="mock-main">${variant !== 'sidebar' ? '<se-breadcrumbs></se-breadcrumbs>' : ''}<div class="mock-page-heading"><se-title level="page">${page === 'Overview' ? names[scope] : page}</se-title></div><se-nav-tabs variant="${variant === 'top' ? 'pill' : 'underline'}">${variant === 'rail' ? '<span data-actions><se-button variant="secondary" icon="plus" text="' + (repo ? 'New issue' : 'New repository') + '"></se-button></span>' : ''}</se-nav-tabs><div class="mock-content"></div></main>
+            <main class="mock-main">${variant !== 'sidebar' ? '<se-breadcrumbs></se-breadcrumbs>' : ''}<div class="mock-page-heading"><se-title level="page">${page === 'Overview' ? names[scope] : page}</se-title></div><div class="mock-tab-bar"><nav class="mock-tab-links" aria-label="Section navigation">${pages.map(p => `<se-nav-tab label="${p}" href="${path(p)}" variant="${variant === 'top' ? 'pill' : 'underline'}"${p === page ? ' active' : ''}></se-nav-tab>`).join('')}</nav>${variant === 'rail' ? '<div class="mock-tab-actions"><se-button variant="secondary" icon="plus" text="' + (repo ? 'New issue' : 'New repository') + '"></se-button></div>' : ''}</div><div class="mock-content"></div></main>
           </div>
         </div>
       </div>`;
@@ -56,8 +56,6 @@ function scopeDemo(variant, navigationOverlay) {
       const breadcrumbs = root.querySelector('se-breadcrumbs');
       breadcrumbs.options = scopes;
       breadcrumbs.hidden = variant !== 'sidebar' && scopes.length < 2;
-      const tabs = root.querySelector('se-nav-tabs');
-      tabs.options = pages.map(p => ({ id: p, label: p, href: path(p) })); tabs.value = page;
       const content = root.querySelector('.mock-content');
       content.innerHTML = !repo && ['Overview', 'Repositories'].includes(page)
         ? '<div class="mock-projects"><se-project-card title="Website" icon="code" href="#web/overview"></se-project-card><se-project-card title="Platform API" icon="database" href="#api/overview"></se-project-card></div>'
@@ -82,6 +80,9 @@ const scopeStyles = layoutStyles + `
 .mock-main{flex:1;min-width:0;padding:24px;overflow:auto}
 .mock-page-heading{margin:6px 0 16px}.mock-content{margin-top:24px}
 .mock-projects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.mock-tab-bar{display:flex;align-items:flex-end;gap:20px;border-bottom:1px solid var(--se-border)}
+.mock-tab-links{display:flex;gap:16px;min-width:0;overflow-x:auto;flex:1}
+.mock-tab-actions{flex:none;padding:5px 0}
 .mock-menu,.mock-mobile{display:none}
 @media(max-width:767px){.mock-primary,.mock-sidebar{display:none}.mock-menu{display:inline-block}.mock-mobile:not([hidden]){display:block}.mock-projects{grid-template-columns:1fr}.mock-main{padding:20px}.mock-header{padding:10px 12px}}
 

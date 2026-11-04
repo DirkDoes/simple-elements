@@ -1,6 +1,6 @@
 # Progress ring
 
-A compact percentage meter for confidence, completion, or other 0–100 scores. Only the outline fills; it is not a pie chart. Flat, Clean, and Studio use a circle; Edge uses a square outline. The colored stroke starts at the top and fills clockwise.
+A compact percentage meter for confidence, completion, or other 0–100 scores. Only the outline fills; it is not a pie chart. Flat and Clean use a circle; Edge uses a square outline. The colored stroke starts at the top and fills clockwise.
 
 ```html
 <se-progress-ring value="82" label="Confidence" show-value></se-progress-ring>

@@ -12,6 +12,7 @@ import './components/input.js';
 import './components/checkbox.js';
 import './components/radio.js';
 import './components/range.js';
+import './components/avatar.js';
 import './components/chat-message.js';
 import './components/chat-context.js';
 import './components/thought-train.js';
@@ -51,7 +52,7 @@ import './components/time-picker.js';
 import './components/datetime-picker.js';
 
 import './components/breadcrumbs.js';
-import './components/nav-tabs.js';
+import './components/nav-tab.js';
 import './components/pagination.js';
 
 import './components/reactions.js';

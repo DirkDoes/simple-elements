@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../dist/styles.css?v=20261104regions1"><link rel="stylesheet" href="../dist/themes/edge.css?v=20261104regions1"><script defer src="../dist/simple-elements.js?v=20261104regions1"></script></head><body><pre id="result">Running</pre><div id="fixtures"></div>
+<script type="module">
+const assert=(ok,message)=>{if(!ok)throw Error(message)};
+const tick=()=>new Promise(r=>setTimeout(r,40));
+try{
+await customElements.whenDefined('se-avatar');
+const root=document.querySelector('#fixtures');
+const avatar=document.createElement('se-avatar');avatar.setAttribute('name','Sarah Jenkins');root.append(avatar);assert(avatar.textContent==='SJ','Automatic initials');avatar.setAttribute('initials','Alias');assert(avatar.textContent==='Alias','Explicit alias');avatar.removeAttribute('initials');avatar.removeAttribute('name');assert(avatar.querySelector('se-icon[name="user"]'),'Generic fallback');avatar.setAttribute('icon','zap');assert(avatar.querySelector('se-icon[name="zap"]'),'Custom fallback');
+avatar.setAttribute('name','Sarah Jenkins');avatar.setAttribute('image','data:image/png;base64,broken');await tick();assert(!avatar.querySelector('img')&&avatar.textContent==='SJ','Broken image fallback');avatar.removeAttribute('image');avatar.setAttribute('clickable','');assert(avatar.querySelector('button'),'Native button');
+let clicks=0;avatar.addEventListener('click',()=>clicks++);
+for(const tag of ['profile','comment','chat-message']){
+ const parent=document.createElement('se-'+tag);parent.setAttribute('name','Sarah');parent.setAttribute('author','Sarah');parent.setAttribute('title','Sarah');parent.setAttribute('options','[{"label":"Settings"}]');
+ avatar.setAttribute('data-se-region','avatar');parent.append(avatar);if(tag!=='profile'){const body=document.createElement('p');body.textContent='A longer message with more than one line.';parent.append(body);}root.append(parent);await tick();
+ assert(parent.querySelector('se-avatar')===avatar,'Region preserves identity: '+tag);const before=clicks;avatar.querySelector('.se-avatar').click();assert(clicks===before+1,'Click listener preserved: '+tag);assert(!parent.querySelector('button button,button a,a button'),'No nested controls: '+tag);
+ if(tag==='profile'){assert(parent.querySelector('.se-profile-menu--open'),'Avatar click activates whole profile');parent.setAttribute('compact','');assert(getComputedStyle(parent.querySelector('.se-profile__text')).display==='none','Compact hides identity text');assert(parent.querySelector('button.se-profile').getBoundingClientRect().width>0,'Compact menu remains accessible');}
+ else {const target=parent.querySelector(tag==='comment'?'header':'.se-chat-message__bubble');assert(Math.abs(target.getBoundingClientRect().top-avatar.getBoundingClientRect().top)<1,'Top-aligned avatar: '+tag);}
+ parent.remove();
+ const custom=document.createElement('span');custom.setAttribute('data-se-region','avatar');custom.textContent='Custom';const host=document.createElement('se-'+tag);host.append(custom);root.append(host);await tick();assert(host.querySelector('[data-se-region="avatar"]')===custom,'Custom region: '+tag);host.remove();
+ const empty=document.createElement('se-'+tag);root.append(empty);await tick();assert(!empty.querySelector('se-avatar,[data-se-region="avatar"]'),'No implicit avatar: '+tag);empty.remove();
+}
+for(const tag of ['profile','comment','chat-message','menu','popover','tooltip']){
+ const host=document.createElement('se-'+tag),region=['profile','comment','chat-message'].includes(tag)?'avatar':'trigger';
+ host.innerHTML=`<span data-se-region="${region}">First</span><span data-se-region="${region}">Last</span>`;
+ const last=host.lastElementChild;root.append(host);await tick();assert(host.querySelectorAll(`[data-se-region="${region}"]`).length===1&&host.querySelector(`[data-se-region="${region}"]`)===last,'Last singleton wins: '+tag);assert(!host.textContent.includes('First'),'Superseded region omitted: '+tag);host.remove();
+}
+root.append(avatar);avatar.removeAttribute('data-se-region');
+for(const theme of ['flat','clean','edge'])for(const mode of ['light','dark']){
+ document.documentElement.dataset.seTheme=theme;document.documentElement.dataset.theme=mode;
+ for(const shape of ['circle','square']){avatar.setAttribute('shape',shape);const radius=getComputedStyle(avatar.firstElementChild).borderRadius;assert(shape==='square'&&theme!=='edge'?parseFloat(radius)>0&&radius!=='50%':radius===(shape==='circle'?'50%':'0px'),'Shape '+theme+mode+shape);}
+}
+document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: avatar fallbacks, native interactions, all three regions, preserved listeners, top alignment, compact menus, and shapes in three themes/two modes';
+}catch(e){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=e.stack;}
+</script></body></html>

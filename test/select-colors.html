@@ -1,4 +1,4 @@
-<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css"><script defer src="../dist/simple-elements.js"></script></head><body>
+<!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/edge.css"><script defer src="../dist/simple-elements.js"></script></head><body>
 <se-select id="single" value="alpha" options='[{"id":"alpha","label":"Alpha","icon":"star"}]'></se-select>
 <se-select id="multiple" multiple value="alpha,beta" options='[{"id":"alpha","label":"Alpha","icon":"star"},{"id":"beta","label":"Beta","icon":"lock","locked":true}]'></se-select>
 <pre id="result"></pre>
@@ -10,7 +10,7 @@ try {
   const probe=document.createElement('span');document.body.append(probe);
   const color=(value)=>{probe.style.color=`var(${value})`;return getComputedStyle(probe).color};
   const background=(value)=>{probe.style.backgroundColor=`var(${value})`;return getComputedStyle(probe).backgroundColor};
-  for(const theme of ['flat','clean','studio','edge'])for(const mode of ['light','dark']){
+  for(const theme of ['flat','clean','edge'])for(const mode of ['light','dark']){
     document.documentElement.dataset.seTheme=theme;document.documentElement.dataset.theme=mode;
     const brand=multiple.querySelector('.se-select__tag:not(:has(se-icon[name="lock"]))');
     const locked=multiple.querySelector('.se-select__tag:has(se-icon[name="lock"])');

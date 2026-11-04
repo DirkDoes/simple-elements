@@ -1,5 +1,5 @@
 <!doctype html><html data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body><pre id="result">Running</pre><script type="module">
-import { commentsPattern } from '../examples/patterns/comments.js';
+import { commentsPattern } from '../examples/patterns/comments.js?v=20261104regions1';
 const assert=(ok,message)=>{if(!ok)throw Error(message)};
 const wait=async fn=>{for(let i=0;i<100;i++){if(fn())return;await new Promise(r=>setTimeout(r,30))}throw Error('Timed out')};
 try {
@@ -9,6 +9,8 @@ for(const example of commentsPattern.examples){
  await wait(()=>frame.contentDocument.querySelector('.se-comment__reply'));
 
  const doc=frame.contentDocument;const comment=doc.querySelector('se-comment');const reactions=comment.querySelector('se-reactions');let events=0;reactions.addEventListener('reactionchange',()=>events++);
+ if(example.title==='Blog discussion'){assert(doc.querySelector('se-profile se-avatar'),'Blog author avatar');assert(!doc.querySelector('se-comment se-avatar'),'Blog comments omit avatars');}else assert([...doc.querySelectorAll('se-comment')].every(c=>c.querySelector(':scope > article > .se-comment__avatar > se-avatar')),'Document participants have avatars');
+ const replyRegion=comment.replies,firstReply=replyRegion.querySelector('se-comment');assert(Math.abs(replyRegion.getBoundingClientRect().top-firstReply.getBoundingClientRect().top)<1,'Guide starts at first reply');assert(getComputedStyle(comment.firstElementChild,'::before').content==='none','No guide through parent body');const column=comment.querySelector(':scope > article > .se-comment__avatar');if(column){const avatar=column.firstElementChild;assert(getComputedStyle(column,'::after').content!=='none','Avatar guide exists');assert(column.getBoundingClientRect().bottom>=replyRegion.getBoundingClientRect().bottom-1,'Avatar guide reaches replies');assert(avatar.getBoundingClientRect().bottom+4<replyRegion.getBoundingClientRect().top,'Avatar guide starts above replies');assert(getComputedStyle(replyRegion,'::before').content==='none','No duplicate reply guide');}else assert(getComputedStyle(replyRegion,'::before').top==='0px','Avatar-free guide starts at replies');
  assert(comment.replies.querySelector('se-comment'),'Initial reply is nested');assert(comment.querySelector('.se-comment__body').textContent.trim(),'Initial body is inside comment');
  assert(reactions.querySelector('summary se-icon[name="plus"]'),'Add reaction uses an icon');
  const choices=[...reactions.querySelectorAll('.se-reactions__picker button')].map(button=>button.textContent);
@@ -19,7 +21,7 @@ for(const example of commentsPattern.examples){
  comment.querySelector('.se-comment__reply').click();assert(replies===1,'Reply emits one event');assert(!comment.querySelector('form'),'No hidden reply editor behavior');
 
 }
-const toned=document.createElement('se-comment');toned.setAttribute('author','Alex');toned.setAttribute('tone','success');document.body.append(toned);await wait(()=>toned.querySelector('.se-profile--success'));assert(toned.querySelector('se-profile').getAttribute('tone')==='success','Comment forwards avatar tone');
+const toned=document.createElement('se-comment');toned.setAttribute('author','Alex');toned.innerHTML='<se-avatar data-se-region="avatar" name="Alex" tone="success"></se-avatar>';document.body.append(toned);await wait(()=>toned.querySelector('article > .se-comment__avatar > se-avatar'));assert(toned.querySelector('se-avatar').getAttribute('tone')==='success','Avatar owns its tone');
 assert(!commentsPattern.isolated,'Comments use a normal pattern page');
 assert(!commentsPattern.initialize,'No hidden preview initialization');
 document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: markup-only previews, nested comments, reply events, real emoji and reaction toggles';

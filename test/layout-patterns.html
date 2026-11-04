@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><title>Layout recipe checks</title><body><pre id="result">Running…</pre><div id="fixtures"></div>
 <script type="module">
-import { patternCatalog } from '../examples/catalog.js?v=20261031layout4';
+import { patternCatalog } from '../examples/catalog.js?v=20261104navtab1';
 let count=0;
 const assert=(condition,message)=>{if(!condition)throw Error(message);count++;};
 const wait=async fn=>{const end=Date.now()+10000;while(!fn()){if(Date.now()>end)throw Error('Timed out');await new Promise(r=>setTimeout(r,20));}};
@@ -11,9 +11,9 @@ const examples=patternCatalog.find(p=>p.tag==='page-layout').examples;
 assert(examples.length===7,'Seven recipes consolidated under Page Layout');
 for(const example of examples){
  const frame=document.createElement('iframe');frame.style.cssText='width:1024px;height:576px;border:0';
- frame.srcdoc=`<!doctype html><html><head><link rel="stylesheet" href="${new URL('../dist/styles.css?v=20261031layout4',location.href)}"><script defer src="${new URL('../dist/simple-elements.js?v=20261031layout4',location.href)}"><\/script><style>html,body{height:100%;margin:0}</style></head><body>${example.markup}</body></html>`;
+ frame.srcdoc=`<!doctype html><html><head><link rel="stylesheet" href="${new URL('../dist/styles.css?v=20261104navtab1',location.href)}"><script defer src="${new URL('../dist/simple-elements.js?v=20261104navtab1',location.href)}"><\/script><style>html,body{height:100%;margin:0}</style></head><body>${example.markup}</body></html>`;
  document.querySelector('#fixtures').append(frame);
- await wait(()=>frame.contentDocument?.querySelector('se-nav-item button,se-nav-item a,se-nav-tabs a'));
+ await wait(()=>frame.contentDocument?.querySelector('se-nav-item button,se-nav-item a,se-nav-tab a'));
  const doc=frame.contentDocument;
  await settle(doc);
  assert(!doc.querySelector('se-sidebar,se-topbar'),`${example.title}: native containers`);

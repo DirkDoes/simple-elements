@@ -1,5 +1,5 @@
 <!doctype html><html data-se-theme="flat" data-theme="light"><meta charset="utf-8">
-<link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css">
+<link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/edge.css">
 <script defer src="../dist/simple-elements.js"></script>
 <body><pre id="result">Running…</pre><div id="fixture" style="width:700px"></div>
 <script type="module">
@@ -45,7 +45,7 @@ try {
   pagination.pages = 12; pagination.page = 4;
   pagination.setAttribute('label', '<Results> & pages');
   assert(pagination.querySelector('nav').getAttribute('aria-label') === '<Results> & pages', 'Escaped accessible label');
-  for (const theme of ['flat', 'clean', 'studio', 'edge']) for (const mode of ['light', 'dark']) {
+  for (const theme of ['flat', 'clean', 'edge']) for (const mode of ['light', 'dark']) {
     document.documentElement.dataset.seTheme = theme; document.documentElement.dataset.theme = mode;
     assert(getComputedStyle(pagination.querySelector('[aria-current]')).backgroundColor !== getComputedStyle(pagination.querySelector('[data-page="1"]')).backgroundColor, 'Selected page is distinct');
   }

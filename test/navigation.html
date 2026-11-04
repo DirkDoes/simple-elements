@@ -1,20 +1,24 @@
-<!doctype html><html data-theme="dark" data-se-theme="flat"><head><meta charset="utf-8"><link rel="stylesheet" href="../dist/styles.css?v=20261031layout4"><script defer src="../dist/simple-elements.js?v=20261031layout4"></script></head><body><pre id="result">Running… Serve this repository over HTTP.</pre><div id="fixtures"></div>
+<!doctype html><html data-theme="dark" data-se-theme="flat"><head><meta charset="utf-8"><link rel="stylesheet" href="../dist/styles.css?v=20261104navtab4"><script defer src="../dist/simple-elements.js?v=20261104navtab4"></script></head><body><pre id="result">Running… Serve this repository over HTTP.</pre><div id="fixtures"></div>
 <script type="module">
-import { multiScopeExamples } from '../examples/patterns/multi-scope.js?v=20261031layout4';
+import { multiScopeExamples } from '../examples/patterns/multi-scope.js?v=20261104navtab4';
 const assert = (ok, message) => { if (!ok) throw Error(message); };
 const wait = async fn => { const end = Date.now()+10000; while(!fn()){if(Date.now()>end)throw Error('Timed out waiting for preview');await new Promise(r=>setTimeout(r,30));} };
 try {
-await customElements.whenDefined('se-nav-tabs');
+await customElements.whenDefined('se-nav-tab');
 const fixtures=document.querySelector('#fixtures');
 const crumbs=document.createElement('se-breadcrumbs');crumbs.options=[{label:'<Acme>',href:'#org'},{label:'Website',href:'#web'}];fixtures.append(crumbs);assert(crumbs.querySelectorAll('a').length===1,'Current breadcrumb is not a link');assert(crumbs.textContent.includes('<Acme>'),'Escaped breadcrumb label');
-const tabs=document.createElement('se-nav-tabs');tabs.options=[{id:'a',label:'Overview',href:'#a'},{id:'b',label:'Disabled',disabled:true}];tabs.value='a';fixtures.append(tabs);await wait(()=>tabs.querySelector('a[aria-current="page"]'));assert(tabs.querySelector('a[aria-current="page"]'),'Active route');assert(!tabs.querySelector('a[aria-disabled]'),'Disabled route not interactive');
+const tabs=document.createElement('nav');tabs.innerHTML='<se-nav-tab label="Overview" href="#a" active></se-nav-tab><se-nav-tab label="Disabled" href="#b" disabled></se-nav-tab>';fixtures.append(tabs);assert(tabs.querySelector('a[aria-current="page"]'),'Active route');assert(tabs.querySelector('button:disabled')&&!tabs.querySelector('a[href="#b"]'),'Disabled route not interactive');
+const activeTab=tabs.querySelector('se-nav-tab'), link=activeTab.querySelector('a');link.focus();activeTab.removeAttribute('active');assert(!link.hasAttribute('aria-current')&&document.activeElement===link,'Active changes retain focus and nodes');activeTab.setAttribute('active','');assert(link.getAttribute('aria-current')==='page','Active state synchronizes');
+const standalone=document.createElement('se-nav-tab');standalone.setAttribute('label','<Safe>');standalone.setAttribute('badge','<New>');standalone.innerHTML='<span data-se-region="end">Extra</span>';const end=standalone.firstElementChild;fixtures.append(standalone);assert(standalone.querySelector('button')&&standalone.textContent.includes('<Safe>'),'Standalone button and escaped label');assert(standalone.querySelector('.se-nav-tab__badge').textContent==='<New>','Badge accepts and escapes arbitrary text');assert(standalone.querySelector('[data-se-region="end"]')===end,'End region preserves nodes');
+for(const variant of ['underline','pill','plain']){standalone.setAttribute('variant',variant);assert(getComputedStyle(standalone.querySelector('button')).borderBottomWidth===(variant==='underline'?'2px':'0px'),'Variant '+variant);}
+standalone.setAttribute('variant','pill');standalone.setAttribute('active','');const badge=standalone.querySelector('.se-nav-tab__badge');assert(getComputedStyle(badge).backgroundColor==='rgba(0, 0, 0, 0)','Default active pill badge blends in');standalone.setAttribute('badge-tone','brand');assert(getComputedStyle(badge).backgroundColor!=='rgba(0, 0, 0, 0)','Explicit tone remains on active pill');standalone.querySelector('button').focus();standalone.removeAttribute('badge-tone');assert(getComputedStyle(badge).backgroundColor==='rgba(0, 0, 0, 0)'&&document.activeElement===standalone.querySelector('button'),'Clearing tone keeps focus');standalone.setAttribute('badge','Seen');assert(badge.textContent==='Seen','Badge text updates');standalone.removeAttribute('badge');assert(!standalone.querySelector('.se-nav-tab__badge'),'Badge can be removed');
 const sidebar=document.createElement('nav');sidebar.innerHTML='<section><se-nav-item label="Dashboard" icon="dashboard"></se-nav-item><se-nav-group label="Projects" icon="folder"></se-nav-group></section>';fixtures.append(sidebar);sidebar.dataset.seMinimized='true';await new Promise(requestAnimationFrame);
 for(const control of sidebar.querySelectorAll('.se-nav-item,.se-nav-group__head > button')){
  control.focus();const tip=control.closest('se-nav-item,se-nav-group').querySelector('[role="tooltip"]');assert(tip.matches(':popover-open'),'Collapsed label tooltip opens on focus');assert(tip.textContent===control.getAttribute('aria-label'),'Tooltip matches label');control.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert(!tip.matches(':popover-open'),'Escape dismisses tooltip');control.blur();
 }
 sidebar.dataset.seMinimized='false';await new Promise(requestAnimationFrame);sidebar.querySelector('.se-nav-item').focus();assert(!sidebar.querySelector(':popover-open'),'Expanded sidebar has no tooltip');
 const frames=[];
-for(const example of multiScopeExamples){const frame=document.createElement('iframe');frame.style.cssText='width:1024px;height:768px';frame.srcdoc=`<html data-theme="dark" data-se-theme="flat"><head><link rel="stylesheet" href="${new URL('../dist/styles.css?v=20261031layout4',location.href)}"><script defer src="${new URL('../dist/simple-elements.js?v=20261031layout4',location.href)}"><\/script></head><body style="margin:0;height:768px">${example.markup}</body></html>`;fixtures.append(frame);frames.push(frame);await wait(()=>frame.contentDocument.querySelector('.mock-content'));}
+for(const example of multiScopeExamples){const frame=document.createElement('iframe');frame.style.cssText='width:1024px;height:768px';frame.srcdoc=`<html data-theme="dark" data-se-theme="flat"><head><link rel="stylesheet" href="${new URL('../dist/styles.css?v=20261104navtab4',location.href)}"><script defer src="${new URL('../dist/simple-elements.js?v=20261104navtab4',location.href)}"><\/script></head><body style="margin:0;height:768px">${example.markup}</body></html>`;fixtures.append(frame);frames.push(frame);await wait(()=>frame.contentDocument.querySelector('.mock-content'));}
 for(const frame of frames){
  const doc=frame.contentDocument;
  assert(!doc.querySelector('dialog'),'No modal navigation');
@@ -25,7 +29,7 @@ for(const frame of frames){
  doc.querySelector('.mock-projects a[href="#api/overview"]').click();
  assert(doc.querySelector('.mock-page-heading').textContent.includes('Platform API'),'Project card changes scope');
  if(frame===frames[0]){assert(doc.querySelector('.mock-header se-breadcrumbs[variant="header"]'),'Contextual breadcrumbs in header');assert(doc.querySelector('se-brand[compact]'),'Contextual brand compact');assert(!doc.querySelector('main se-breadcrumbs'),'No duplicate breadcrumbs');}
- doc.querySelector('se-nav-tabs a[href="#api/settings"]').click();
+ doc.querySelector('se-nav-tab a[href="#api/settings"]').click();
  assert(doc.querySelector('.mock-page-heading').textContent.includes('Settings'),'Page navigation works');
  assert(!doc.querySelector('se-breadcrumbs').hidden,'Two scopes show breadcrumbs');
  assert(!doc.querySelector('se-breadcrumbs').textContent.includes('Settings'),'Breadcrumbs omit navigation page');

@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>Preview fidelity</title><pre id="result">Running</pre><iframe id="app" src="../examples/?test=fidelity#profile" style="width:1200px;height:800px"></iframe>
+<script type="module">
+const wait=async fn=>{for(let i=0;i<300;i++){if(fn())return;await new Promise(r=>setTimeout(r,30));}throw Error('Timed out')};
+const assert=(ok,msg)=>{if(!ok)throw Error(msg)};
+const normalize=(doc,html)=>{const t=doc.createElement('template');t.innerHTML=html;const walk=n=>{for(const c of [...n.childNodes]){if(c.nodeType===3){c.textContent=c.textContent.trim();if(!c.textContent)c.remove();}else walk(c)}};walk(t.content);return t.innerHTML};
+try{
+const frame=document.querySelector('#app');await wait(()=>frame.contentDocument?.querySelector('section[data-demo="profile"] [data-component-code]')?.value);const doc=frame.contentDocument;let count=0;
+for(const section of doc.querySelectorAll('section[data-demo]')){
+ const content=section.querySelector('[data-component-attribute="content"]'),code=section.querySelector('[data-component-code]');if(!content||!code)continue;
+ const t=doc.createElement('template');t.innerHTML=code.value;const component=t.content.querySelector('se-'+section.dataset.demo);if(!component)continue;
+ assert(normalize(doc,component.innerHTML)===normalize(doc,content.value),'Content matches code: '+section.dataset.demo);count++;
+}
+const profile=doc.querySelector('section[data-demo="profile"]'),editor=profile.querySelector('[data-component-attribute="content"]');assert(editor.value.includes('data-se-region="avatar"'),'Profile avatar is prefilled');editor.value='';editor.dispatchEvent(new frame.contentWindow.Event('input',{bubbles:true}));await new Promise(r=>setTimeout(r,50));assert(!profile.querySelector('[data-component-preview] se-avatar'),'Clearing content removes avatar');assert(!profile.querySelector('[data-component-code]').value.includes('<se-avatar'),'Cleared code matches preview');
+for(const tag of ['nav-tab','avatar','profile','panel-toggle','resize-handle']){const section=doc.querySelector('section[data-demo="'+tag+'"]');const code=section.querySelector('[data-component-code]');const t=doc.createElement('template');t.innerHTML=code.value;const component=t.content.querySelector('se-'+tag);for(const control of section.querySelectorAll('[data-component-attribute]')){const name=control.dataset.componentAttribute;if(name==='content')continue;if(control.matches('se-checkbox'))assert(component.hasAttribute(name)===control.checked,tag+' '+name);else if(control.value)assert(component.getAttribute(name)===control.value,tag+' '+name);}}
+const comment=doc.querySelector('section[data-demo="comment"]'),bodyEditor=comment.querySelector('[data-component-attribute="content"]');
+for(const region of ['avatar','reactions']){const index=[...comment.querySelectorAll('.demo-component-regions se-list-row')].find(row=>row.querySelector('strong')?.textContent===region).querySelector('se-button');index.querySelector('button').click();index.querySelector('button').click();const t=doc.createElement('template');t.innerHTML=bodyEditor.value;assert([...t.content.children].filter(child=>child.getAttribute('data-se-region')===region).length===2,'Add appends duplicate '+region);}
+document.documentElement.dataset.test='passed';document.querySelector('#result').textContent='PASS: '+count+' content/code pairs, clearing profile content, and explicit attributes for changed components';
+}catch(e){document.documentElement.dataset.test='failed';document.querySelector('#result').textContent=e.stack;}
+</script>

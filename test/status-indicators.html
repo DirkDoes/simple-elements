@@ -1,5 +1,5 @@
 <!doctype html><html data-theme="light" data-se-theme="flat"><meta charset="utf-8">
-<link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/studio.css"><link rel="stylesheet" href="../dist/themes/edge.css">
+<link rel="stylesheet" href="../dist/styles.css"><link rel="stylesheet" href="../dist/themes/edge.css">
 <script defer src="../dist/simple-elements.js"></script>
 <body><pre id="result">Running…</pre><div id="fixtures"></div>
 <script type="module">
@@ -30,7 +30,7 @@ try {
   for (const [input, expected] of [[-5,0],[150,100],['bad',0],['Infinity',0],[42.75,42.75]]) { ring.value=input; assert(ring.value===expected && Number(meter.getAttribute('aria-valuenow'))===expected, 'Value normalization'); }
   ring.setAttribute('label','<Confidence> & completion'); assert(tooltip.textContent.startsWith('<Confidence> & completion:'), 'Safe live label');
   const color = () => getComputedStyle(ring.querySelector('.se-progress-ring__value')).stroke;
-  for (const theme of ['flat','clean','studio','edge']) for (const mode of ['light','dark']) {
+  for (const theme of ['flat','clean','edge']) for (const mode of ['light','dark']) {
     document.documentElement.dataset.seTheme=theme; document.documentElement.dataset.theme=mode;
     ring.value=50; meter.style.transition='none';
     assert((getComputedStyle(ring.querySelector('.se-progress-ring__square')).display!=='none')===(theme==='edge'), 'Square only in Edge');

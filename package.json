@@ -18,7 +18,6 @@
     "./components/*": "./src/components/*.js",
     "./themes/flat.css": "./dist/themes/flat.css",
     "./themes/clean.css": "./dist/themes/clean.css",
-    "./themes/studio.css": "./dist/themes/studio.css",
     "./themes/edge.css": "./dist/themes/edge.css",
     "./icons/all": "./src/all-icons.js",
     "./icons/all.js": "./dist/icons-all.js"

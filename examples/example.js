@@ -1,9 +1,74 @@
-import { navigationOverlay } from './navigation-overlay.js?v=20261031layout4';
+import { navigationOverlay } from './navigation-overlay.js?v=20261104guides3';
 import { setBrandTheme } from '../src/theme.js';
-import { componentCatalog, patternCatalog } from './catalog.js?v=20261031layout4';
+import { componentCatalog, patternCatalog } from './catalog.js?v=20261104guides3';
 
 const titleFor = (tag) => tag.split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
 const componentPages = componentCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]);
+const globalSearch = document.querySelector('.demo-global-search se-input');
+const searchArea = globalSearch.closest('.demo-global-search');
+const searchResults = document.createElement('div');
+searchResults.className = 'demo-search-results';
+searchResults.hidden = true;
+searchArea.append(searchResults);
+const closeSearch = () => { searchResults.hidden = true; };
+const renderSearch = () => {
+  const query = globalSearch.value.trim().toLowerCase();
+  const matches = query ? componentPages.filter(([, title]) => title.toLowerCase().includes(query)) : [];
+  searchResults.replaceChildren();
+  searchResults.hidden = !query;
+  if (!query) return;
+  const summary = document.createElement('div');
+  summary.className = 'demo-search-summary';
+  summary.setAttribute('role', 'status');
+  summary.textContent = matches.length ? `Components · ${matches.length} results` : 'No components found';
+  searchResults.append(summary);
+  const links = document.createElement('nav');
+  links.setAttribute('aria-label', 'Component search results');
+  for (const [id, title, icon] of matches) {
+    const link = document.createElement('a');
+    link.href = `#${id}`;
+    const glyph = document.createElement('se-icon');
+    glyph.setAttribute('name', icon);
+    glyph.setAttribute('aria-hidden', 'true');
+    link.append(glyph, document.createTextNode(title));
+    links.append(link);
+  }
+  searchResults.append(links);
+};
+globalSearch.addEventListener('input', renderSearch);
+globalSearch.addEventListener('focusin', renderSearch);
+searchArea.addEventListener('keydown', event => {
+  if (event.key === 'Escape') {
+    globalSearch.querySelector('input').focus();
+    closeSearch();
+    event.preventDefault();
+    return;
+  }
+  if (searchResults.hidden) return;
+  const links = [...searchResults.querySelectorAll('a')];
+  const index = links.indexOf(document.activeElement);
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    event.preventDefault();
+    const next = event.key === 'ArrowDown' ? index + 1 : index < 0 ? links.length - 1 : index - 1;
+    if (next < 0) globalSearch.querySelector('input').focus();
+    else links[Math.min(next, links.length - 1)]?.focus();
+  } else if (event.key === 'Enter' && index < 0 && links.length) {
+    event.preventDefault();
+    links[0].click();
+  }
+});
+searchResults.addEventListener('click', event => {
+  if (!event.target.closest('a')) return;
+  globalSearch.value = '';
+  globalSearch.querySelector('input').focus();
+  closeSearch();
+});
+document.addEventListener('pointerdown', event => {
+  if (!searchArea.contains(event.target)) closeSearch();
+});
+searchArea.addEventListener('focusout', event => {
+  if (!searchArea.contains(event.relatedTarget)) closeSearch();
+});
 const patternPages = [...patternCatalog.map(({ tag, icon }) => [tag, titleFor(tag), icon]), ['icons', 'Icon gallery', 'blocks']];
 const pages = [['dashboard', 'Dashboard', 'dashboard'], ...componentPages, ...patternPages];
 const requestedPage = location.hash.slice(1) || 'dashboard';
@@ -16,10 +81,10 @@ fetch('https://api.github.com/repos/DirkDoes/simple-elements/tags?per_page=1')
   .catch(() => {});
 const sidebarItems = (items) => items.map(([id, label, icon]) => `<se-nav-item label="${label}" icon="${icon}" href="#${id}"${id === initialPage ? ' active' : ''}></se-nav-item>`).join('');
 const groups = [
-  ['Navigation', 'panel-left-open', ['breadcrumbs', 'nav-tabs', 'pagination', 'profile', 'brand', 'panel-toggle', 'resize-handle', 'nav-item', 'nav-section', 'nav-group']],
+  ['Navigation', 'panel-left-open', ['breadcrumbs', 'nav-tab', 'pagination', 'brand', 'panel-toggle', 'resize-handle', 'nav-item', 'nav-section', 'nav-group']],
   ['Form elements', 'text-input', ['checkbox', 'code-editor', 'color-picker', 'date-picker', 'datetime-picker', 'file-upload', 'input', 'phone-input', 'radio', 'range', 'select', 'time-picker', 'wysiwyg']],
   ['Overlays', 'panel-right', ['drawer', 'menu', 'popover', 'modal', 'toast', 'tooltip']],
-  ['Chat', 'message-square', ['comment', 'reactions', 'chat-context', 'chat-message', 'thought-train']],
+  ['Chat', 'message-square', ['avatar', 'profile', 'comment', 'reactions', 'chat-context', 'chat-message', 'thought-train']],
   ['Composing', 'list', ['card', 'collection', 'empty-state', 'empty-illustration', 'file-card', 'folder-card', 'list-header', 'list-row', 'project-card', 'workspace-card', 'tree-item', 'diff-value']],
   ['Styling', 'badge', ['spinner', 'progress-ring', 'badge', 'blockquote', 'button', 'split-button', 'segmented-control', 'code', 'diff', 'icon', 'markdown', 'text', 'theme-switch', 'title']],
 ];
@@ -46,12 +111,14 @@ const formatHtml = (source) => {
   };
   return [...template.content.childNodes].filter((node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim()).map((node) => formatNode(node)).join('\n');
 };
-const controlMarkup = (attribute) => {
-  if (attribute.control === 'range') return `<se-range data-component-attribute="${attribute.name}" label="Value" min="0" max="100" value="82" decimals="0" suffix="%"></se-range>`;
-  if (attribute.control === 'boolean') return `<se-checkbox variant="switch" data-component-attribute="${attribute.name}" label="Enabled"></se-checkbox>`;
-  if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}"${attribute.name === 'layout-mode' ? ` value="${attribute.defaultValue}"` : ''} clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value), ...(['icon', 'name'].includes(attribute.name) ? { icon: value } : {}) }))))}"></se-select>`;
-  if (attribute.control === 'code') return `<se-code-editor data-component-attribute="${attribute.name}" language="${attribute.name === 'options' ? 'json' : 'html'}" wrap></se-code-editor>`;
-  return `<se-input data-component-attribute="${attribute.name}" placeholder="No override"></se-input>`;
+const controlMarkup = (attribute, source) => {
+  const initial = source?.getAttribute(attribute.name);
+  const valueAttribute = initial !== null && initial !== undefined ? ` value="${escapeAttribute(initial)}"` : '';
+  if (attribute.control === 'range') return `<se-range data-component-attribute="${attribute.name}" label="Value" min="0" max="100" ${valueAttribute || ' value="82"'} decimals="0" suffix="%"></se-range>`;
+  if (attribute.control === 'boolean') return `<se-checkbox variant="switch" data-component-attribute="${attribute.name}" label="Enabled"${initial !== null && initial !== undefined ? ' checked' : ''}></se-checkbox>`;
+  if (attribute.control === 'select') return `<se-select data-component-attribute="${attribute.name}"${valueAttribute || (attribute.name === 'layout-mode' ? ` value="${attribute.defaultValue}"` : '')} clearable placeholder="No override" options="${escapeAttribute(JSON.stringify(attribute.options.map((value) => ({ id: value, label: titleFor(value), ...(['icon', 'name'].includes(attribute.name) ? { icon: value } : {}) }))))}"></se-select>`;
+  if (attribute.control === 'code') return `<se-code-editor data-component-attribute="${attribute.name}" language="${attribute.name === 'options' ? 'json' : 'html'}"${valueAttribute} wrap></se-code-editor>`;
+  return `<se-input data-component-attribute="${attribute.name}" placeholder="No override"${valueAttribute}></se-input>`;
 };
 const defaultMarkup = (attribute) => {
   if (attribute.defaultValue === '') return '<span></span>';
@@ -70,7 +137,7 @@ const renderComponentPage = (component) => {
   const section = document.createElement('section');
   section.dataset.demo = tag;
   section.hidden = true;
-  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-segmented-control aria-label="Preview view" value="component" options='[{"id":"component","label":"Component"},{"id":"code","label":"Code"}]' data-component-view></se-segmented-control></div><div data-component-preview${previewSurface ? ` data-preview-surface="${escapeAttribute(previewSurface)}"` : ''}></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${contextTableMarkup(contexts)}${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute)}</se-list-row>`).join('')}</se-collection>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}${component.regions?.length ? `<div class="demo-component-regions"><se-title level="sidebar">Regions</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 5rem"><se-list-header><span>Region</span><span>Description</span><span></span></se-list-header>${component.regions.map((region, index) => `<se-list-row><strong>${region.name}</strong><span>${region.description}</span><se-button variant="secondary" text="Add" data-add-region="${index}"></se-button></se-list-row>`).join('')}</se-collection></div>` : ''}</se-card></div>`;
+  section.innerHTML = `<se-title level="section">${titleFor(tag)}</se-title><se-text muted>${description}</se-text><div class="demo-stack"><se-card class="demo-component-preview" data-component="${tag}"><div class="demo-template-heading"><se-title level="sidebar">Preview</se-title><se-segmented-control aria-label="Preview view" value="component" options='[{"id":"component","label":"Component"},{"id":"code","label":"Code"}]' data-component-view></se-segmented-control></div><div data-component-preview${previewSurface ? ` data-preview-surface="${escapeAttribute(previewSurface)}"` : ''}></div><se-code-editor data-component-code language="html" readonly wrap hidden></se-code-editor></se-card><se-card class="demo-stack demo-component-attributes">${contextTableMarkup(contexts)}${tableAttributes.length ? `<se-title level="sidebar">Attributes</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 10rem minmax(15rem, 1.4fr)"><se-list-header><span>Attribute</span><span>Description</span><span>Default</span><span>Override</span></se-list-header>${tableAttributes.map((attribute) => `<se-list-row><strong data-description="${escapeAttribute(attribute.description)}">${attribute.name}</strong><span>${attribute.description}</span>${defaultMarkup(attribute)}${controlMarkup(attribute, sourceTemplate.content.firstElementChild)}</se-list-row>`).join('')}</se-collection>` : ''}${contentAttribute ? `<div class="demo-component-content"><se-title level="sidebar">Content</se-title><se-code-editor data-component-attribute="${contentAttribute.name}" language="html" value="${escapeAttribute(formatHtml(contentAttribute.defaultValue))}" wrap></se-code-editor></div>` : ''}${component.regions?.length ? `<div class="demo-component-regions"><se-title level="sidebar">Regions</se-title><se-collection type="table" class="demo-template-table" columns="9rem minmax(15rem, 2fr) 5rem"><se-list-header><span>Region</span><span>Description</span><span></span></se-list-header>${component.regions.map((region, index) => `<se-list-row><strong>${region.name}</strong><span>${region.description}</span><se-button variant="secondary" text="Add" data-add-region="${index}"></se-button></se-list-row>`).join('')}</se-collection></div>` : ''}</se-card></div>`;
   document.querySelector('.demo-content').append(section);
   const preview = section.querySelector('[data-component-preview]');
   const code = section.querySelector('[data-component-code]');
@@ -79,7 +146,7 @@ const renderComponentPage = (component) => {
     sourceTemplate.innerHTML = markup;
     const source = sourceTemplate.content.firstElementChild;
     attributes.forEach(({ name }) => {
-      if (!['pagination', 'progress-ring'].includes(tag) && (tag !== 'segmented-control' || name !== 'options') && (tag !== 'nav-tabs' || !['value', 'options'].includes(name))) source.removeAttribute(name);
+      source.removeAttribute(name);
     });
     const clone = source.cloneNode(true);
     const contextMarkers = { minimized: 'data-se-minimized' };
@@ -87,30 +154,44 @@ const renderComponentPage = (component) => {
     section.querySelectorAll('[data-component-attribute]').forEach((control) => {
       const name = control.dataset.componentAttribute;
       const value = control.matches('se-checkbox') ? control.checked : control.matches('se-range') ? control.querySelector('input').value : control.value;
-      if (name === 'content') { if (value) clone.innerHTML = value; return; }
+      if (name === 'content') { clone.innerHTML = value; return; }
       if (control.matches('se-checkbox')) { if (value) clone.setAttribute(name, ''); else clone.removeAttribute(name); return; }
       if (value) clone.setAttribute(name, value);
     });
     let usageMarkup = clone.outerHTML;
     section.querySelectorAll('se-checkbox[data-component-attribute]').forEach((control) => { if (control.checked) usageMarkup = usageMarkup.replace(` ${control.dataset.componentAttribute}=""`, ` ${control.dataset.componentAttribute}`); });
-    preview.replaceChildren(clone);
     if (tag === 'panel-toggle' || tag === 'resize-handle') {
       const pane = document.createElement('div');
-      pane.id = `${tag}-preview`;
+      pane.id = clone.getAttribute('for');
+      pane.className = 'control-example-pane';
       pane.innerHTML = '<se-nav-item label="Projects" icon="folder" active></se-nav-item><se-nav-item label="Settings" icon="settings"></se-nav-item>';
-      pane.style.cssText = 'padding:12px;background:var(--se-surface-soft);width:var(--se-resize-size,200px);flex:none;overflow:auto';
       const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:flex;min-height:160px;max-width:100%;overflow:auto;gap:8px';
-      if (tag === 'resize-handle' && clone.getAttribute('axis') === 'y') {
-        wrapper.style.flexDirection = 'column';
-        pane.style.width = '100%';
-        pane.style.height = 'var(--se-resize-size,160px)';
-      }
-      preview.replaceChildren(wrapper);
+      wrapper.className = `control-example control-example--${tag}`;
+      if (tag === 'resize-handle' && clone.getAttribute('axis') === 'y') wrapper.classList.add('control-example--vertical');
+      const style = document.createElement('style');
+      style.textContent = `.control-example{position:relative;display:flex;width:min(100%,32rem);min-height:180px;max-width:100%}
+.control-example--panel-toggle{width:fit-content;gap:16px;align-items:flex-start}
+.control-example-pane{box-sizing:border-box;flex:none;min-width:0;width:var(--se-resize-size,200px);padding:12px;background:var(--se-surface-soft);overflow:auto;transition:width .2s,height .2s}
+.control-example-pane[data-se-minimized="true"]{width:64px}
+.control-example-pane[hidden]{display:none}
+.control-example-pane[data-resizing]{transition:none}
+.control-example-remainder{box-sizing:border-box;flex:1;min-width:0;min-height:0;padding:16px;background:var(--se-bg);color:var(--se-muted)}
+.control-example--vertical{flex-direction:column;height:360px}
+.control-example--vertical>.control-example-pane{width:100%;height:var(--se-resize-size,160px)}
+.control-example--vertical>.control-example-pane[data-se-minimized="true"]{height:64px}
+@media(prefers-reduced-motion:reduce){.control-example-pane{transition:none}}`;
       if (tag === 'panel-toggle') wrapper.append(clone, pane);
-      else wrapper.append(pane, clone);
-      usageMarkup = `${pane.outerHTML}\n${clone.outerHTML}`;
-    }
+      else {
+        const remainder = document.createElement('div');
+        remainder.className = 'control-example-remainder';
+        remainder.textContent = 'Drag the divider or focus it and use the arrow keys.';
+        if (clone.getAttribute('edge') === 'start') wrapper.append(remainder, clone, pane);
+        else wrapper.append(pane, clone, remainder);
+      }
+      // Capture author markup before custom elements add their internal DOM.
+      usageMarkup = `${style.outerHTML}\n${wrapper.outerHTML}`;
+      preview.replaceChildren(style, wrapper);
+    } else preview.replaceChildren(clone);
     if (component.action === 'open') {
       const opener = document.createElement('se-button');
       opener.setAttribute('text', `Open ${titleFor(tag)}`);
@@ -131,16 +212,7 @@ const renderComponentPage = (component) => {
   section.querySelectorAll('[data-add-region]').forEach((button) => button.addEventListener('click', () => {
     const editor = section.querySelector('[data-component-attribute="content"]');
     const region = component.regions[Number(button.dataset.addRegion)];
-    if (region.name === 'trigger' && editor.value.includes('data-se-region="trigger"')) {
-      const content = document.createElement('template');
-      const replacement = document.createElement('template');
-      content.innerHTML = editor.value;
-      replacement.innerHTML = region.example;
-      content.content.querySelector('[data-se-region="trigger"]').replaceWith(replacement.content);
-      editor.value = formatHtml(content.innerHTML);
-    } else {
-      editor.value = [editor.value.trim(), region.example].filter(Boolean).join('\n');
-    }
+    editor.value = [editor.value.trim(), region.example].filter(Boolean).join('\n');
     render();
   }));
   section.querySelector('[data-component-view]').addEventListener('change', (event) => { preview.hidden = event.currentTarget.value === 'code'; code.hidden = event.currentTarget.value !== 'code'; });
@@ -197,7 +269,7 @@ const renderPatternPage = ({ tag, description, examples, isolated = false }) => 
         frame.dataset.height = frameHeight;
         frame.style.width = `${frameWidth}px`;
         frame.style.height = `${frameHeight}px`;
-        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20261031layout4"><link rel="stylesheet" href="../dist/themes/studio.css?v=20261031layout4"><link rel="stylesheet" href="../dist/themes/edge.css?v=20261031layout4"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}</style><script defer src="../dist/simple-elements.js?v=20261031layout4"></script></head><body>${editor.value}</body></html>`;
+        frame.srcdoc = `<!doctype html><html lang="en" data-theme="${document.documentElement.dataset.theme}" data-se-theme="${document.documentElement.dataset.seTheme || 'flat'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="../dist/styles.css?v=20261104guides3"><link rel="stylesheet" href="../dist/themes/edge.css?v=20261104guides3"><style>html,body{width:100%;height:100%;margin:0}body{overflow:hidden}</style><script defer src="../dist/simple-elements.js?v=20261104guides3"></script></head><body>${editor.value}</body></html>`;
         preview.replaceChildren(frame);
         resizeFrame();
         return;

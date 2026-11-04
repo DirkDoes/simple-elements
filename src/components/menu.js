@@ -10,7 +10,7 @@ class SeMenu extends HTMLElement {
     this.close();
     this._trigger?.removeEventListener('click', this._triggerHandler);
     const options = parseOptions(this);
-    const customTrigger = this.querySelector(':scope > [data-se-region="trigger"], :scope > .se-menu > [data-se-region="trigger"]');
+    const customTrigger = [...this.querySelectorAll(':scope > [data-se-region="trigger"], :scope > .se-menu > [data-se-region="trigger"]')].at(-1);
     customTrigger?.remove();
     this.innerHTML = `<div class="se-menu"><button class="se-button se-button--${this.getAttribute('variant') === 'mini' ? 'mini' : 'secondary'}${this.hasAttribute('icon-only') ? ' se-button--icon' : ''}" aria-label="${escapeHtml(this.getAttribute('label') || 'More')}" type="button" aria-expanded="false">${this.hasAttribute('icon-only') ? '' : escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => option.heading ? `<div class="se-menu__heading${option.separator ? ' se-menu-item--separated' : ''}">${escapeHtml(option.heading)}</div>` : `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-menu');

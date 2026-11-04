@@ -55,7 +55,7 @@ SimpleElements.setBrandTheme({ primary: '#7c3aed' });
 document.documentElement.dataset.theme = 'dark'; // or 'light'
 ```
 
-Flat, Clean, Studio, and Edge use the same SVG geometry with their current surface and text colors. The artwork keeps its circular backdrop without ground shadows. The illustration has a transparent outer background so it fits both pages and cards.
+Flat, Clean, and Edge use the same SVG geometry with their current surface and text colors. The artwork keeps its circular backdrop without ground shadows. The illustration has a transparent outer background so it fits both pages and cards.
 
 For per-app or per-instance changes, override these optional CSS properties on a parent or the component:
 

@@ -2,7 +2,7 @@
 
 The library supplies visual components and focused interactions. Applications own page structure, CSS grid/flex, widths, scrolling, positioning, breakpoints, routing, and mobile presentation. There is no sidebar or topbar shell component.
 
-Use native `header`, labelled `nav`, `aside`, `main`, `section`, and `div` containers. Put `se-nav-item`, `se-nav-group`, `se-nav-section`, `se-brand`, and `se-nav-tabs` wherever needed, including nested panels or modal content. Navigation links stay native links; do not use ARIA menu roles for ordinary site navigation.
+Use native `header`, labelled `nav`, `aside`, `main`, `section`, and `div` containers. Put `se-nav-item`, `se-nav-group`, `se-nav-section`, `se-brand`, and `se-nav-tab` wherever needed, including nested panels or modal content. Navigation links stay native links; do not use ARIA menu roles for ordinary site navigation.
 
 ## State vocabulary
 

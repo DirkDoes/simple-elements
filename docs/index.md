@@ -10,7 +10,7 @@ Then import `simple-elements` and its precompiled `simple-elements/styles.css`, 
 
 Flat is the default visual theme. Use `data-se-theme="clean"` for Clean, or follow the theme guide for a Clean-only stylesheet and user preferences.
 
-Studio and Edge are optional visual themes, each with light and dark modes. Import only the optional theme stylesheets your app uses; see the guide below for single-theme and all-four setups.
+Edge is an optional visual theme with light and dark modes. Import its stylesheet if your app uses it; see the guide below for single-theme and all-three setups.
 
 v0.17.0 moves application layout into native HTML and CSS, with reusable navigation, panel toggles, and resize handles. This is a breaking change: read the [v0.17.0 migration guide](layout-migration.md) and the seven [Page Layout examples](page-layout.md) before upgrading.
 
@@ -66,6 +66,7 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 - [Tooltip](tooltip.md)
 - [Menu](menu.md)
 - [Popover](popover.md)
+- [Avatar](avatar.md)
 - [Profile](profile.md)
 - [Modal](modal.md)
 - [Drawer](drawer.md)
@@ -83,7 +84,7 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 
 - [Pagination](pagination.md)
 - [Breadcrumbs](breadcrumbs.md)
-- [Navigation tabs](nav-tabs.md)
+- [Navigation tab](nav-tab.md)
 - [Brand](brand.md)
 - [Navigation section](nav-section.md)
 - [Navigation item](nav-item.md)
@@ -112,4 +113,4 @@ Upgrading from v0.14.6? Read the [v0.15.0 migration guide](migration-0.15.0.md) 
 
 Browse the page-like component sections in [`examples/index.html`](../examples/index.html).
 
-The showcase’s **Patterns → Icon gallery** lists the 147 default icon names with tooltips and click-to-copy. The [icon guide](icon.md#default-and-full-lucide-sets) explains optional full-pack loading and individual registration. [Profiles](profile.md) support circular image avatars as well as initials.
+The showcase’s **Patterns → Icon gallery** lists the 147 default icon names with tooltips and click-to-copy. The [icon guide](icon.md#default-and-full-lucide-sets) explains optional full-pack loading and individual registration. [Avatars](avatar.md) provide shared identity pictures for profiles, comments, and messages.

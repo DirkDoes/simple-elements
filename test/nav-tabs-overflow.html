@@ -1,19 +1,19 @@
 <!doctype html><html><head><link rel="stylesheet" href="../dist/styles.css"><script defer src="../dist/simple-elements.js"></script></head><body>
 <div style="width:320px">
-  <se-nav-tabs value="a" options='[{"id":"a","label":"Overview"},{"id":"b","label":"Projects"},{"id":"c","label":"Settings"}]'>
+  <div class="test-tab-bar"><nav aria-label="Section navigation"><se-nav-tab label="Overview" href="#a" active></se-nav-tab><se-nav-tab label="Projects" href="#b"></se-nav-tab><se-nav-tab label="Settings" href="#c"></se-nav-tab></nav>
     <span data-actions><se-split-button direct variant="secondary" text="New" icon="plus" options='[{"id":"issue","label":"Create issue"},{"id":"draft","label":"Save draft"}]'></se-split-button></span>
-  </se-nav-tabs>
+  </div>
 </div>
-<div style="width:320px"><se-nav-tabs value="a" options='[{"id":"a","label":"Files"},{"id":"b","label":"Activity"}]'><span data-actions><se-date-picker label="Deadline"></se-date-picker></span></se-nav-tabs></div>
-<div style="width:320px"><se-nav-tabs value="a" options='[{"id":"a","label":"Files"},{"id":"b","label":"Activity"}]'><span data-actions><se-select label="Owner" options='[{"id":"one","label":"One"},{"id":"two","label":"Two"}]'></se-select></span></se-nav-tabs></div>
-<div style="width:320px"><se-nav-tabs value="a" options='[{"id":"a","label":"Files"},{"id":"b","label":"Activity"}]'><span data-actions><se-tooltip><se-button data-se-region="trigger" icon="info" aria-label="Help"></se-button>Context help</se-tooltip></span></se-nav-tabs></div>
+<div style="width:320px"><div class="test-tab-bar"><nav aria-label="Section navigation"><se-nav-tab label="Files" href="#a" active></se-nav-tab><se-nav-tab label="Activity" href="#b"></se-nav-tab></nav><span data-actions><se-date-picker label="Deadline"></se-date-picker></span></div></div>
+<div style="width:320px"><div class="test-tab-bar"><nav aria-label="Section navigation"><se-nav-tab label="Files" href="#a" active></se-nav-tab><se-nav-tab label="Activity" href="#b"></se-nav-tab></nav><span data-actions><se-select label="Owner" options='[{"id":"one","label":"One"},{"id":"two","label":"Two"}]'></se-select></span></div></div>
+<div style="width:320px"><div class="test-tab-bar"><nav aria-label="Section navigation"><se-nav-tab label="Files" href="#a" active></se-nav-tab><se-nav-tab label="Activity" href="#b"></se-nav-tab></nav><span data-actions><se-tooltip><se-button data-se-region="trigger" icon="info" aria-label="Help"></se-button>Context help</se-tooltip></span></div></div>
 <button id="outside">Outside</button><pre id="result"></pre>
-<script type="module">
+<style>.test-tab-bar{display:flex;align-items:flex-end;gap:20px;border-bottom:1px solid var(--se-border)}.test-tab-bar>nav{display:flex;gap:20px;flex:1;min-width:0;overflow-x:auto}.test-tab-bar>[data-actions]{flex:none;padding:5px 0}</style><script type="module">
 const assert=(ok,message)=>{if(!ok)throw Error(message)};
 try{
- await customElements.whenDefined('se-nav-tabs');
+ await customElements.whenDefined('se-nav-tab');
  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- const tabs=document.querySelector('se-nav-tabs'),nav=tabs.querySelector('nav'),items=nav;
+ const tabs=document.querySelector('.test-tab-bar'),nav=tabs.querySelector('nav'),items=nav;
  const split=tabs.querySelector('se-split-button'),toggle=split.querySelector('.se-split__toggle'),menu=split.querySelector('.se-split__menu');
  assert(!nav.contains(split)&&tabs.contains(split),'Actions are outside tab scroller');
  assert(getComputedStyle(tabs).overflowY==='visible','Action container does not clip popups');
@@ -31,27 +31,27 @@ try{
  menu.querySelector('[data-index]').click();
  assert(getComputedStyle(menu).display==='none'&&toggle.getAttribute('aria-expanded')==='false','Selection closes direct menu');
  const action=tabs.querySelector('[data-actions]');
- tabs.value='b';
+ tabs.querySelectorAll('se-nav-tab').forEach(tab=>tab.toggleAttribute('active',tab.getAttribute('href')==='#b'));
  assert(tabs.querySelector('[data-actions]')===action,'Tab changes preserve action node');
  assert(tabs.querySelector('[aria-current="page"]').textContent==='Projects','Tab selection still works');
  for(const [tag,triggerSelector,popupSelector] of [
   ['se-date-picker','.se-date__trigger','.se-date__popover'],
   ['se-select','.se-select__trigger','.se-select__menu']
  ]){
-  const control=document.querySelector('se-nav-tabs '+tag),host=control.closest('se-nav-tabs'),tabScroller=host.querySelector('nav');
+  const control=document.querySelector('.test-tab-bar '+tag),host=control.closest('.test-tab-bar'),tabScroller=host.querySelector('nav');
   const controlNode=control,baseline=tabScroller.scrollHeight;
   control.querySelector(triggerSelector).click();
   assert(control.querySelector(popupSelector).matches(':popover-open'),tag+' opens in top layer');
   assert(tabScroller.scrollHeight===baseline,tag+' does not add scrollbars');
-  host.value='b';
+  host.querySelectorAll('se-nav-tab').forEach(tab=>tab.toggleAttribute('active',tab.getAttribute('href')==='#b'));
   assert(control===controlNode&&control.querySelector(popupSelector).matches(':popover-open'),tag+' survives active-tab change');
   control.close();
  }
- const tip=document.querySelector('se-nav-tabs se-tooltip'),tipHost=tip.closest('se-nav-tabs');
+ const tip=document.querySelector('.test-tab-bar se-tooltip'),tipHost=tip.closest('.test-tab-bar');
  const tipTrigger=tip.querySelector('button');
  tipTrigger.focus();
  assert(tip.querySelector('[role="tooltip"]').matches(':popover-open'),'Tooltip opens from trailing action');
- tipHost.value='b';
+ tipHost.querySelectorAll('se-nav-tab').forEach(tab=>tab.toggleAttribute('active',tab.getAttribute('href')==='#b'));
  assert(tip.querySelector('[role="tooltip"]').matches(':popover-open'),'Tooltip survives tab change');
  tipTrigger.blur();
  document.documentElement.dataset.test='passed';

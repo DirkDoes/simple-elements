@@ -27,7 +27,7 @@ class SeDrawer extends HTMLElement {
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
   open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); if (this._mode === 'push') document.body.style.setProperty('--se-drawer-push-width', `min(100%, ${this._width})`); this.querySelector('.se-close')?.focus(); }
-  close() { this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); if (this._mode === 'push') document.body.style.removeProperty('--se-drawer-push-width'); emit(this, 'close', {}); }
+  close() { this.querySelectorAll('se-color-picker').forEach(child => child.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); if (this._mode === 'push') document.body.style.removeProperty('--se-drawer-push-width'); emit(this, 'close', {}); }
 }
 
 define('se-drawer', SeDrawer);

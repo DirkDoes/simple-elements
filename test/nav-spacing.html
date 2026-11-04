@@ -1,11 +1,11 @@
 <!doctype html><link rel="stylesheet" href="../dist/styles.css"><script src="../dist/simple-elements.js"></script>
-<se-nav-tabs value="a" options='[{"id":"a","label":"Overview"}]'><span data-actions><se-button text="New issue" icon="plus"></se-button></span></se-nav-tabs><pre id="result"></pre>
-<script type="module">
+<div class="test-tab-bar"><nav aria-label="Section navigation"><se-nav-tab label="Overview" href="#a" active></se-nav-tab></nav><span data-actions><se-button text="New issue" icon="plus"></se-button></span></div><pre id="result"></pre>
+<style>.test-tab-bar{display:flex;align-items:flex-end;gap:20px;border-bottom:1px solid var(--se-border)}.test-tab-bar>nav{display:flex;gap:20px;flex:1;min-width:0;overflow-x:auto}.test-tab-bar>[data-actions]{flex:none;padding:5px 0}</style><script type="module">
 const assert=(ok,message)=>{if(!ok)throw Error(message)};
 try {
 await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-const tabs=document.querySelector('se-nav-tabs'),action=tabs.querySelector('[data-actions]');
-const item=tabs.querySelector('.se-nav-tabs__item'), nav=tabs.querySelector('nav');
+const tabs=document.querySelector('.test-tab-bar'),action=tabs.querySelector('[data-actions]');
+const item=tabs.querySelector('.se-nav-tab'), nav=tabs.querySelector('nav');
 const height=item.getBoundingClientRect().height;
 assert(Math.abs(tabs.getBoundingClientRect().bottom-item.getBoundingClientRect().bottom-1)<1,'Tab underline meets divider with actions');
 action.style.height='80px';

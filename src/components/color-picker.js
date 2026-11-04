@@ -1,4 +1,4 @@
-import { define, emit, escapeHtml } from '../helpers.js';
+import { define, emit, escapeHtml, openPopup } from '../helpers.js';
 
 export const colorPalette = ['#0f172a', '#64748b', '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1', '#a855f7', '#ec4899'];
 const palettes = {
@@ -48,7 +48,7 @@ class SeColorPicker extends HTMLElement {
     this.bind();
   }
 
-  disconnectedCallback() { document.removeEventListener('pointerdown', this._outside); }
+  disconnectedCallback() { this.close(); document.removeEventListener('pointerdown', this._outside); }
   get value() { return this.querySelector('[data-value-input]')?.value || this._value || ''; }
   set value(value) {
     const next = normalizeColor(value);
@@ -57,12 +57,15 @@ class SeColorPicker extends HTMLElement {
     if (this.isConnected) this.renderValue();
   }
   open() {
-    if (!this.hasAttribute('disabled')) {
-      this.querySelector('.se-color-picker__popover').hidden = false;
-      this.querySelector('.se-color-picker__trigger').setAttribute('aria-expanded', 'true');
-    }
+    if (this.hasAttribute('disabled') || this._mode !== 'popover' || this._popup) return;
+    const trigger = this.querySelector('.se-color-picker__trigger');
+    const popup = this.querySelector('.se-color-picker__popover');
+    popup.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    this._popup = openPopup(trigger, popup, () => this.close());
   }
   close() {
+    this._popup?.(); this._popup = null;
     this.querySelector('.se-color-picker__popover')?.setAttribute('hidden', '');
     this.querySelector('.se-color-picker__trigger')?.setAttribute('aria-expanded', 'false');
   }

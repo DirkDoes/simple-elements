@@ -2,7 +2,7 @@
 <html data-theme="light" data-se-theme="flat">
 <meta charset="utf-8">
 <link rel="stylesheet" href="../dist/styles.css?v=20261031layout4">
-<link rel="stylesheet" href="../dist/themes/studio.css?v=20261031layout4">
+
 <link rel="stylesheet" href="../dist/themes/edge.css?v=20261031layout4">
 <script defer src="../dist/simple-elements.js?v=20261031layout4"></script>
 <body><pre id="result">Running...</pre><div id="fixtures" style="width:280px"></div>
@@ -25,7 +25,7 @@ try {
   assert(group.collapsed && toggle.getAttribute('aria-expanded') === 'false', 'Disclosure remains independent');
   assert(!heading.hasAttribute('aria-expanded'), 'Page heading is not a disclosure');
   group.collapsed = false;
-  for (const theme of ['flat', 'clean', 'studio', 'edge']) for (const mode of ['light', 'dark']) {
+  for (const theme of ['flat', 'clean', 'edge']) for (const mode of ['light', 'dark']) {
     document.documentElement.dataset.seTheme = theme;
     document.documentElement.dataset.theme = mode;
     for (const property of ['color', 'backgroundColor', 'boxShadow', 'fontWeight', 'borderRadius']) {
@@ -48,7 +48,7 @@ try {
     fixtures.append(parent);
     const parentHeading = parent.querySelector('.se-nav-group__head > :first-child');
     const selectedChild = parent.querySelector('se-nav-item');
-    for (const theme of ['flat', 'clean', 'studio', 'edge']) for (const mode of ['light', 'dark']) {
+    for (const theme of ['flat', 'clean', 'edge']) for (const mode of ['light', 'dark']) {
       document.documentElement.dataset.seTheme = theme;
       document.documentElement.dataset.theme = mode;
       parent.collapsed = true;

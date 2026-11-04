@@ -983,26 +983,57 @@ class SeRange extends HTMLElement {
 define('se-range', SeRange);
 
 
-class SeChatMessage extends HTMLElement {
-  connectedCallback() {
-    if (this.dataset.ready) return;
-    this.dataset.ready = 'true';
-    this.render();
-  }
-
+class SeAvatar extends HTMLElement {
+  static observedAttributes = ['name', 'initials', 'image', 'icon', 'clickable', 'aria-label'];
+  connectedCallback() { this.render(); }
+  attributeChangedCallback() { if (this.isConnected) this.render(); }
   render() {
-    const mode = this.getAttribute('mode') === 'sent' ? 'sent' : 'received';
-    const content = this.getAttribute('content') ?? this.innerHTML.trim();
-    const title = this.getAttribute('title') || (mode === 'sent' ? 'You' : 'Assistant');
-    const timestamp = this.getAttribute('timestamp');
-    const profile = this.hasAttribute('profile');
-    const initials = this.getAttribute('initials');
-    const avatar = initials ? escapeHtml(initials) : `<se-icon name="${escapeIcon(this.getAttribute('icon') || (mode === 'sent' ? 'user' : 'zap'))}"></se-icon>`;
-    const time = timestamp ? `<time>${escapeHtml(timestamp)}</time>` : '';
-    this.innerHTML = `<article class="se-chat-message se-chat-message--${mode}"><div class="se-chat-message__row">${profile ? `<span class="se-chat-message__avatar">${avatar}</span>` : ''}<div class="se-chat-message__bubble"><header>${this.getAttribute('timestamp-position') === 'start' ? time : ''}<strong>${escapeHtml(title)}</strong>${this.getAttribute('timestamp-position') !== 'start' ? time : ''}</header><div class="se-chat-message__content">${content}</div></div></div></article>`;
+    const name = this.getAttribute('name') || '';
+    const initials = this.getAttribute('initials') || name.trim().split(/\s+/).filter(Boolean).map(word => [...word][0]).slice(0, 2).join('').toUpperCase();
+    const label = this.getAttribute('aria-label') || name || initials || 'Avatar';
+    const tag = this.hasAttribute('clickable') && !this.closest('button.se-profile') ? 'button' : 'span';
+    const focused = this.contains(document.activeElement);
+    this.innerHTML = `<${tag} class="se-avatar" aria-label="${escapeHtml(label)}"${tag === 'button' ? ' type="button"' : ' role="img"'}></${tag}>`;
+    const control = this.firstElementChild;
+    const fallback = () => {
+      control.classList.remove('se-avatar--image');
+      control.innerHTML = initials ? `<span aria-hidden="true">${escapeHtml(initials)}</span>` : `<se-icon aria-hidden="true" name="${escapeIcon(this.getAttribute('icon') || 'user')}"></se-icon>`;
+    };
+    fallback();
+    const image = this.getAttribute('image');
+    if (image) {
+      const img = document.createElement('img');
+      img.alt = ''; img.draggable = false;
+      img.addEventListener('error', fallback, { once: true });
+      control.classList.add('se-avatar--image');
+      control.replaceChildren(img);
+      img.src = image;
+    }
+    if (focused && tag !== 'span') control.focus();
   }
 }
+define('se-avatar', SeAvatar);
 
+
+class SeChatMessage extends HTMLElement {
+  connectedCallback() {
+    if (!this.dataset.ready) setTimeout(() => { if (this.isConnected && !this.dataset.ready) this.render(); });
+  }
+  render() {
+    this.dataset.ready = 'true';
+    const nodes = [...this.childNodes];
+    const avatar = nodes.findLast(node => node.nodeType === 1 && node.getAttribute('data-se-region') === 'avatar');
+    const mode = this.getAttribute('mode') === 'sent' ? 'sent' : 'received';
+    const title = this.getAttribute('title') || (mode === 'sent' ? 'You' : 'Assistant');
+    const timestamp = this.getAttribute('timestamp');
+    const time = timestamp ? `<time>${escapeHtml(timestamp)}</time>` : '';
+    this.innerHTML = `<article class="se-chat-message se-chat-message--${mode}"><div class="se-chat-message__row"><div class="se-chat-message__bubble"><header>${this.getAttribute('timestamp-position') === 'start' ? time : ''}<strong>${escapeHtml(title)}</strong>${this.getAttribute('timestamp-position') !== 'start' ? time : ''}</header><div class="se-chat-message__content"></div></div></div></article>`;
+    if (avatar) this.querySelector('.se-chat-message__row').prepend(avatar);
+    const body = this.querySelector('.se-chat-message__content');
+    if (this.hasAttribute('content')) body.innerHTML = this.getAttribute('content');
+    else body.append(...nodes.filter(node => !(node.nodeType === 1 && node.getAttribute('data-se-region') === 'avatar')));
+  }
+}
 define('se-chat-message', SeChatMessage);
 
 
@@ -1386,7 +1417,8 @@ class SeTooltip extends HTMLElement {
     this.innerHTML = `<span class="se-tooltip"><div class="se-tooltip__bubble se-tooltip__layer" id="${id}" role="tooltip" popover="manual"></div></span>`;
     const root = this.querySelector('.se-tooltip');
     const bubble = this.querySelector('[role="tooltip"]');
-    for (const node of children) (node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger' ? root : bubble).append(node);
+    const latestTrigger = children.findLast(node => node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger');
+    for (const node of children.filter(node => !(node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger') || node === latestTrigger)) (node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger' ? root : bubble).append(node);
     const trigger = root.querySelector('button, a, input, [tabindex]') || root.querySelector('[data-se-region="trigger"]') || root;
     const ids = new Set((trigger.getAttribute('aria-describedby') || '').split(' ').filter(Boolean));
     ids.add(id); trigger.setAttribute('aria-describedby', [...ids].join(' '));
@@ -1408,7 +1440,7 @@ class SeMenu extends HTMLElement {
     this.close();
     this._trigger?.removeEventListener('click', this._triggerHandler);
     const options = parseOptions(this);
-    const customTrigger = this.querySelector(':scope > [data-se-region="trigger"], :scope > .se-menu > [data-se-region="trigger"]');
+    const customTrigger = [...this.querySelectorAll(':scope > [data-se-region="trigger"], :scope > .se-menu > [data-se-region="trigger"]')].at(-1);
     customTrigger?.remove();
     this.innerHTML = `<div class="se-menu"><button class="se-button se-button--${this.getAttribute('variant') === 'mini' ? 'mini' : 'secondary'}${this.hasAttribute('icon-only') ? ' se-button--icon' : ''}" aria-label="${escapeHtml(this.getAttribute('label') || 'More')}" type="button" aria-expanded="false">${this.hasAttribute('icon-only') ? '' : escapeHtml(this.getAttribute('label') || 'More')}<se-icon name="more"></se-icon></button><div class="se-menu__items">${options.map((option, index) => option.heading ? `<div class="se-menu__heading${option.separator ? ' se-menu-item--separated' : ''}">${escapeHtml(option.heading)}</div>` : `<button class="se-menu-item${option.danger ? ' se-menu-item--danger' : ''}${option.separator ? ' se-menu-item--separated' : ''}" type="button" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}${escapeHtml(option.label)}</button>`).join('')}</div></div>`;
     const root = this.querySelector('.se-menu');
@@ -1435,16 +1467,20 @@ class SeProfile extends HTMLElement {
   connectedCallback() {
     this._disconnectContext = connectMinimized(this);
     if (this.dataset.ready) return;
+    setTimeout(() => { if (this.isConnected && !this.dataset.ready) this.render(); });
+  }
+  render() {
     this.dataset.ready = 'true';
     const options = parseOptions(this);
     const tag = !options.length && this.hasAttribute('clickable') ? 'button' : 'div';
-    const variants = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'];
-    const tone = variants.includes(this.getAttribute('tone')) ? this.getAttribute('tone') : 'brand';
-    const image = this.getAttribute('image');
-    const avatar = image ? `<img src="${escapeHtml(image)}" alt="" draggable="false">` : escapeHtml(this.getAttribute('initials') || '');
-    const identity = `<span class="se-profile__avatar${image ? ' se-profile__avatar--image' : ''}">${avatar}</span><span><strong>${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || '')}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span>`;
-    if (!options.length) { this.innerHTML = `<${tag} title="" class="se-profile se-profile--${tone}" aria-label="${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || 'Profile')}"${tag === 'button' ? ' type="button"' : ''}>${identity}</${tag}>`; return; }
-    this.innerHTML = `<div class="se-profile-menu" title=""><button class="se-profile se-profile--${tone}" aria-label="${escapeHtml(this.getAttribute('name') || this.getAttribute('title') || 'Profile')}" type="button" aria-haspopup="menu" aria-expanded="false">${identity}<se-icon class="se-profile__chevron" name="chevron"></se-icon></button><div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div></div>`;
+    const avatar = [...this.children].findLast(child => child.getAttribute('data-se-region') === 'avatar');
+    const name = this.getAttribute('name') || this.getAttribute('title') || '';
+    const identity = `<span class="se-profile__text"><strong>${escapeHtml(name)}</strong>${this.getAttribute('subtitle') ? `<small>${escapeHtml(this.getAttribute('subtitle'))}</small>` : ''}</span>`;
+    const interactive = options.length || tag === 'button';
+    const controlTag = interactive ? 'button' : 'div';
+    this.innerHTML = `<div class="se-profile-menu"><${controlTag} class="se-profile"${interactive ? ` type="button" aria-label="${escapeHtml(name || 'Profile')}"` : ''}${options.length ? ' aria-haspopup="menu" aria-expanded="false"' : ''}>${identity}${options.length ? '<se-icon class="se-profile__chevron" name="chevron"></se-icon>' : ''}</${controlTag}>${options.length ? `<div class="se-profile-menu__items" role="menu">${options.map((option, index) => `<button type="button" role="menuitem" data-index="${index}"${option.disabled ? ' disabled' : ''}>${option.icon ? `<se-icon name="${escapeIcon(option.icon)}"></se-icon>` : ''}<span><strong>${escapeHtml(option.label || '')}</strong>${option.description ? `<small>${escapeHtml(option.description)}</small>` : ''}</span></button>`).join('')}</div>` : ''}</div>`;
+    if (avatar) this.querySelector('.se-profile').prepend(avatar);
+    if (!options.length) return;
     const menu = this.querySelector('.se-profile-menu');
     const trigger = this.querySelector('.se-profile');
     trigger.addEventListener('click', () => { const open = menu.classList.toggle('se-profile-menu--open'); trigger.setAttribute('aria-expanded', String(open)); if (open) placePopover(trigger, this.querySelector('.se-profile-menu__items')); });
@@ -1503,7 +1539,7 @@ class SeModal extends HTMLElement {
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
   open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); (this.querySelector('.se-modal__panel :is([autofocus], input, button)') || this.querySelector('.se-modal__panel'))?.focus(); }
-  close() { this.querySelectorAll('se-select, se-menu, se-popover').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
+  close() { this.querySelectorAll('se-select, se-menu, se-popover, se-color-picker').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
 }
 
 define('se-modal', SeModal);
@@ -1536,7 +1572,7 @@ class SeDrawer extends HTMLElement {
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
   open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); if (this._mode === 'push') document.body.style.setProperty('--se-drawer-push-width', `min(100%, ${this._width})`); this.querySelector('.se-close')?.focus(); }
-  close() { this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); if (this._mode === 'push') document.body.style.removeProperty('--se-drawer-push-width'); emit(this, 'close', {}); }
+  close() { this.querySelectorAll('se-color-picker').forEach(child => child.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); if (this._mode === 'push') document.body.style.removeProperty('--se-drawer-push-width'); emit(this, 'close', {}); }
 }
 
 define('se-drawer', SeDrawer);
@@ -2296,7 +2332,7 @@ class SeColorPicker extends HTMLElement {
     this.bind();
   }
 
-  disconnectedCallback() { document.removeEventListener('pointerdown', this._outside); }
+  disconnectedCallback() { this.close(); document.removeEventListener('pointerdown', this._outside); }
   get value() { return this.querySelector('[data-value-input]')?.value || this._value || ''; }
   set value(value) {
     const next = normalizeColor(value);
@@ -2305,12 +2341,15 @@ class SeColorPicker extends HTMLElement {
     if (this.isConnected) this.renderValue();
   }
   open() {
-    if (!this.hasAttribute('disabled')) {
-      this.querySelector('.se-color-picker__popover').hidden = false;
-      this.querySelector('.se-color-picker__trigger').setAttribute('aria-expanded', 'true');
-    }
+    if (this.hasAttribute('disabled') || this._mode !== 'popover' || this._popup) return;
+    const trigger = this.querySelector('.se-color-picker__trigger');
+    const popup = this.querySelector('.se-color-picker__popover');
+    popup.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    this._popup = openPopup(trigger, popup, () => this.close());
   }
   close() {
+    this._popup?.(); this._popup = null;
     this.querySelector('.se-color-picker__popover')?.setAttribute('hidden', '');
     this.querySelector('.se-color-picker__trigger')?.setAttribute('aria-expanded', 'false');
   }
@@ -2609,31 +2648,44 @@ class SeBreadcrumbs extends HTMLElement {
 define('se-breadcrumbs', SeBreadcrumbs);
 
 
-class SeNavTabs extends HTMLElement {
-  static observedAttributes = ['value', 'variant', 'label'];
-  get options() { return this._options; }
-  set options(value) { this._options = value; if (this.isConnected) this.render(); }
-  get value() { return this.getAttribute('value') || ''; }
-  set value(value) { this.setAttribute('value', value); }
-  connectedCallback() { requestAnimationFrame(() => { if (this.isConnected) this.render(); }); }
-  attributeChangedCallback() { if (this.isConnected) this.render(); }
-  render() {
-    const nav = this.querySelector(':scope > nav');
-    const actions = this.querySelector(':scope > [data-actions]');
-    const links = parseOptions(this).map(item => `<${item.disabled ? 'span' : 'a'} class="se-nav-tabs__item"${item.disabled ? ' aria-disabled="true"' : ` href="${escapeHtml(item.href || '#')}"`}${String(item.id) === this.value ? ' aria-current="page"' : ''}>${item.icon ? `<se-icon name="${escapeIcon(item.icon)}"></se-icon>` : ''}${escapeHtml(item.label)}${item.count !== undefined ? `<span class="se-nav-tabs__count">${escapeHtml(item.count)}</span>` : ''}</${item.disabled ? 'span' : 'a'}>`).join('');
-    const label = this.getAttribute('label') || 'Section navigation';
-    if (nav) {
-      nav.classList.toggle('se-nav-tabs--pill', this.getAttribute('variant') === 'pill');
-      nav.setAttribute('aria-label', label);
-      nav.innerHTML = links;
-      actions?.classList.add('se-nav-tabs__actions');
-      return;
+class SeNavTab extends HTMLElement {
+  static observedAttributes = ['active', 'badge', 'badge-tone'];
+  attributeChangedCallback() { this.sync(); }
+  sync() {
+    const control = this.querySelector('.se-nav-tab');
+    if (!control) return;
+    if (this.hasAttribute('active')) control.setAttribute('aria-current', 'page');
+    else control.removeAttribute('aria-current');
+    let badge = control.querySelector('.se-nav-tab__badge');
+    if (!this.hasAttribute('badge')) { badge?.remove(); return; }
+    if (!badge) {
+      badge = document.createElement('span');
+      control.insertBefore(badge, control.querySelector('[data-se-region="end"]'));
     }
-    this.insertAdjacentHTML('afterbegin', `<nav class="se-nav-tabs${this.getAttribute('variant') === 'pill' ? ' se-nav-tabs--pill' : ''}" aria-label="${escapeHtml(label)}">${links}</nav>`);
-    actions?.classList.add('se-nav-tabs__actions');
+    badge.textContent = this.getAttribute('badge');
+    const tone = this.getAttribute('badge-tone');
+    const explicit = ['gray', 'brand', 'success', 'warning', 'error', 'info', 'important'].includes(tone);
+    badge.className = `se-nav-tab__badge${explicit ? ` se-badge--${tone}` : ''}`;
+    if (explicit) badge.dataset.tone = tone;
+    else delete badge.dataset.tone;
+  }
+  connectedCallback() {
+    if (this.dataset.ready) return;
+    this.dataset.ready = 'true';
+    const end = [...this.children].filter(child => child.getAttribute('data-se-region') === 'end');
+    const label = this.getAttribute('label') || [...this.childNodes].filter(node => !end.includes(node)).map(node => node.textContent).join('').trim() || 'Navigation tab';
+    const icon = this.getAttribute('icon');
+    const disabled = this.hasAttribute('disabled');
+    const content = `${icon ? `<se-icon name="${escapeIcon(icon)}"></se-icon>` : ''}<span>${escapeHtml(label)}</span>`;
+    this.innerHTML = this.hasAttribute('href') && !disabled
+      ? `<a class="se-nav-tab" href="${escapeHtml(this.getAttribute('href'))}">${content}</a>`
+      : `<button class="se-nav-tab" type="button"${disabled ? ' disabled' : ''}>${content}</button>`;
+    this.querySelector('.se-nav-tab').append(...end);
+    this.sync();
   }
 }
-define('se-nav-tabs', SeNavTabs);
+
+define('se-nav-tab', SeNavTab);
 
 
 const paginationInteger = value => {
@@ -2720,9 +2772,16 @@ class SeComment extends HTMLElement {
     if (this.dataset.ready) return;
     this.dataset.ready = 'true';
     const children = [...this.childNodes];
+    const avatar = children.findLast(node => node.nodeType === 1 && node.getAttribute('data-se-region') === 'avatar');
     const author = this.getAttribute('author') || 'Anonymous';
-    this.innerHTML = `<article class="se-comment" aria-label="Comment by ${escapeHtml(author)}"><header><se-profile name="${escapeHtml(author)}" initials="${escapeHtml(this.getAttribute('initials') || author.slice(0, 2))}" ${this.hasAttribute('image') ? `image="${escapeHtml(this.getAttribute('image'))}"` : ''} tone="${escapeHtml(this.getAttribute('tone') || 'gray')}"></se-profile><time>${escapeHtml(this.getAttribute('timestamp') || '')}</time></header><div class="se-comment__body"></div><div class="se-comment__actions"><button type="button" class="se-comment__reply">Reply</button></div><div class="se-comment__replies" role="group" aria-label="Replies to ${escapeHtml(author)}"></div></article>`;
-    for (const node of children) this.querySelector(node.nodeType === 1 && node.matches('se-comment') ? '.se-comment__replies' : node.nodeType === 1 && node.getAttribute('data-se-region') === 'reactions' ? '.se-comment__actions' : '.se-comment__body').append(node);
+    this.innerHTML = `<article class="se-comment" aria-label="Comment by ${escapeHtml(author)}"><header><strong>${escapeHtml(author)}</strong><time>${escapeHtml(this.getAttribute('timestamp') || '')}</time></header><div class="se-comment__body"></div><div class="se-comment__actions"><button type="button" class="se-comment__reply">Reply</button></div><div class="se-comment__replies" role="group" aria-label="Replies to ${escapeHtml(author)}"></div></article>`;
+    if (avatar) {
+      const column = document.createElement('div');
+      column.className = 'se-comment__avatar';
+      column.append(avatar);
+      this.querySelector('article').prepend(column);
+    }
+    for (const node of children.filter(node => !(node.nodeType === 1 && node.getAttribute('data-se-region') === 'avatar'))) this.querySelector(node.nodeType === 1 && node.matches('se-comment') ? '.se-comment__replies' : node.nodeType === 1 && node.getAttribute('data-se-region') === 'reactions' ? '.se-comment__actions' : '.se-comment__body').append(node);
     this.querySelector('.se-comment__reply').onclick = () => emit(this, 'reply', { author });
   }
   get replies() { return this.querySelector(':scope > article > .se-comment__replies'); }
@@ -2792,7 +2851,7 @@ class SePopover extends HTMLElement {
       if (!this.isConnected || this._ready) return;
       this._ready = true;
       const content = [...this.childNodes];
-      const triggerNode = content.find(node => node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger');
+      const triggerNode = content.findLast(node => node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger');
       content.forEach(node => node.remove());
       const label = this.getAttribute('label') || 'Options';
       const icon = this.getAttribute('icon') || 'more';
@@ -2803,7 +2862,7 @@ class SePopover extends HTMLElement {
       this._trigger.setAttribute('aria-haspopup', 'dialog');
       this._trigger.setAttribute('aria-expanded', 'false');
       this._trigger.setAttribute('aria-controls', id);
-      this.querySelector('.se-popover__panel').append(...content.filter(node => node !== triggerNode));
+      this.querySelector('.se-popover__panel').append(...content.filter(node => !(node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger')));
       this._trigger.addEventListener('click', () => this._popup ? this.close() : this.open());
     });
   }
@@ -2815,7 +2874,7 @@ class SePopover extends HTMLElement {
     this.querySelector('.se-popover__panel :is(input, button, select, textarea)')?.focus({ preventScroll: true });
   }
   close() {
-    this.querySelectorAll('se-select, se-menu, se-popover, se-date-picker').forEach(child => child.close());
+    this.querySelectorAll('se-select, se-menu, se-popover, se-date-picker, se-color-picker').forEach(child => child.close());
     this._popup?.(); this._popup = null;
     this._trigger?.setAttribute('aria-expanded', 'false');
   }

@@ -1,24 +1,19 @@
 # Profile
 
 ```html
-<se-profile name="Sarah Jenkins" subtitle="Lead Designer" initials="SJ" tone="brand" clickable></se-profile>
+<se-profile name="Sarah Jenkins" subtitle="Lead Designer">
+  <se-avatar data-se-region="avatar" name="Sarah Jenkins" image="/people/sarah.jpg"></se-avatar>
+</se-profile>
 ```
 
-Use `tone` for the avatar color (`gray`, `brand`, `success`, `warning`, `error`, `info`, or `important`). Add `compact` to show only the avatar; the same presentation is applied automatically inside a collapsed sidebar. Add `clickable` for a normal button, or provide an `options` JSON array or property for a context menu; `options` takes priority when both are present. The component emits `select` with the chosen option.
+Profile owns the name, subtitle, compact presentation, and optional account menu. The optional `avatar` region owns the identity picture; use [Avatar](avatar.md) or custom HTML.
 
-The profile stays within its container. Inside a `data-se-minimized="true"` context (or with `minimized`), it reduces to its avatar; at narrower expanded widths, names and subtitles truncate with an ellipsis. Context menus prefer opening down and right, then flip toward available viewport space.
+Attributes: `name`, `title` (name alias), `subtitle`, `clickable`, `options`, `compact`, and `minimized`. Name takes priority over title.
 
-Attributes: `tone`, `name`, `title`, `subtitle`, `initials`, `image`, `clickable`, `options`, and `compact`.
+`clickable` makes the entire profile, including its avatar, one button. An `options` JSON array enables a menu and takes priority over clickable; selecting an option emits `select`. The avatar region is inside that button. Use non-interactive custom region content; `se-avatar` automatically defers clicks to its enclosing profile button.
 
-Icon inputs support Lucide names, asset URLs, and the shared [icon configuration object](icon.md).
+`compact` or a minimized context hides the text. The avatar remains inside the full profile click target; the chevron is hidden. Without an avatar region there is no generated picture.
 
+Migration: move `image`, `initials`, and `tone` onto an explicit `se-avatar data-se-region="avatar"` child. There are no legacy attribute aliases.
 
-Set `image` to an image URL to display a circular, center-cropped avatar in every theme. When both `image` and `initials` are provided, the image takes priority. Omitting `image` keeps the initials avatar. Images use empty alt text because the adjacent profile name identifies the person.
-
-```html
-<se-profile name="Sarah Jenkins" initials="SJ" image="/images/sarah.jpg"></se-profile>
-```
-
-Image avatars use `object-fit: cover`: the shorter image side fills the circle and excess on the longer side is cropped centrally, without stretching. Their border uses the theme’s subtle border color in both light and dark modes. Initials-only avatars keep their existing theme styling.
-
-`name` and `title` both set the primary profile label. If both are present, `name` takes priority.
+When multiple direct children use the `avatar` region, only the last one is displayed. Earlier avatar regions are not rendered as body content.

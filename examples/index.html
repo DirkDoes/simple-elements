@@ -5,16 +5,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Simple Elements</title>
-    <link rel="stylesheet" href="../dist/styles.css?v=20261031layout4">
-    <link rel="stylesheet" href="./example.css?v=20261031layout4">
-    <link rel="stylesheet" href="../dist/themes/studio.css?v=20261031layout4"><link rel="stylesheet" href="../dist/themes/edge.css?v=20261031layout4">
-    <script defer src="../dist/simple-elements.js?v=20261031layout4"></script>
-    <script type="module" src="./example.js?v=20261031layout4"></script>
+    <link rel="stylesheet" href="../dist/styles.css?v=20261104guides3">
+    <link rel="stylesheet" href="./example.css?v=20261104guides3">
+    <link rel="stylesheet" href="../dist/themes/edge.css?v=20261104guides3">
+    <script defer src="../dist/simple-elements.js?v=20261104guides3"></script>
+    <script type="module" src="./example.js?v=20261104guides3"></script>
   </head>
   <body>
     <div class="demo-shell">
       <main class="demo-main">
-        <header class="demo-topbar"><section data-start><se-panel-toggle for="example-sidebar" variant="menu" class="demo-mobile" label="Toggle navigation"></se-panel-toggle><se-brand label="Simple Elements" icon="package" href="#dashboard"></se-brand></section><section data-end><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"},{"id":"studio","label":"Studio"},{"id":"edge","label":"Edge"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></header>
+        <header class="demo-topbar"><section data-start><se-panel-toggle for="example-sidebar" variant="menu" class="demo-mobile" label="Toggle navigation"></se-panel-toggle><se-brand label="Simple Elements" icon="package" href="#dashboard"></se-brand></section><section class="demo-global-search" role="search" aria-label="Components"><se-input type="search" aria-label="Search components" placeholder="Search components…"></se-input></section><section data-end><se-select class="demo-theme-family" label="Theme" value="flat" options='[{"id":"flat","label":"Flat"},{"id":"clean","label":"Clean"},{"id":"edge","label":"Edge"}]'></se-select><se-theme-switch class="demo-theme" variant="button" label="Color mode"></se-theme-switch></section></header>
         <div class="demo-body">
           <nav id="example-sidebar" class="demo-sidebar" data-mobile-navigation aria-label="Showcase">
             <section>
@@ -63,20 +63,20 @@
             <se-drawer id="dashboard-chat" mode="overlay-clear" width="30rem" title="Ask Nova">
               <div class="demo-chat demo-dashboard-chat">
                 <div class="demo-chat__messages">
-                  <se-chat-message mode="received" title="Nova" profile icon="zap" timestamp="Now">Hi! I can help you explore Simple Elements or plan your interface.</se-chat-message>
+                  <se-chat-message mode="received" title="Nova" timestamp="Now"><se-avatar data-se-region="avatar" icon="zap" name="Nova"></se-avatar>Hi! I can help you explore Simple Elements or plan your interface.</se-chat-message>
                   <se-chat-context variant="info" icon="package">Using the Simple Elements component library.</se-chat-context>
-                  <se-chat-message mode="sent" title="You" initials="YO" profile>What should I put at the top of the page?</se-chat-message>
-                  <se-chat-message mode="received" title="Nova" profile icon="zap">Lead with one clear purpose and the action people use most often.</se-chat-message>
-                  <se-chat-message mode="sent" title="You" initials="YO" profile>Should the form stay visible?</se-chat-message>
-                  <se-chat-message mode="received" title="Nova" profile icon="zap">Yes. It is the primary workflow, so keeping it in the main view reduces extra navigation.</se-chat-message>
+                  <se-chat-message mode="sent" title="You"><se-avatar data-se-region="avatar" initials="YO" name="You"></se-avatar>What should I put at the top of the page?</se-chat-message>
+                  <se-chat-message mode="received" title="Nova"><se-avatar data-se-region="avatar" icon="zap" name="Nova"></se-avatar>Lead with one clear purpose and the action people use most often.</se-chat-message>
+                  <se-chat-message mode="sent" title="You"><se-avatar data-se-region="avatar" initials="YO" name="You"></se-avatar>Should the form stay visible?</se-chat-message>
+                  <se-chat-message mode="received" title="Nova"><se-avatar data-se-region="avatar" icon="zap" name="Nova"></se-avatar>Yes. It is the primary workflow, so keeping it in the main view reduces extra navigation.</se-chat-message>
                   <se-chat-context variant="success" icon="check">Dashboard structure reviewed.</se-chat-context>
-                  <se-chat-message mode="sent" title="You" initials="YO" profile>How would you structure this dashboard?</se-chat-message>
+                  <se-chat-message mode="sent" title="You"><se-avatar data-se-region="avatar" initials="YO" name="You"></se-avatar>How would you structure this dashboard?</se-chat-message>
                   <se-thought-train title="Reviewing the dashboard" icon="activity" variant="brand" collapsible>Looking at the navigation, overview, form, and recent activity sections.</se-thought-train>
-                  <se-chat-message mode="received" title="Nova" profile icon="zap"><p>Keep the overview concise and let the main form carry the primary action.</p><p>This drawer works well for assistance without hiding the dashboard context.</p></se-chat-message>
-                  <se-chat-message mode="sent" title="You" initials="YO" profile>What about recent activity?</se-chat-message>
-                  <se-chat-message mode="received" title="Nova" profile icon="zap">Keep it secondary and show only enough detail to help people decide where to go next.</se-chat-message>
-                  <se-chat-message mode="sent" title="You" initials="YO" profile>That sounds good. Give me one final recommendation.</se-chat-message>
-                  <se-chat-message mode="received" title="Nova" profile icon="zap">Use progressive disclosure: keep the dashboard calm, and place contextual help here in the drawer.</se-chat-message>
+                  <se-chat-message mode="received" title="Nova"><se-avatar data-se-region="avatar" icon="zap" name="Nova"></se-avatar><p>Keep the overview concise and let the main form carry the primary action.</p><p>This drawer works well for assistance without hiding the dashboard context.</p></se-chat-message>
+                  <se-chat-message mode="sent" title="You"><se-avatar data-se-region="avatar" initials="YO" name="You"></se-avatar>What about recent activity?</se-chat-message>
+                  <se-chat-message mode="received" title="Nova"><se-avatar data-se-region="avatar" icon="zap" name="Nova"></se-avatar>Keep it secondary and show only enough detail to help people decide where to go next.</se-chat-message>
+                  <se-chat-message mode="sent" title="You"><se-avatar data-se-region="avatar" initials="YO" name="You"></se-avatar>That sounds good. Give me one final recommendation.</se-chat-message>
+                  <se-chat-message mode="received" title="Nova"><se-avatar data-se-region="avatar" icon="zap" name="Nova"></se-avatar>Use progressive disclosure: keep the dashboard calm, and place contextual help here in the drawer.</se-chat-message>
                 </div>
                 <div class="demo-chat__composer">
                   <se-select value="nova" options='[{"id":"nova","label":"Nova","description":"Fast everyday assistant","icon":"zap"},{"id":"atlas","label":"Atlas","description":"Deep analysis model","icon":"activity"}]'></se-select>

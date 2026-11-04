@@ -15,7 +15,8 @@ class SeTooltip extends HTMLElement {
     this.innerHTML = `<span class="se-tooltip"><div class="se-tooltip__bubble se-tooltip__layer" id="${id}" role="tooltip" popover="manual"></div></span>`;
     const root = this.querySelector('.se-tooltip');
     const bubble = this.querySelector('[role="tooltip"]');
-    for (const node of children) (node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger' ? root : bubble).append(node);
+    const latestTrigger = children.findLast(node => node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger');
+    for (const node of children.filter(node => !(node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger') || node === latestTrigger)) (node.nodeType === 1 && node.getAttribute('data-se-region') === 'trigger' ? root : bubble).append(node);
     const trigger = root.querySelector('button, a, input, [tabindex]') || root.querySelector('[data-se-region="trigger"]') || root;
     const ids = new Set((trigger.getAttribute('aria-describedby') || '').split(' ').filter(Boolean));
     ids.add(id); trigger.setAttribute('aria-describedby', [...ids].join(' '));

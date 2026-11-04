@@ -47,7 +47,7 @@ class SeModal extends HTMLElement {
   disconnectedCallback() { document.removeEventListener('keydown', this._escape); }
   get opened() { return this.querySelector('.se-overlay')?.classList.contains('se-overlay--open'); }
   open() { this.querySelector('.se-overlay')?.classList.add('se-overlay--open'); (this.querySelector('.se-modal__panel :is([autofocus], input, button)') || this.querySelector('.se-modal__panel'))?.focus(); }
-  close() { this.querySelectorAll('se-select, se-menu, se-popover').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
+  close() { this.querySelectorAll('se-select, se-menu, se-popover, se-color-picker').forEach(element => element.close()); this.querySelector('.se-overlay')?.classList.remove('se-overlay--open'); emit(this, 'close', {}); }
 }
 
 define('se-modal', SeModal);

@@ -1,19 +1,18 @@
 # Comment
 
-`se-comment` accepts `author`, `initials`, `tone`, `image` (overrides initials), and `timestamp`. Place trusted HTML inside it for the body, an optional child marked `data-se-region="reactions"` for reactions, and child `se-comment` elements for replies. It emits a bubbling `reply` event with `{ author }`; the event target identifies the comment. Applications own composing, storage, and permissions. The `replies` property exposes the container for appending replies after connection. Use textContent or sanitize untrusted user content before inserting it; do not interpolate raw user HTML.
-
 ```html
-<se-comment author="Alex" initials="AM" timestamp="Just now">
-  <p>Could we show a mobile example?</p>
+<se-comment author="Sarah Jenkins" timestamp="Just now">
+  <se-avatar data-se-region="avatar" name="Sarah Jenkins" tone="gray"></se-avatar>
+  <p>A comment starts a conversation.</p>
   <se-reactions data-se-region="reactions"></se-reactions>
-  <se-comment author="Sam"><p>Yes, good idea.</p></se-comment>
+  <se-comment author="Alex"><p>A nested reply.</p></se-comment>
 </se-comment>
 ```
 
-Initial content is wrapped on the next task after connection so nested HTML can finish parsing. Append later replies through `comment.replies` after rendering. Attributes describe the initial render; create a new comment element when replacing its identity or content. Reply editors and document resolution controls belong to the application or pattern, not this component.
+Attributes: `author` (default Anonymous) and `timestamp`. Body content is trusted child HTML. Direct nested `se-comment` elements become replies; the `replies` getter exposes their container. Reply emits a `reply` event with the author; the application owns the reply editor.
 
-Indentation is built into the component: nest a `se-comment` inside its parent comment to make a reply. Each nested reply group gets indentation automatically. Its connector starts just below the parent avatar and continues through the replies. Comments without replies have no connector. On phones, indentation is reduced and text stays clear of the line. No `level` attribute or application CSS is required; the HTML nesting records who is replying to whom.
+Regions: `avatar` for an optional top-aligned identity element, and `reactions` for controls beside Reply. Avatar content may be [Avatar](avatar.md) or custom HTML. Supplied nodes and listeners are preserved. Omitting the avatar removes its column.
 
-`tone` sets the profile avatar color family: `gray` (default), `brand`, `success`, `warning`, `error`, `info`, or `important`. An `image` replaces the colored initials avatar, just as with `se-profile`.
+Migration: move `initials`, `image`, and `tone` to a child `se-avatar data-se-region="avatar"`. The comment no longer generates a profile component or a picture automatically.
 
-The reactions region accepts any suitable child. Nested `se-comment` elements still become replies automatically.
+When multiple direct children use the `avatar` region, only the last one is displayed. Earlier avatar regions are not rendered as body content.

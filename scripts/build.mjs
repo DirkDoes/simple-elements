@@ -27,7 +27,7 @@ await writeFile('dist/icons-all.js', `// Optional Lucide pack. Load after simple
 
 // Clean is the base; the default stylesheet adds Flat without adding CSS to JavaScript.
 await mkdir('dist/themes', { recursive: true });
-for (const theme of ['studio', 'edge']) await writeFile(`dist/themes/${theme}.css`, await readFile(`src/themes/${theme}.css`, 'utf8'));
+await writeFile('dist/themes/edge.css', await readFile('src/themes/edge.css', 'utf8'));
 const flatCss = await readFile('src/themes/flat.css', 'utf8');
 await writeFile('dist/themes/flat.css', flatCss);
 await writeFile('dist/styles.css', (await readFile('dist/themes/clean.css', 'utf8')) + '\n' + flatCss);
